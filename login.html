@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TradeForge – Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root{
+      --bg: #2d2d2d;          /* dark grey background */
+      --card: #1a1a1a;
+      --text: #e5e5e5;
+      --muted: #9ca3af;
+      --border: #404040;
+      --accent: #22c55e;      /* green accent */
+      --accent-dark: #16a34a;
+      --danger: #ef4444;
+    }
+
+    *{ box-sizing:border-box; margin:0; padding:0; font-family: Arial, sans-serif; }
+    body{ background: var(--bg); color: var(--text); }
+
+    header{
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:800; letter-spacing:0.2px;
+      color: var(--accent);
+      font-size: 1.2rem;
+      text-decoration:none;
+    }
+    .brand .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: var(--accent);
+      display:inline-block;
+    }
+    .nav{ display:flex; gap:10px; flex-wrap:wrap; }
+    .nav a{
+      text-decoration:none;
+      color: var(--text);
+      background: #404040;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+    .nav a:hover{
+      background: #505050;
+    }
+    .nav a.primary{
+      background: var(--accent);
+      color:#fff;
+      border-color: var(--accent);
+    }
+    .nav a.primary:hover{
+      background: var(--accent-dark);
+    }
+
+    .container{
+      max-width: 980px;
+      margin: 26px auto 40px;
+      padding: 0 16px;
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      overflow:hidden;
+    }
+
+    .hero{
+      padding: 22px;
+      min-height: 420px;
+      display:flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .hero h1{
+      font-size: 1.6rem;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .hero p{
+      color: var(--muted);
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+    .hero .points{
+      display:grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .point{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #2d2d2d;
+    }
+    .check{
+      width: 28px; height: 28px;
+      border-radius: 10px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: var(--accent);
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+    .point b{ display:block; margin-bottom: 2px; }
+    .point span{ color: var(--muted); font-size: 0.92rem; line-height: 1.35; }
+
+    .auth{
+      padding: 18px;
+    }
+    .auth h2{
+      font-size: 1.25rem;
+      margin-bottom: 6px;
+    }
+    .auth .sub{
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+      line-height: 1.35;
+    }
+
+    .field{
+      margin-bottom: 12px;
+    }
+    label{
+      display:block;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    input{
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      background: #2d2d2d;
+      color: var(--text);
+    }
+    input::placeholder{
+      color: var(--muted);
+    }
+    input:focus{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.1);
+    }
+
+    .row{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      margin: 8px 0 14px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .row a{
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .row a:hover{
+      color: var(--accent-dark);
+    }
+
+    .btn{
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      background: #404040;
+      color: var(--text);
+      transition: background 0.2s;
+    }
+    .btn:hover{
+      background: #505050;
+    }
+    .btn.primary{
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .btn.primary:hover{
+      background: var(--accent-dark);
+    }
+
+    .divider{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 12px 0;
+    }
+    .divider::before,
+    .divider::after{
+      content:"";
+      height:1px;
+      background: var(--border);
+      flex:1;
+    }
+
+    .oauth{
+      display:grid;
+      gap: 10px;
+    }
+    .oauth .btn{
+      background: #2d2d2d;
+      border-color: var(--border);
+    }
+    .oauth .btn:hover{
+      background: #3d3d3d;
+    }
+
+    .error{
+      display:none; /* toggle to block for error state */
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: var(--danger);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.92rem;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .footer-note{
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align:center;
+      line-height: 1.35;
+    }
+    .footer-note a{
+      color: var(--accent);
+      text-decoration:none;
+      font-weight: 800;
+    }
+    .footer-note a:hover{
+      color: var(--accent-dark);
+    }
+
+    @media (max-width: 880px){
+      .container{ grid-template-columns: 1fr; }
+      .hero{ min-height: auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a class="brand" href="mockup.html"><span class="dot"></span> TradeForge</a>
+  </header>
+
+  <main class="container">
+    <!-- Left: quick pitch / info -->
+    <section class="card hero">
+      <div>
+        <h1>Welcome back 👋</h1>
+        <p>
+          Log in to message sellers, save listings, schedule meetups, and receive alerts.
+        </p>
+
+        <div class="points">
+          <div class="point">
+            <div class="check">✓</div>
+            <div>
+              <b>Message sellers securely</b>
+              <span>Keep everything in-app and tied to each listing.</span>
+            </div>
+          </div>
+
+          <div class="point">
+            <div class="check">✓</div>
+            <div>
+              <b>Save listings for later</b>
+              <span>Bookmark items and come back anytime.</span>
+            </div>
+          </div>
+
+          <div class="point">
+            <div class="check">✓</div>
+            <div>
+              <b>Schedule meetups</b>
+              <span>Propose a time slot and confirm in one place.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p style="color: var(--muted); font-size: 0.9rem;">
+        Tip: Use Google sign-in for faster access.
+      </p>
+    </section>
+
+    <!-- Right: auth form -->
+    <section class="card auth">
+      <h2>Login</h2>
+      <div class="sub">Enter your email and password to continue.</div>
+
+      <!-- Error state example (toggle display to block to show) -->
+      <div class="error">Invalid email or password. Please try again.</div>
+
+      <form>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="you@example.com" />
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="••••••••" />
+        </div>
+
+        <div class="row">
+          <label style="display:flex; gap:8px; align-items:center; font-weight:600;">
+            <input type="checkbox" style="width:auto; accent-color: var(--accent);" />
+            <span>Remember me</span>
+          </label>
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <button class="btn primary" type="button">Log In</button>
+
+        <div class="divider">or</div>
+
+        <div class="oauth">
+          <button class="btn" type="button">Continue with Google</button>
+        </div>
+
+        <div class="footer-note">
+          Don’t have an account? <a href="register.html">Create one</a>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

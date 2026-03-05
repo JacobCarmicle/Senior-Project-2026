@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TradeForge – Listing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root{
+      --bg: #2d2d2d;          /* dark grey background */
+      --card: #1a1a1a;
+      --text: #e5e5e5;
+      --muted: #9ca3af;
+      --border: #404040;
+      --accent: #22c55e;      /* green accent */
+      --accent-2: #16a34a;
+      --danger: #ef4444;
+    }
+
+    *{ box-sizing:border-box; margin:0; padding:0; font-family: Arial, sans-serif; }
+    body{ background:var(--bg); color:var(--text); }
+
+    /* ===== Header ===== */
+    header{
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:800; letter-spacing:0.2px;
+      color: var(--accent);
+      font-size: 1.2rem;
+      text-decoration: none;
+    }
+    .brand .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: var(--accent);
+      display:inline-block;
+    }
+    .nav{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .nav a{
+      text-decoration:none;
+      color: var(--text);
+      background: #404040;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+    .nav a:hover{
+      background: #505050;
+    }
+    .nav a.primary{
+      background: var(--accent);
+      color:#fff;
+      border-color: var(--accent);
+    }
+
+    /* ===== Page Container ===== */
+    .container{
+      max-width: 1100px;
+      margin: 18px auto 40px;
+      padding: 0 16px;
+    }
+
+    .crumbs{
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 10px 0 14px;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 18px;
+      align-items:start;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow:hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    /* ===== Gallery ===== */
+    .gallery{
+      padding: 14px;
+    }
+    .gallery-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .main-img{
+      height: 340px;
+      background: #2d2d2d;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: #888;
+      font-weight: 600;
+    }
+    .thumbs{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .thumb{
+      height: 72px;
+      background: #2d2d2d;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    /* ===== Listing Info ===== */
+    .info{
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .listing-header{
+      margin-bottom: 16px;
+    }
+    
+    .title{
+      font-size: 1.75rem;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    
+    .price{
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    
+    .meta{
+      display:flex; gap:16px; flex-wrap:wrap;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .badges{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-bottom: 20px;
+    }
+    .badge{
+      font-size: 0.85rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: #2d2d2d;
+    }
+    .badge.accent{
+      border-color: rgba(34,197,94,0.3);
+      color: var(--accent);
+      background: rgba(34,197,94,0.1);
+      font-weight: 600;
+    }
+
+    .section-title{
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin: 24px 0 12px;
+      color: var(--text);
+    }
+    .section-title:first-of-type{
+      margin-top: 0;
+    }
+    .desc{
+      color: var(--text);
+      line-height:1.6;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .specs{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .spec{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #2d2d2d;
+    }
+    .spec .k{ color: var(--muted); font-size: 0.82rem; }
+    .spec .v{ font-weight: 800; margin-top: 4px; }
+
+    /* ===== Sidebar ===== */
+    .side{
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+    }
+
+    .side .card-pad{ padding: 14px; }
+
+    .action-row{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      border: none;
+      background: #404040;
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor:pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      flex: 1;
+      min-width: 130px;
+      transition: background 0.2s;
+    }
+    .btn:hover{
+      background: #505050;
+    }
+    .btn.primary{
+      background: var(--accent);
+      border-color: var(--accent);
+      color:#fff;
+    }
+    .btn.primary:hover{
+      background: var(--accent-2);
+    }
+    .btn.danger{
+      background: #2d2d2d;
+      border-color: rgba(239,68,68,0.35);
+      color: var(--danger);
+    }
+    .btn.danger:hover{
+      background: #3d2d2d;
+    }
+
+    .seller{
+      display:flex;
+      gap: 12px;
+      align-items:center;
+    }
+    .avatar{
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: rgba(22,163,74,0.15);
+      border: 1px solid rgba(22,163,74,0.25);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 900;
+      color: var(--accent-2);
+    }
+    .seller .name{ font-weight: 900; }
+    .seller .sub{ color: var(--muted); font-size: 0.9rem; margin-top: 2px; }
+
+    .rating{
+      margin-top: 10px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .stars{
+      font-weight: 900;
+      color: var(--accent-2);
+    }
+
+    .note{
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 920px){
+      .layout{ grid-template-columns: 1fr; }
+      .thumbs{ grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 520px){
+      .main-img{ height: 260px; }
+      .thumbs{ grid-template-columns: repeat(2, 1fr); }
+      .specs{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="mockup.html" class="brand"><span class="dot"></span> TradeForge</a>
+    <nav class="nav">
+      <a href="mockup.html">Marketplace</a>
+      <a href="message.html">Inbox</a>
+      <a href="saved.html">Saved</a>
+      <a class="primary" href="create-listing.html">Create Listing</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="crumbs">Home / Electronics / Phones / <strong>iPhone 13 – Blue</strong></div>
+
+    <div class="layout">
+      <!-- ===== Left Column: Gallery + Details ===== -->
+      <section class="card">
+        <div class="gallery">
+          <div class="gallery-grid">
+            <div class="main-img">Main Image (placeholder)</div>
+            <div class="thumbs">
+              <div class="thumb">Thumb 1</div>
+              <div class="thumb">Thumb 2</div>
+              <div class="thumb">Thumb 3</div>
+              <div class="thumb">Thumb 4</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info">
+          <div class="listing-header">
+            <div class="title">iPhone 13 – Blue (128GB)</div>
+            <div class="price">$550</div>
+            <div class="meta">
+              <span>📍 Louisville, KY</span>
+              <span>🕒 Posted Feb 10, 2026</span>
+              <span>🏷️ Pickup preferred</span>
+            </div>
+          </div>
+
+          <div class="badges">
+            <span class="badge accent">Active</span>
+            <span class="badge">Electronics</span>
+            <span class="badge">Used</span>
+          </div>
+
+          <div class="section-title">Description</div>
+          <p class="desc">
+            Great condition iPhone 13 in blue, 128GB. Battery health 89%.
+            Includes charging cable + case. No repairs, minor wear on edges.
+            Meet in a public place. Cash or verified payment only.
+          </p>
+
+          <div class="section-title">Details</div>
+          <div class="specs">
+            <div class="spec"><div class="k">Storage</div><div class="v">128GB</div></div>
+            <div class="spec"><div class="k">Carrier</div><div class="v">Unlocked</div></div>
+            <div class="spec"><div class="k">Condition</div><div class="v">Used – Very Good</div></div>
+            <div class="spec"><div class="k">Preferred Meetup</div><div class="v">Public Location</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Right Column: Actions + Seller ===== -->
+      <aside class="side">
+        <div class="card card-pad">
+          <button class="btn primary" style="width:100%; margin-bottom:10px;">Message Seller</button>
+          <div class="action-row">
+            <button class="btn">Save</button>
+            <button class="btn">Share</button>
+          </div>
+          <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+            <button class="btn danger" style="width:100%;">Report Listing</button>
+          </div>
+          <div style="margin-top:12px;" class="note">
+            💡 Keep communication in-app and meet in a safe public place.
+          </div>
+        </div>
+
+        <div class="card card-pad">
+          <div class="seller">
+            <div class="avatar">AL</div>
+            <div>
+              <div class="name">Alex L.</div>
+              <div class="sub">Seller • Joined Jan 2026</div>
+            </div>
+          </div>
+
+          <div class="rating">
+            <div><span class="stars">★★★★☆</span> (4.6)</div>
+            <div>23 reviews</div>
+          </div>
+
+          <div style="margin-top:12px;" class="action-row">
+            <button class="btn">View Seller Profile</button>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

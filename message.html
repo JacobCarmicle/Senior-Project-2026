@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TradeForge – Messages</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+
+    body {
+      background: #2d2d2d;
+      color: #e5e5e5;
+    }
+
+    /* ===== Header ===== */
+    header {
+      background: #1a1a1a;
+      border-bottom: 1px solid #404040;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #22c55e;
+      text-decoration: none;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+    }
+
+    .header-actions a {
+      text-decoration: none;
+      margin-left: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #404040;
+      color: #e5e5e5;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+
+    .header-actions a:hover {
+      background: #505050;
+    }
+
+    /* ===== Layout ===== */
+    .page {
+      height: calc(100vh - 58px);
+      display: grid;
+      grid-template-columns: 320px 1fr;
+    }
+
+    /* ===== Left: Conversations ===== */
+    .sidebar {
+      background: #1a1a1a;
+      border-right: 1px solid #404040;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-top {
+      padding: 14px;
+      border-bottom: 1px solid #404040;
+    }
+    .sidebar-top h2 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    .sidebar-top input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #404040;
+      border-radius: 8px;
+      background: #2d2d2d;
+      color: #e5e5e5;
+    }
+
+    .sidebar-top input::placeholder {
+      color: #888;
+    }
+
+    .sidebar-top input:focus {
+      outline: none;
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+
+    .thread-list {
+      overflow: auto;
+    }
+
+    .thread {
+      padding: 12px 14px;
+      border-bottom: 1px solid #2f2f2f;
+      cursor: pointer;
+      display: grid;
+      gap: 6px;
+    }
+
+    .thread.active { background: #262626; }
+
+    .thread-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+    }
+    .thread-name { font-weight: 700; font-size: 0.95rem; color: #f9fafb; }
+    .thread-time { font-size: 0.8rem; color: #9ca3af; white-space: nowrap; }
+    .thread-meta { font-size: 0.85rem; color: #d1d5db; }
+    .thread-snippet { font-size: 0.85rem; color: #9ca3af; }
+
+    /* ===== Right: Chat ===== */
+    .chat {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .chat-header {
+      background: #1a1a1a;
+      border-bottom: 1px solid #404040;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .chat-header-left {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
+    }
+
+    .chat-title {
+      font-weight: 800;
+      font-size: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-actions button {
+      padding: 9px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #22c55e;
+      color: white;
+      margin-left: 8px;
+      transition: background 0.2s;
+    }
+
+    .chat-actions button.secondary {
+      background: #404040;
+      color: #e5e5e5;
+    }
+
+    .chat-actions button:hover {
+      background: #16a34a;
+    }
+
+    .chat-actions button.secondary:hover {
+      background: #505050;
+    }
+
+    .messages {
+      padding: 16px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 10px;
+      background: #2d2d2d;
+      flex: 1;
+    }
+
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .msg-row.me { justify-content: flex-end; }
+
+    .bubble {
+      max-width: 70%;
+      background: #1a1a1a;
+      border: 1px solid #404040;
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      color: #e5e5e5;
+    }
+
+    .me .bubble {
+      background: #22c55e;
+      color: #fff;
+      border-color: #22c55e;
+    }
+
+    .meta {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+
+    .me .meta { color: rgba(255,255,255,0.9); }
+
+    /* Failed message style (red text + exclamation) */
+    .failed .bubble {
+      border-color: #ef4444;
+    }
+    .failed .failed-line {
+      margin-top: 6px;
+      font-size: 0.85rem;
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .failed .retry {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* ===== Composer ===== */
+    .composer {
+      background: #1a1a1a;
+      border-top: 1px solid #404040;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .composer input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #404040;
+      border-radius: 10px;
+      background: #2d2d2d;
+      color: #e5e5e5;
+    }
+
+    .composer input::placeholder {
+      color: #888;
+    }
+
+    .composer input:focus {
+      outline: none;
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+
+    .composer button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #22c55e;
+      color: #fff;
+      transition: background 0.2s;
+    }
+
+    .composer button.secondary {
+      background: #404040;
+      color: #e5e5e5;
+    }
+
+    .composer button:hover {
+      background: #16a34a;
+    }
+
+    .composer button.secondary:hover {
+      background: #505050;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="mockup.html" class="logo">TradeForge</a>
+    <div class="header-actions">
+      <a href="mockup.html">Marketplace</a>
+      <a href="message.html">Inbox</a>
+    </div>
+  </header>
+
+  <div class="page">
+    <!-- ===== Left: Conversation List ===== -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <h2>Messages</h2>
+        <input type="text" placeholder="Search conversations..." />
+      </div>
+
+      <div class="thread-list">
+        <div class="thread active">
+          <div class="thread-row">
+            <div class="thread-name">Alex L.</div>
+            <div class="thread-time">Feb 10</div>
+          </div>
+          <div class="thread-meta">Listing: “iPhone 13 – Blue”</div>
+          <div class="thread-snippet">Can you meet at 6pm?</div>
+        </div>
+
+        <div class="thread">
+          <div class="thread-row">
+            <div class="thread-name">Yahir P.</div>
+            <div class="thread-time">Feb 9</div>
+          </div>
+          <div class="thread-meta">Listing: “Mountain Bike”</div>
+          <div class="thread-snippet">Price negotiable?</div>
+        </div>
+
+        <div class="thread">
+          <div class="thread-row">
+            <div class="thread-name">Sam R.</div>
+            <div class="thread-time">Feb 7</div>
+          </div>
+          <div class="thread-meta">Listing: “Desk Chair”</div>
+          <div class="thread-snippet">Thanks!</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== Right: Chat ===== -->
+    <div class="chat">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="chat-title">Alex L.</div>
+          <div class="chat-subtitle">iPhone 13 – Blue</div>
+        </div>
+        <div class="chat-actions">
+          <button class="secondary">View Listing</button>
+          <button>Make Offer</button>
+        </div>
+      </div>
+
+      <div class="messages">
+        <div class="msg-row">
+          <div class="bubble">
+            Hi! Is the iPhone still available?
+          </div>
+          <div class="meta">Feb 9, 2:30 PM</div>
+        </div>
+
+        <div class="msg-row me">
+          <div class="bubble">
+            Yes, it's still available! It's in great condition.
+          </div>
+          <div class="meta">Feb 9, 2:45 PM</div>
+        </div>
+
+        <div class="msg-row">
+          <div class="bubble">
+            Great! Can you meet at 6pm today?
+          </div>
+          <div class="meta">Feb 10, 10:15 AM</div>
+        </div>
+
+        <div class="msg-row me">
+          <div class="bubble">
+            Yes, that works for me. I'll be at the coffee shop on Main St.
+          </div>
+          <div class="meta">Feb 10, 10:20 AM</div>
+        </div>
+
+        <div class="msg-row">
+          <div class="bubble">
+            Perfect! See you then.
+          </div>
+          <div class="meta">Feb 10, 10:22 AM</div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <input type="text" placeholder="Type a message..." />
+        <button class="secondary">📎</button>
+        <button>Send</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
