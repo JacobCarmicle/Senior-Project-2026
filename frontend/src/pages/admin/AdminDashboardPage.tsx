@@ -412,8 +412,7 @@ export default function AdminDashboardPage() {
       <header style={{ background: T.card, borderBottom:`1px solid ${T.border}`, padding:"12px 20px", display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:10 }}>
         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
           <span style={{ fontWeight:800, color: T.accent, fontSize:"1.2rem", letterSpacing:"0.2px" }}>
-            <span style={{ width:10, height:10, borderRadius:"50%", background: T.accent, display:"inline-block", marginRight:8 }}></span>
-            TradeForge
+            <a href="/" style={{ fontSize: "18px", fontWeight: 700, color: T.accent, textDecoration: "none" }}>TradeForge</a>
           </span>
           <span style={{ fontSize:"12px", background:"rgba(168,85,247,0.15)", color:"#c084fc", border:"1px solid rgba(168,85,247,0.3)", padding:"2px 10px", borderRadius:"6px", fontWeight:700 }}>
             Admin
