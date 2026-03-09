@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { forgotPassword } from "../../api/auth";
+import { getApiErrorMessage } from "../../api/errors";
 import AuthLayout from "../../components/AuthLayout";
 import HeroPanel from "../../components/HeroPanel";
 
@@ -33,8 +34,8 @@ export default function ForgotPasswordPage() {
     try {
       await forgotPassword({ email });
       setSubmitted(true);
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Something went wrong. Please try again."));
     } finally {
       setSubmitting(false);
     }

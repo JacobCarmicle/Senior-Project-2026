@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { requestGoogleIdToken } from "../../lib/googleIdentity";
+import { getApiErrorMessage } from "../../api/errors";
 import AuthLayout from "../../components/AuthLayout";
 import HeroPanel from "../../components/HeroPanel";
 
@@ -55,8 +56,8 @@ export default function LoginPage() {
     try {
       await login(email, password);
       navigate("/");
-    } catch {
-      setError("Invalid email or password. Please try again.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Invalid email or password. Please try again."));
     } finally {
       setSubmitting(false);
     }

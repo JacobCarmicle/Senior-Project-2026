@@ -80,7 +80,7 @@ describe("RegisterPage", () => {
     await user.click(screen.getByRole("button", { name: /create account/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/email may already be in use/i)).toBeInTheDocument();
+      expect(screen.getByText(/email already registered/i)).toBeInTheDocument();
     });
   });
 
