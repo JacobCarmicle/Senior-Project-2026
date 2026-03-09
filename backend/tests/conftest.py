@@ -8,12 +8,14 @@ os.environ.setdefault("GOOGLE_CLIENT_ID", "test-google-client-id")
 from app.main import app  # noqa: E402
 from app.services.google_auth import reset_users_store as reset_google_users_store  # noqa: E402
 from app.services.auth_local import reset_local_auth_state  # noqa: E402
+from app.services.listings import reset_listings_store  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
 def reset_state():
     reset_google_users_store()
     reset_local_auth_state()
+    reset_listings_store()
 
 
 @pytest.fixture()
