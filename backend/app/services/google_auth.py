@@ -38,6 +38,13 @@ def get_or_create_user(claims: dict) -> dict:
     return user
 
 
+def get_user_by_id(user_id: str) -> dict | None:
+    for user in USERS_BY_EMAIL.values():
+        if user["id"] == user_id:
+            return user
+    return None
+
+
 def create_access_token(user: dict) -> str:
     secret = os.environ.get("JWT_SECRET", "dev-secret")
     now = datetime.now(UTC)

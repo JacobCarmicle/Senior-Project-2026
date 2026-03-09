@@ -41,6 +41,8 @@ def get_current_user(
     user_id = claims.get("sub")
     user = auth_local.get_user_by_id(user_id)
     if not user:
+        user = google_auth.get_user_by_id(user_id)
+    if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return user
 

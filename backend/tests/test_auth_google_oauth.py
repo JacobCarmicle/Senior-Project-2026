@@ -70,6 +70,27 @@ def test_google_oauth_unverified_email_returns_401(client, monkeypatch):
     assert res.status_code == 401
 
 
+def test_google_oauth_token_can_access_protected_route(client, monkeypatch):
+    def fake_verify(_token: str):
+        return {
+            "aud": "test-google-client-id",
+            "email": "jane@example.com",
+            "email_verified": True,
+            "name": "Jane Doe",
+            "sub": "google-sub-1",
+        }
+
+    monkeypatch.setattr(google_auth, "verify_google_id_token", fake_verify)
+
+    login = client.post("/auth/oauth/google", json={"token": "valid-token"})
+    token = login.json()["access_token"]
+    me = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
+
+    assert login.status_code == 200
+    assert me.status_code == 200
+    assert me.json()["email"] == "jane@example.com"
+
+
 def test_google_oauth_reuses_existing_user(client, monkeypatch):
     def fake_verify(_token: str):
         return {
