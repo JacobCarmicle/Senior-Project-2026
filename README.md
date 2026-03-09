@@ -15,6 +15,21 @@ Full-stack senior software project marketplace app.
 
 ## Quick Start
 
+### Docker (recommended for team consistency)
+
+```bash
+docker compose up --build
+```
+
+- Frontend: http://localhost:5173
+- Backend:  http://localhost:8000
+
+Stop:
+
+```bash
+docker compose down
+```
+
 ### 1) Configure environment files
 
 ```bash
