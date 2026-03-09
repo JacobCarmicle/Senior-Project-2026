@@ -1,0 +1,138 @@
+import os
+from decimal import Decimal
+
+from supabase import Client, create_client
+
+
+_client: Client | None = None
+
+
+def _get_client() -> Client:
+    global _client
+    if _client is not None:
+        return _client
+
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    if not url or not key:
+        raise RuntimeError("Supabase env is missing")
+
+    _client = create_client(url, key)
+    return _client
+
+
+def create_listing(payload: dict, seller_id: str) -> dict:
+    client = _get_client()
+    created = (
+        client.table("listings")
+        .insert(
+            {
+                "seller_id": seller_id,
+                "title": payload["title"],
+                "description": payload["description"],
+                "price": float(payload["price"]),
+                "category": payload["category"],
+                "location": payload["location"],
+            }
+        )
+        .execute()
+    )
+    item = created.data[0]
+
+    for i, url in enumerate(payload["images"]):
+        client.table("listing_media").insert(
+            {
+                "listing_id": item["id"],
+                "public_url": url,
+                "is_primary": i == 0,
+            }
+        ).execute()
+
+    return get_listing(item["id"])
+
+
+def _with_images(items: list[dict]) -> list[dict]:
+    client = _get_client()
+    if not items:
+        return []
+
+    ids = [x["id"] for x in items]
+    media = client.table("listing_media").select("listing_id,public_url,created_at").in_("listing_id", ids).execute().data
+
+    by_listing: dict[str, list[str]] = {i: [] for i in ids}
+    media.sort(key=lambda x: x.get("created_at") or "")
+    for m in media:
+        by_listing[m["listing_id"]].append(m["public_url"])
+
+    out = []
+    for item in items:
+        item["price"] = Decimal(str(item["price"]))
+        item["images"] = by_listing.get(item["id"], [])
+        out.append(item)
+    return out
+
+
+def get_listing(listing_id: str) -> dict | None:
+    client = _get_client()
+    res = client.table("listings").select("*").eq("id", listing_id).neq("status", "deleted").limit(1).execute().data
+    if not res:
+        return None
+    return _with_images(res)[0]
+
+
+def list_public_listings(page: int = 1, page_size: int = 20) -> tuple[list[dict], int]:
+    client = _get_client()
+    start = (page - 1) * page_size
+    end = start + page_size - 1
+    rows = (
+        client.table("listings")
+        .select("*", count="exact")
+        .neq("status", "deleted")
+        .order("created_at", desc=True)
+        .range(start, end)
+        .execute()
+    )
+    return _with_images(rows.data), rows.count or 0
+
+
+def update_listing(listing_id: str, seller_id: str, patch: dict) -> dict | None:
+    client = _get_client()
+    existing = client.table("listings").select("id,seller_id,status").eq("id", listing_id).limit(1).execute().data
+    if not existing or existing[0].get("status") == "deleted":
+        return None
+    if existing[0]["seller_id"] != seller_id:
+        raise PermissionError("Forbidden")
+
+    update_payload = {k: v for k, v in patch.items() if k in {"title", "description", "price", "category", "location", "status"}}
+    if "price" in update_payload:
+        update_payload["price"] = float(update_payload["price"])
+
+    if update_payload:
+        client.table("listings").update(update_payload).eq("id", listing_id).execute()
+
+    return get_listing(listing_id)
+
+
+def delete_listing(listing_id: str, seller_id: str) -> bool:
+    item = update_listing(listing_id, seller_id, {"status": "deleted"})
+    return item is not None
+
+
+def search_listings(keyword, category, min_price, max_price, page, page_size):
+    client = _get_client()
+    q = client.table("listings").select("*", count="exact").eq("status", "active")
+
+    if category:
+        q = q.ilike("category", category)
+    if min_price is not None:
+        q = q.gte("price", float(min_price))
+    if max_price is not None:
+        q = q.lte("price", float(max_price))
+    if keyword:
+        like = f"%{keyword}%"
+        q = q.or_(f"title.ilike.{like},description.ilike.{like}")
+
+    start = (page - 1) * page_size
+    end = start + page_size - 1
+    rows = q.order("created_at", desc=True).range(start, end).execute()
+    return _with_images(rows.data), rows.count or 0

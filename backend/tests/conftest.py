@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 os.environ.setdefault("JWT_SECRET", "test-secret")
 os.environ.setdefault("GOOGLE_CLIENT_ID", "test-google-client-id")
+os.environ.setdefault("LISTINGS_BACKEND", "memory")
 
 from app.main import app  # noqa: E402
 from app.services.google_auth import reset_users_store as reset_google_users_store  # noqa: E402

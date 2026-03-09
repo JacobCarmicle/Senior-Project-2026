@@ -1,108 +1,48 @@
-import uuid
-from datetime import UTC, datetime
-from decimal import Decimal
+import os
 
-LISTINGS_BY_ID: dict[str, dict] = {}
+from app.services import listings_supabase
+from app.services import listings_memory as memory
+
+
+def _use_supabase() -> bool:
+    return os.environ.get("LISTINGS_BACKEND", "memory").lower() == "supabase"
 
 
 def reset_listings_store() -> None:
-    LISTINGS_BY_ID.clear()
-
-
-def _now() -> datetime:
-    return datetime.now(UTC)
+    memory.reset_listings_store()
 
 
 def create_listing(payload: dict, seller_id: str) -> dict:
-    now = _now()
-    listing = {
-        "id": str(uuid.uuid4()),
-        "seller_id": seller_id,
-        "title": payload["title"],
-        "description": payload["description"],
-        "price": Decimal(str(payload["price"])),
-        "category": payload["category"],
-        "location": payload["location"],
-        "status": "active",
-        "images": payload["images"],
-        "created_at": now,
-        "updated_at": now,
-    }
-    LISTINGS_BY_ID[listing["id"]] = listing
-    return listing
+    if _use_supabase():
+        return listings_supabase.create_listing(payload, seller_id)
+    return memory.create_listing(payload, seller_id)
 
 
 def get_listing(listing_id: str) -> dict | None:
-    listing = LISTINGS_BY_ID.get(listing_id)
-    if not listing or listing["status"] == "deleted":
-        return None
-    return listing
+    if _use_supabase():
+        return listings_supabase.get_listing(listing_id)
+    return memory.get_listing(listing_id)
 
 
 def list_public_listings(page: int = 1, page_size: int = 20) -> tuple[list[dict], int]:
-    items = [l for l in LISTINGS_BY_ID.values() if l["status"] != "deleted"]
-    items.sort(key=lambda x: x["created_at"], reverse=True)
-    total = len(items)
-    start = (page - 1) * page_size
-    end = start + page_size
-    return items[start:end], total
+    if _use_supabase():
+        return listings_supabase.list_public_listings(page, page_size)
+    return memory.list_public_listings(page, page_size)
 
 
 def update_listing(listing_id: str, seller_id: str, patch: dict) -> dict | None:
-    listing = LISTINGS_BY_ID.get(listing_id)
-    if not listing or listing["status"] == "deleted":
-        return None
-    if listing["seller_id"] != seller_id:
-        raise PermissionError("Forbidden")
-
-    for key in ["title", "description", "price", "category", "location", "status"]:
-        if key in patch and patch[key] is not None:
-            if key == "price":
-                listing[key] = Decimal(str(patch[key]))
-            else:
-                listing[key] = patch[key]
-    listing["updated_at"] = _now()
-    return listing
+    if _use_supabase():
+        return listings_supabase.update_listing(listing_id, seller_id, patch)
+    return memory.update_listing(listing_id, seller_id, patch)
 
 
 def delete_listing(listing_id: str, seller_id: str) -> bool:
-    listing = LISTINGS_BY_ID.get(listing_id)
-    if not listing or listing["status"] == "deleted":
-        return False
-    if listing["seller_id"] != seller_id:
-        raise PermissionError("Forbidden")
-
-    listing["status"] = "deleted"
-    listing["updated_at"] = _now()
-    return True
+    if _use_supabase():
+        return listings_supabase.delete_listing(listing_id, seller_id)
+    return memory.delete_listing(listing_id, seller_id)
 
 
-def search_listings(
-    keyword: str | None,
-    category: str | None,
-    min_price: Decimal | None,
-    max_price: Decimal | None,
-    page: int,
-    page_size: int,
-) -> tuple[list[dict], int]:
-    items = [l for l in LISTINGS_BY_ID.values() if l["status"] == "active"]
-
-    if keyword:
-        needle = keyword.lower()
-        items = [
-            l
-            for l in items
-            if needle in l["title"].lower() or needle in l["description"].lower()
-        ]
-    if category:
-        items = [l for l in items if l["category"].lower() == category.lower()]
-    if min_price is not None:
-        items = [l for l in items if l["price"] >= min_price]
-    if max_price is not None:
-        items = [l for l in items if l["price"] <= max_price]
-
-    items.sort(key=lambda x: x["created_at"], reverse=True)
-    total = len(items)
-    start = (page - 1) * page_size
-    end = start + page_size
-    return items[start:end], total
+def search_listings(keyword, category, min_price, max_price, page, page_size):
+    if _use_supabase():
+        return listings_supabase.search_listings(keyword, category, min_price, max_price, page, page_size)
+    return memory.search_listings(keyword, category, min_price, max_price, page, page_size)
