@@ -12,12 +12,12 @@ MessageKind = Literal["text", "image", "system"]
 
 class ConversationCreateRequest(BaseModel):
     listing_id: str
-    seller_id: str
+    seller_id: str | None = None
     buyer_id: str | None = None
 
     @model_validator(mode="after")
     def validate_no_self_message(self):
-        if self.buyer_id and self.buyer_id == self.seller_id:
+        if self.buyer_id and self.seller_id and self.buyer_id == self.seller_id:
             raise ValueError("Buyer cannot start a conversation with themselves")
         return self
 
@@ -31,6 +31,15 @@ class ConversationResponse(BaseModel):
     blocked_by_user_id: str | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class ConversationListResponse(BaseModel):
+    items: list[ConversationResponse]
+    total: int
+
+
+class ConversationStatusUpdateRequest(BaseModel):
+    status: ConversationStatus
 
 
 class MessageCreateRequest(BaseModel):
