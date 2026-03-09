@@ -72,4 +72,6 @@ on pushes to `main` and pull requests.
 - Do not commit real secrets; use `.env.example` for required keys.
 - Prefer small, focused commits with clear messages.
 
-See `CONTRIBUTING.md` for team workflow.
+See:
+- `CONTRIBUTING.md` for team workflow.
+- `DEPLOY_CHECKLIST.md` for production release readiness.
