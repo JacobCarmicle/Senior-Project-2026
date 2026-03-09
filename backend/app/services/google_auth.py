@@ -1,17 +1,16 @@
 import os
-import uuid
 from datetime import UTC, datetime, timedelta
 
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
 from jose import jwt
 
-
-USERS_BY_EMAIL: dict[str, dict] = {}
+from app.services import auth_local
 
 
 def reset_users_store() -> None:
-    USERS_BY_EMAIL.clear()
+    # user persistence is now centralized in auth_local
+    return None
 
 
 def verify_google_id_token(token: str) -> dict:
@@ -21,28 +20,13 @@ def verify_google_id_token(token: str) -> dict:
 
 def get_or_create_user(claims: dict) -> dict:
     email = claims["email"].lower()
-    existing = USERS_BY_EMAIL.get(email)
-    if existing:
-        return existing
-
-    now = datetime.now(UTC).isoformat()
-    user = {
-        "id": str(uuid.uuid4()),
-        "email": email,
-        "full_name": claims.get("name") or email.split("@")[0],
-        "role": "user",
-        "created_at": now,
-        "google_sub": claims.get("sub"),
-    }
-    USERS_BY_EMAIL[email] = user
-    return user
+    full_name = claims.get("name") or email.split("@")[0]
+    google_sub = claims.get("sub")
+    return auth_local.get_or_create_google_user(email=email, full_name=full_name, google_sub=google_sub)
 
 
 def get_user_by_id(user_id: str) -> dict | None:
-    for user in USERS_BY_EMAIL.values():
-        if user["id"] == user_id:
-            return user
-    return None
+    return auth_local.get_user_by_id(user_id)
 
 
 def create_access_token(user: dict) -> str:

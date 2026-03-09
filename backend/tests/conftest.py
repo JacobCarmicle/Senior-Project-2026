@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 os.environ.setdefault("JWT_SECRET", "test-secret")
 os.environ.setdefault("GOOGLE_CLIENT_ID", "test-google-client-id")
+os.environ.setdefault("USERS_BACKEND", "memory")
 os.environ.setdefault("LISTINGS_BACKEND", "memory")
 os.environ.setdefault("UPLOADS_BACKEND", "local")
 
