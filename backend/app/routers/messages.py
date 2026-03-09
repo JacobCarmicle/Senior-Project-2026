@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.routers.auth import get_current_user
 from app.schemas.messaging import MessageCreateRequest, MessageListResponse, MessageResponse
-from app.services import messages
+from app.services import messages, realtime
 
 router = APIRouter(prefix="/conversations", tags=["messages"])
 
 
 @router.post("/{conversation_id}/messages", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
-def send_message(
+async def send_message(
     conversation_id: str,
     payload: MessageCreateRequest,
     current_user: dict = Depends(get_current_user),
@@ -26,6 +26,9 @@ def send_message(
 
     if not msg:
         raise HTTPException(status_code=404, detail="Conversation not found")
+
+    event = {"type": "message.sent", "conversation_id": conversation_id, "message": MessageResponse(**msg).model_dump(mode="json")}
+    await realtime.broadcast(conversation_id, event)
     return MessageResponse(**msg)
 
 
@@ -38,7 +41,7 @@ def list_messages(conversation_id: str, current_user: dict = Depends(get_current
 
 
 @router.patch("/{conversation_id}/messages/{message_id}/read", response_model=MessageResponse)
-def mark_message_read(
+async def mark_message_read(
     conversation_id: str,
     message_id: str,
     current_user: dict = Depends(get_current_user),
@@ -54,4 +57,7 @@ def mark_message_read(
 
     if not msg:
         raise HTTPException(status_code=404, detail="Message or conversation not found")
+
+    event = {"type": "message.read", "conversation_id": conversation_id, "message": MessageResponse(**msg).model_dump(mode="json")}
+    await realtime.broadcast(conversation_id, event)
     return MessageResponse(**msg)
