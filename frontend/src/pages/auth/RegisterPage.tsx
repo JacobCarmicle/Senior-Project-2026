@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { googleOAuth } from "../../api/auth";
+import { requestGoogleIdToken } from "../../lib/googleIdentity";
 import AuthLayout from "../../components/AuthLayout";
 import HeroPanel from "../../components/HeroPanel";
 
@@ -21,7 +21,7 @@ const HERO_FEATURES = [
 ];
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const [fullName, setFullName] = useState("");
@@ -32,10 +32,20 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
 
   async function handleGoogleSignup() {
-    // TODO: integrate Google Identity Services to get the credential token,
-    // then POST it to /auth/oauth/google via googleOAuth(token)
-    void googleOAuth;
-    setError("Google sign-in is not yet configured.");
+    setError("");
+    setSubmitting(true);
+
+    try {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      const idToken = await requestGoogleIdToken(clientId);
+      await loginWithGoogle(idToken);
+      navigate("/");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Google sign-in failed. Please try again.";
+      setError(message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -161,7 +171,8 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={handleGoogleSignup}
-            className="w-full rounded-xl border border-[#404040] bg-[#2d2d2d] p-3 font-extrabold text-[#e5e5e5] transition-colors hover:bg-[#3d3d3d]"
+            disabled={submitting}
+            className="w-full rounded-xl border border-[#404040] bg-[#2d2d2d] p-3 font-extrabold text-[#e5e5e5] transition-colors hover:bg-[#3d3d3d] disabled:opacity-60"
           >
             Continue with Google
           </button>
