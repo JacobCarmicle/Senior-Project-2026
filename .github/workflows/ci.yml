@@ -49,6 +49,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run frontend lint
+        run: npm run lint
+
       - name: Run frontend tests
         run: npm test -- --run --maxWorkers=1
 

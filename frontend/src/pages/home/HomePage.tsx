@@ -324,8 +324,6 @@ export default function HomePage() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoadingListings(true);
-    setListingsError("");
 
     listListings()
       .then((res) => {
