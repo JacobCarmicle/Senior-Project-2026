@@ -1,5 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { listListings } from "../../api/listings";
+import type { Listing as ApiListing } from "../../types/listings";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -28,27 +30,8 @@ interface Listing {
   status: "active" | "sold";
   sellerName: string;
   sellerRating: number;
+  imageUrl?: string;
 }
-
-// ── Mock Data ─────────────────────────────────────────────────────────────────
-const MOCK_LISTINGS: Listing[] = [
-  { id:"l1",  title:"iPhone 13 – Blue (128GB)",      price:550,   category:"Electronics", location:"Louisville, KY",   postedAt:"2026-03-04", saved:false, status:"active", sellerName:"Alex L.",   sellerRating:4.6 },
-  { id:"l2",  title:"2019 Honda Civic LX",            price:14500, category:"Automotive",  location:"Bowling Green, KY", postedAt:"2026-03-03", saved:false, status:"active", sellerName:"Mark T.",   sellerRating:4.8 },
-  { id:"l3",  title:"IKEA MALM Dresser – White",      price:80,    category:"Furniture",   location:"Nashville, TN",    postedAt:"2026-03-03", saved:false, status:"active", sellerName:"Sara M.",   sellerRating:4.2 },
-  { id:"l4",  title:"Trek Mountain Bike 29\"",        price:480,   category:"Sports",      location:"Bowling Green, KY", postedAt:"2026-03-02", saved:false, status:"active", sellerName:"Ravi P.",   sellerRating:5.0 },
-  { id:"l5",  title:"MacBook Pro M3 14\" 512GB",      price:1800,  category:"Electronics", location:"Franklin, TN",     postedAt:"2026-03-02", saved:true,  status:"active", sellerName:"Lisa C.",   sellerRating:4.9 },
-  { id:"l6",  title:"Vintage Leather Sofa",           price:320,   category:"Furniture",   location:"Louisville, KY",   postedAt:"2026-03-01", saved:false, status:"active", sellerName:"Dana R.",   sellerRating:3.8 },
-  { id:"l7",  title:"Nike Air Jordan 1 Retro – Sz10", price:210,   category:"Clothing",    location:"Bowling Green, KY", postedAt:"2026-03-01", saved:false, status:"active", sellerName:"Jay W.",    sellerRating:4.5 },
-  { id:"l8",  title:"PS5 Console + 2 Controllers",   price:450,   category:"Electronics", location:"Owensboro, KY",    postedAt:"2026-02-28", saved:false, status:"active", sellerName:"Chris K.",  sellerRating:4.7 },
-  { id:"l9",  title:"2017 Subaru Outback AWD",        price:18000, category:"Automotive",  location:"Nashville, TN",    postedAt:"2026-02-28", saved:false, status:"active", sellerName:"Tom B.",    sellerRating:4.3 },
-  { id:"l10", title:"Dining Table + 4 Chairs",        price:250,   category:"Furniture",   location:"Bowling Green, KY", postedAt:"2026-02-27", saved:false, status:"active", sellerName:"Nina S.",   sellerRating:4.1 },
-  { id:"l11", title:"Canon EOS R50 Camera Kit",       price:680,   category:"Electronics", location:"Louisville, KY",   postedAt:"2026-02-27", saved:false, status:"active", sellerName:"Priya N.",  sellerRating:4.8 },
-  { id:"l12", title:"North Face Jacket – Sz M",       price:95,    category:"Clothing",    location:"Franklin, TN",     postedAt:"2026-02-26", saved:false, status:"active", sellerName:"Ethan J.",  sellerRating:4.4 },
-  { id:"l13", title:"Bowflex SelectTech Dumbbells",   price:300,   category:"Sports",      location:"Louisville, KY",   postedAt:"2026-02-26", saved:false, status:"active", sellerName:"Cole M.",   sellerRating:4.6 },
-  { id:"l14", title:"2020 Toyota Camry SE",           price:22500, category:"Automotive",  location:"Bowling Green, KY", postedAt:"2026-02-25", saved:false, status:"active", sellerName:"Fiona R.",  sellerRating:4.9 },
-  { id:"l15", title:"iPad Pro 11\" M2 + Apple Pencil",price:750,   category:"Electronics", location:"Owensboro, KY",    postedAt:"2026-02-25", saved:false, status:"active", sellerName:"Sam H.",    sellerRating:4.7 },
-  { id:"l16", title:"Levi's 501 Jeans – Sz 32x32",   price:45,    category:"Clothing",    location:"Nashville, TN",    postedAt:"2026-02-24", saved:false, status:"active", sellerName:"Mia L.",    sellerRating:4.0 },
-];
 
 const CATEGORIES = ["All", "Electronics", "Automotive", "Furniture", "Clothing", "Sports"];
 const SORT_OPTIONS = [
@@ -58,6 +41,23 @@ const SORT_OPTIONS = [
   { value:"price-desc",label:"Price: High to Low" },
 ];
 const PAGE_SIZE = 8;
+
+function toUiListing(listing: ApiListing): Listing {
+  return {
+    id: listing.id,
+    title: listing.title,
+    price: Number(listing.price),
+    category: listing.category,
+    location: listing.location,
+    postedAt: (listing.created_at || "").slice(0, 10),
+    saved: false,
+    status: listing.status === "sold" ? "sold" : "active",
+    sellerName: "Seller",
+    sellerRating: 0,
+    imageUrl: listing.images?.[0],
+  };
+}
+
 
 // ── Category pill color ───────────────────────────────────────────────────────
 function catColor(cat: string): { bg: string; color: string; border: string } {
@@ -253,8 +253,13 @@ function ListingCard({ listing, onSave, onClick }: {
         margin:"10px 10px 0",
         borderRadius:"10px",
         flexShrink:0,
+        overflow:"hidden",
       }}>
-        No Image
+        {listing.imageUrl ? (
+          <img src={listing.imageUrl} alt={listing.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          "No Image"
+        )}
         {/* Save Button */}
         <button
           onClick={e => { e.stopPropagation(); onSave(listing.id); }}
@@ -307,13 +312,39 @@ function ListingCard({ listing, onSave, onClick }: {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const [listings,  setListings]  = useState<Listing[]>(MOCK_LISTINGS);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loadingListings, setLoadingListings] = useState(true);
+  const [listingsError, setListingsError] = useState("");
   const [search,    setSearch]    = useState("");
   const [category,  setCategory]  = useState("All");
   const [minPrice,  setMinPrice]  = useState("");
   const [maxPrice,  setMaxPrice]  = useState("");
   const [sort,      setSort]      = useState("newest");
   const [page,      setPage]      = useState(1);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingListings(true);
+    setListingsError("");
+
+    listListings()
+      .then((res) => {
+        if (cancelled) return;
+        setListings((res.items ?? []).map(toUiListing));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setListingsError("Unable to load marketplace listings.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoadingListings(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // ── Filter + Sort ───────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -449,10 +480,27 @@ export default function HomePage() {
           })}
         </div>
 
+        {listingsError && (
+          <div style={{
+            marginBottom: "12px",
+            padding: "10px 12px",
+            borderRadius: "10px",
+            border: `1px solid rgba(239,68,68,0.4)`,
+            background: "rgba(239,68,68,0.1)",
+            color: T.danger,
+            fontSize: "13px",
+            fontWeight: 600,
+          }}>
+            {listingsError}
+          </div>
+        )}
+
         {/* ── Results Bar ── */}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"16px", flexWrap:"wrap", gap:"10px" }}>
           <span style={{ fontSize:"14px", color: T.muted }}>
-            {filtered.length === 0
+            {loadingListings
+              ? "Loading listings..."
+              : filtered.length === 0
               ? "No listings found"
               : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, filtered.length)} of ${filtered.length} listing${filtered.length !== 1 ? "s" : ""}`}
           </span>
@@ -465,7 +513,9 @@ export default function HomePage() {
         </div>
 
         {/* ── Listing Grid ── */}
-        {paginated.length > 0 ? (
+        {loadingListings ? (
+          <div style={{ background: T.card, border:`1px solid ${T.border}`, borderRadius:"14px", padding:"40px 20px", textAlign:"center", color: T.muted }}>Loading listings...</div>
+        ) : paginated.length > 0 ? (
           <div style={{
             display:"grid",
             gridTemplateColumns:"repeat(auto-fill, minmax(240px, 1fr))",
