@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.routers.auth import get_current_user
-from app.schemas.reviews import ReviewCreateRequest, ReviewListResponse, ReviewResponse
+from app.schemas.reviews import (
+    ReviewCreateRequest,
+    ReviewListResponse,
+    ReviewResponse,
+    SellerRatingSummaryResponse,
+)
 from app.services import reviews
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
@@ -28,3 +33,9 @@ def create_review(payload: ReviewCreateRequest, current_user: dict = Depends(get
 def list_reviews_for_seller(seller_id: str):
     items = reviews.list_reviews_for_seller(seller_id)
     return ReviewListResponse(items=[ReviewResponse(**x) for x in items], total=len(items))
+
+
+@router.get("/seller/{seller_id}/rating-summary", response_model=SellerRatingSummaryResponse)
+def seller_rating_summary(seller_id: str):
+    summary = reviews.get_seller_rating_summary(seller_id)
+    return SellerRatingSummaryResponse(**summary)

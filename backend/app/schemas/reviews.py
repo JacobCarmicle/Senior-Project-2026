@@ -23,3 +23,9 @@ class ReviewResponse(BaseModel):
 class ReviewListResponse(BaseModel):
     items: list[ReviewResponse]
     total: int
+
+
+class SellerRatingSummaryResponse(BaseModel):
+    seller_id: str
+    review_count: int
+    average_rating: float
