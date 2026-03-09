@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -25,12 +26,19 @@ app = FastAPI(title="TradeForge Backend", version="0.1.0")
 
 app.add_middleware(RequestIDAndLoggingMiddleware)
 
+frontend_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+# Comma-separated origins for deployed frontends, e.g. Vercel URLs
+extra_origins_raw = os.environ.get("FRONTEND_ORIGINS", "")
+if extra_origins_raw:
+    frontend_origins.extend([o.strip() for o in extra_origins_raw.split(",") if o.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=frontend_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
