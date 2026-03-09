@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { getApiErrorMessage } from "../../api/errors";
+import { createListing, getListing, updateListing, uploadListingImages } from "../../api/listings";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -52,17 +54,6 @@ interface FormErrors {
   condition?:   string;
   images?:      string;
 }
-
-const MOCK_EXISTING_LISTING = {
-  id:          "l1",
-  title:       "iPhone 13 – Blue (128GB)",
-  description: "Great condition iPhone 13 in blue, 128GB. Battery health 89%. Includes charging cable + case. No repairs, minor wear on edges.",
-  price:       "550",
-  category:    "Electronics",
-  location:    "Louisville, KY",
-  condition:   "Used – Very Good",
-  images:      [] as ImageFile[],
-};
 
 // ── Shared Input Style ────────────────────────────────────────────────────────
 function inputStyle(hasError: boolean): React.CSSProperties {
@@ -244,22 +235,35 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
   const [submitting, setSubmitting] = useState(false);
   const [success,  setSuccess]  = useState(false);
   const [imageError, setImageError] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   // ── Load existing data in edit mode ────────────────────────────────────────
   useEffect(() => {
-    if (isEditMode) {
-      const data = MOCK_EXISTING_LISTING;
-      setForm({
-        title:       data.title,
-        description: data.description,
-        price:       data.price,
-        category:    data.category,
-        location:    data.location,
-        condition:   data.condition,
+    if (!isEditMode || !listingId) return;
+
+    getListing(listingId)
+      .then((data) => {
+        setForm({
+          title: data.title,
+          description: data.description,
+          price: String(data.price),
+          category: data.category,
+          location: data.location,
+          condition: "Used – Very Good",
+        });
+        setImages(
+          (data.images ?? []).map((url, i) => ({
+            id: `existing-${i}`,
+            preview: url,
+            isPrimary: i === 0,
+            isExisting: true,
+          })),
+        );
+      })
+      .catch(() => {
+        setSubmitError("Unable to load listing details.");
       });
-      setImages(data.images);
-    }
-  }, [isEditMode]);
+  }, [isEditMode, listingId]);
 
   // ── Field change ───────────────────────────────────────────────────────────
   const setField = (field: keyof FormData, value: string) => {
@@ -329,11 +333,40 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
   // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     if (!validate()) return;
+
     setSubmitting(true);
-    // Simulate API call
-    await new Promise(res => setTimeout(res, 1200));
-    setSubmitting(false);
-    setSuccess(true);
+    setSubmitError("");
+
+    try {
+      const sorted = [...images].sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary));
+      const newFiles = sorted.filter((img) => img.file).map((img) => img.file as File);
+      const existingUrls = sorted.filter((img) => img.isExisting).map((img) => img.preview);
+
+      const uploaded = newFiles.length > 0 ? await uploadListingImages(newFiles) : [];
+      const uploadedUrls = uploaded.map((u) => u.public_url);
+      const allImageUrls = [...existingUrls, ...uploadedUrls];
+
+      const payload = {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        price: Number(form.price),
+        category: form.category,
+        location: form.location.trim(),
+        images: allImageUrls,
+      };
+
+      if (isEditMode && listingId) {
+        await updateListing(listingId, payload);
+      } else {
+        await createListing(payload);
+      }
+
+      setSuccess(true);
+    } catch (err) {
+      setSubmitError(getApiErrorMessage(err, "Unable to save listing. Please try again."));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // ── Success State ──────────────────────────────────────────────────────────
@@ -514,6 +547,11 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
             {Object.keys(errors).length > 0 && (
               <span style={{ fontSize: "13px", color: T.error, fontWeight: 600 }}>
                 Please fix the errors above.
+              </span>
+            )}
+            {submitError && (
+              <span style={{ fontSize: "13px", color: T.error, fontWeight: 600 }}>
+                {submitError}
               </span>
             )}
             <a href="/" style={{ padding: "11px 22px", borderRadius: "10px", border: `1px solid ${T.border}`, background: "transparent", color: T.muted, textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
