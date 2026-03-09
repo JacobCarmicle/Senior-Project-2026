@@ -111,6 +111,31 @@ def test_update_and_delete_listing_owner_only(client):
     assert ok_delete.status_code == 204
 
 
+def test_update_listing_images_replaces_previous_images(client):
+    token, _ = _signup_and_token(client, "seller4@example.com")
+    created = client.post(
+        "/listings",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "title": "Monitor",
+            "description": "24 inch monitor in good condition",
+            "price": 80,
+            "category": "electronics",
+            "location": "Wichita, KS",
+            "images": ["https://img.test/monitor1.jpg"],
+        },
+    ).json()
+
+    updated = client.patch(
+        f"/listings/{created['id']}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"images": ["https://img.test/monitor2.jpg", "https://img.test/monitor3.jpg"]},
+    )
+
+    assert updated.status_code == 200
+    assert updated.json()["images"] == ["https://img.test/monitor2.jpg", "https://img.test/monitor3.jpg"]
+
+
 def test_search_filters(client):
     token, _ = _signup_and_token(client, "seller3@example.com")
 

@@ -20,6 +20,7 @@ class ListingUpdateRequest(BaseModel):
     category: str | None = Field(default=None, min_length=1, max_length=80)
     location: str | None = Field(default=None, min_length=1, max_length=120)
     status: str | None = Field(default=None)
+    images: list[str] | None = Field(default=None, min_length=1)
 
 
 class ListingResponse(BaseModel):

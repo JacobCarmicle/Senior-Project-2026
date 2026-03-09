@@ -103,6 +103,8 @@ def update_listing(listing_id: str, seller_id: str, patch: dict) -> dict | None:
     if existing[0]["seller_id"] != seller_id:
         raise PermissionError("Forbidden")
 
+    images = patch.get("images") if "images" in patch else None
+
     update_payload = {k: v for k, v in patch.items() if k in {"title", "description", "price", "category", "location", "status"}}
     if "price" in update_payload:
         update_payload["price"] = float(update_payload["price"])
@@ -110,12 +112,51 @@ def update_listing(listing_id: str, seller_id: str, patch: dict) -> dict | None:
     if update_payload:
         client.table("listings").update(update_payload).eq("id", listing_id).execute()
 
+    if images is not None:
+        old_media = client.table("listing_media").select("id,object_key").eq("listing_id", listing_id).execute().data
+        client.table("listing_media").delete().eq("listing_id", listing_id).execute()
+
+        bucket = os.environ.get("SUPABASE_STORAGE_BUCKET", "listing-images")
+        keys = [m.get("object_key") for m in old_media if m.get("object_key")]
+        if keys:
+            try:
+                client.storage.from_(bucket).remove(keys)
+            except Exception:
+                pass
+
+        for i, url in enumerate(images):
+            client.table("listing_media").insert(
+                {
+                    "listing_id": listing_id,
+                    "public_url": url,
+                    "is_primary": i == 0,
+                }
+            ).execute()
+
     return get_listing(listing_id)
 
 
 def delete_listing(listing_id: str, seller_id: str) -> bool:
-    item = update_listing(listing_id, seller_id, {"status": "deleted"})
-    return item is not None
+    client = _get_client()
+    existing = client.table("listings").select("id,seller_id,status").eq("id", listing_id).limit(1).execute().data
+    if not existing or existing[0].get("status") == "deleted":
+        return False
+    if existing[0]["seller_id"] != seller_id:
+        raise PermissionError("Forbidden")
+
+    media = client.table("listing_media").select("object_key").eq("listing_id", listing_id).execute().data
+    client.table("listing_media").delete().eq("listing_id", listing_id).execute()
+
+    bucket = os.environ.get("SUPABASE_STORAGE_BUCKET", "listing-images")
+    keys = [m.get("object_key") for m in media if m.get("object_key")]
+    if keys:
+        try:
+            client.storage.from_(bucket).remove(keys)
+        except Exception:
+            pass
+
+    client.table("listings").update({"status": "deleted"}).eq("id", listing_id).execute()
+    return True
 
 
 def search_listings(keyword, category, min_price, max_price, page, page_size):

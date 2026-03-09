@@ -55,7 +55,7 @@ def update_listing(listing_id: str, seller_id: str, patch: dict) -> dict | None:
     if listing["seller_id"] != seller_id:
         raise PermissionError("Forbidden")
 
-    for key in ["title", "description", "price", "category", "location", "status"]:
+    for key in ["title", "description", "price", "category", "location", "status", "images"]:
         if key in patch and patch[key] is not None:
             if key == "price":
                 listing[key] = Decimal(str(patch[key]))
