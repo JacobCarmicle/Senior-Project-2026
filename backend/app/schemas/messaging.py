@@ -43,8 +43,8 @@ class ConversationStatusUpdateRequest(BaseModel):
 
 
 class MessageCreateRequest(BaseModel):
-    conversation_id: str
-    sender_id: str
+    conversation_id: str | None = None
+    sender_id: str | None = None
     text: str | None = Field(default=None, min_length=1, max_length=4000)
     image_url: HttpUrl | None = None
     kind: MessageKind = "text"
@@ -65,3 +65,8 @@ class MessageResponse(BaseModel):
     kind: MessageKind = "text"
     sent_at: datetime
     read_at: datetime | None = None
+
+
+class MessageListResponse(BaseModel):
+    items: list[MessageResponse]
+    total: int
