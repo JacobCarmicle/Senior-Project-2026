@@ -3,6 +3,15 @@ import { useSearchParams } from "react-router-dom";
 import { listMessages, listMyConversations, sendMessage } from "../../api/messaging";
 import type { Conversation, Message } from "../../types/messaging";
 
+const T = {
+  bg: "#2d2d2d",
+  card: "#1a1a1a",
+  text: "#e5e5e5",
+  muted: "#9ca3af",
+  border: "#404040",
+  accent: "#22c55e",
+};
+
 export default function MessagingPage() {
   const [params] = useSearchParams();
   const preferred = params.get("conversation") || "";
@@ -34,28 +43,79 @@ export default function MessagingPage() {
   const active = useMemo(() => conversations.find((c) => c.id === activeId), [conversations, activeId]);
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", height: "calc(100vh - 64px)", color: "#e5e5e5" }}>
-      <div style={{ borderRight: "1px solid #404040", padding: 12 }}>
-        <h3>Inbox</h3>
-        {conversations.map((c) => (
-          <button key={c.id} onClick={() => setActiveId(c.id)} style={{ width: "100%", textAlign: "left", marginBottom: 8, padding: 10, borderRadius: 8, border: c.id === activeId ? "1px solid #22c55e" : "1px solid #404040", background: "#1f1f1f", color: "#e5e5e5" }}>
-            Listing {c.listing_id.slice(0, 8)}...
-          </button>
-        ))}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <div style={{ padding: 12, borderBottom: "1px solid #404040" }}>Conversation: {active?.id?.slice(0, 8) || "none"}</div>
-        <div style={{ flex: 1, overflow: "auto", padding: 12 }}>
-          {messages.map((m) => (
-            <div key={m.id} style={{ marginBottom: 8, background: "#2d2d2d", padding: 10, borderRadius: 8 }}>
-              <div style={{ fontSize: 12, color: "#9ca3af" }}>{new Date(m.sent_at).toLocaleString()}</div>
-              <div>{m.text || "[image]"}</div>
+    <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: 20 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "300px 1fr",
+            border: `1px solid ${T.border}`,
+            background: T.card,
+            borderRadius: 14,
+            overflow: "hidden",
+            minHeight: "78vh",
+          }}
+        >
+          <aside style={{ borderRight: `1px solid ${T.border}`, padding: 12 }}>
+            <h3 style={{ marginTop: 4 }}>Inbox</h3>
+            {conversations.length === 0 && <p style={{ color: T.muted, fontSize: 13 }}>No conversations yet.</p>}
+            {conversations.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setActiveId(c.id)}
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  marginBottom: 8,
+                  padding: 10,
+                  borderRadius: 10,
+                  border: c.id === activeId ? "1px solid #22c55e" : `1px solid ${T.border}`,
+                  background: c.id === activeId ? "rgba(34,197,94,0.12)" : "#222",
+                  color: T.text,
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: 13 }}>Listing {c.listing_id.slice(0, 8)}...</div>
+                <div style={{ color: T.muted, fontSize: 12, marginTop: 3 }}>{c.status.toUpperCase()}</div>
+              </button>
+            ))}
+          </aside>
+
+          <section style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: 12, borderBottom: `1px solid ${T.border}`, color: T.muted, fontSize: 13 }}>
+              Conversation: {active?.id?.slice(0, 8) || "none"}
             </div>
-          ))}
-        </div>
-        <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid #404040" }}>
-          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Type a message..." style={{ flex: 1, background: "#333", border: "1px solid #404040", color: "#e5e5e5", borderRadius: 8, padding: 10 }} />
-          <button onClick={handleSend} style={{ background: "#22c55e", color: "#fff", border: 0, borderRadius: 8, padding: "10px 14px" }}>Send</button>
+
+            <div style={{ flex: 1, overflow: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+              {messages.length === 0 && <p style={{ color: T.muted }}>No messages yet.</p>}
+              {messages.map((m) => (
+                <div key={m.id} style={{ marginBottom: 4, background: "#2a2a2a", padding: 10, borderRadius: 10, border: `1px solid ${T.border}` }}>
+                  <div style={{ fontSize: 11, color: T.muted }}>{new Date(m.sent_at).toLocaleString()}</div>
+                  <div style={{ marginTop: 4 }}>{m.text || "[image]"}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: "flex", gap: 8, padding: 12, borderTop: `1px solid ${T.border}` }}>
+              <input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder="Type a message..."
+                style={{
+                  flex: 1,
+                  background: "#333",
+                  border: `1px solid ${T.border}`,
+                  color: T.text,
+                  borderRadius: 10,
+                  padding: 10,
+                }}
+              />
+              <button onClick={handleSend} style={{ background: T.accent, color: "#fff", border: 0, borderRadius: 10, padding: "10px 14px", fontWeight: 700 }}>
+                Send
+              </button>
+            </div>
+          </section>
         </div>
       </div>
     </div>
