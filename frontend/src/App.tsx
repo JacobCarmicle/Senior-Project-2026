@@ -7,6 +7,9 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import HomePage from "./pages/home/HomePage";
 import CreateEditListingPage from "./pages/listings/createeditlistingpage";
+import ListingDetailPage from "./pages/listings/ListingDetailPage";
+import MessagingPage from "./pages/messages/MessagingPage";
+import ReviewsPage from "./pages/reviews/ReviewsPage";
 
 export default function App() {
   return (
@@ -20,7 +23,10 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/create-listing" element={<CreateEditListingPage />} />
-          <Route path="/edit-listing/:id" element={<CreateEditListingPage listingId="l1" />} />
+          <Route path="/edit-listing/:id" element={<CreateEditListingPage />} />
+          <Route path="/listing/:id" element={<ListingDetailPage />} />
+          <Route path="/messages" element={<MessagingPage />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

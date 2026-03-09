@@ -110,6 +110,7 @@ function Navbar() {
         {[
           { label: "Marketplace", href: "/" },
           { label: "Inbox",       href: "/messages" },
+          { label: "Reviews",     href: "/reviews" },
           { label: "Saved",       href: "/saved" },
         ].map(link => (
           <a key={link.href} href={link.href} style={{
@@ -386,8 +387,7 @@ export default function HomePage() {
     setListings(prev => prev.map(l => l.id === id ? { ...l, saved: !l.saved } : l));
 
   const handleCardClick = (id: string) => {
-    // Will navigate to listing detail page once built
-    alert(`Navigate to listing ${id} — detail page coming soon!`);
+    window.location.href = `/listing/${id}`;
   };
 
   // ── Shared input style ──────────────────────────────────────────────────────

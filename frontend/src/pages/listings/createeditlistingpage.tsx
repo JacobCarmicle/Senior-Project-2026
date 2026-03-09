@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getApiErrorMessage } from "../../api/errors";
 import { createListing, getListing, updateListing, uploadListingImages } from "../../api/listings";
@@ -219,7 +220,9 @@ function Navbar() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 // Pass listingId prop to enter edit mode. Leave undefined for create mode.
 export default function CreateEditListingPage({ listingId }: { listingId?: string }) {
-  const isEditMode = Boolean(listingId);
+  const params = useParams();
+  const resolvedListingId = listingId ?? params.id;
+  const isEditMode = Boolean(resolvedListingId);
 
   const [form, setForm] = useState<FormData>({
     title:       "",
@@ -239,9 +242,9 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
 
   // ── Load existing data in edit mode ────────────────────────────────────────
   useEffect(() => {
-    if (!isEditMode || !listingId) return;
+    if (!isEditMode || !resolvedListingId) return;
 
-    getListing(listingId)
+    getListing(resolvedListingId)
       .then((data) => {
         setForm({
           title: data.title,
@@ -263,7 +266,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
       .catch(() => {
         setSubmitError("Unable to load listing details.");
       });
-  }, [isEditMode, listingId]);
+  }, [isEditMode, resolvedListingId]);
 
   // ── Field change ───────────────────────────────────────────────────────────
   const setField = (field: keyof FormData, value: string) => {
@@ -355,8 +358,8 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
         images: allImageUrls,
       };
 
-      if (isEditMode && listingId) {
-        await updateListing(listingId, payload);
+      if (isEditMode && resolvedListingId) {
+        await updateListing(resolvedListingId, payload);
       } else {
         await createListing(payload);
       }
