@@ -141,6 +141,15 @@ export const handlers = [
     return HttpResponse.json(updated);
   }),
 
+  http.get(`${BASE}/listings`, () => {
+    return HttpResponse.json({
+      items: listings,
+      total: listings.length,
+      page: 1,
+      page_size: 20,
+    });
+  }),
+
   http.get(`${BASE}/listings/:id`, ({ params }) => {
     const id = String(params.id);
     const item = listings.find((x) => x.id === id);

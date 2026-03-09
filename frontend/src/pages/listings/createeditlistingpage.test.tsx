@@ -10,6 +10,8 @@ vi.mock("../../api/listings", async () => {
     ...actual,
     uploadListingImages: vi.fn(),
     createListing: vi.fn(),
+    getListing: vi.fn(),
+    updateListing: vi.fn(),
   };
 });
 
@@ -25,6 +27,19 @@ async function fillRequiredFields(user: ReturnType<typeof userEvent.setup>) {
 describe("CreateEditListingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(listingsApi.getListing).mockResolvedValue({
+      id: "l1",
+      seller_id: "u1",
+      title: "Existing listing",
+      description: "Existing listing description",
+      price: 50,
+      category: "Electronics",
+      location: "Wichita, KS",
+      status: "active",
+      images: ["https://img.test/existing.jpg"],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
   });
 
   it("uploads images and then submits listing payload", async () => {
@@ -68,6 +83,43 @@ describe("CreateEditListingPage", () => {
         location: "Wichita, KS",
         images: ["https://img.test/upload-1.jpg"],
       });
+    });
+  });
+
+  it("loads listing in edit mode and submits update", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem("access_token", "mock-jwt-token-abc123");
+
+    vi.mocked(listingsApi.uploadListingImages).mockResolvedValue([]);
+    vi.mocked(listingsApi.updateListing).mockResolvedValue({
+      id: "l1",
+      seller_id: "u1",
+      title: "Updated title",
+      description: "Existing listing description",
+      price: 50,
+      category: "Electronics",
+      location: "Wichita, KS",
+      status: "active",
+      images: ["https://img.test/existing.jpg"],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+    renderWithProviders(<CreateEditListingPage listingId="l1" />, { route: "/edit-listing/l1" });
+
+    expect(await screen.findByDisplayValue("Existing listing")).toBeInTheDocument();
+
+    const titleInput = screen.getByDisplayValue("Existing listing");
+    await user.clear(titleInput);
+    await user.type(titleInput, "Updated title");
+
+    await user.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => {
+      expect(listingsApi.updateListing).toHaveBeenCalledWith(
+        "l1",
+        expect.objectContaining({ title: "Updated title" }),
+      );
     });
   });
 
