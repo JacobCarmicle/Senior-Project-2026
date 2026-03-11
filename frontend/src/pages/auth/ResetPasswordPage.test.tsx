@@ -100,7 +100,7 @@ describe("ResetPasswordPage", () => {
     await user.click(screen.getByRole("button", { name: /reset password/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/link may have expired/i)).toBeInTheDocument();
+      expect(screen.getByText(/token expired/i)).toBeInTheDocument();
     });
   });
 });

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { resetPassword } from "../../api/auth";
+import { getApiErrorMessage } from "../../api/errors";
 import AuthLayout from "../../components/AuthLayout";
 import HeroPanel from "../../components/HeroPanel";
 
@@ -50,8 +51,8 @@ export default function ResetPasswordPage() {
     try {
       await resetPassword({ token, new_password: password });
       setSuccess(true);
-    } catch {
-      setError("Reset failed. The link may have expired.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Reset failed. The link may have expired."));
     } finally {
       setSubmitting(false);
     }
