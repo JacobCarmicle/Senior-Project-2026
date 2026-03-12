@@ -10,6 +10,7 @@ import CreateEditListingPage from "./pages/listings/createeditlistingpage";
 import ListingDetailPage from "./pages/listings/ListingDetailPage";
 import MessagingPage from "./pages/messages/MessagingPage";
 import ReviewsPage from "./pages/reviews/ReviewsPage";
+import ProfilePage from "./pages/profile/ProfilePage";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/listing/:id" element={<ListingDetailPage />} />
           <Route path="/messages" element={<MessagingPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
+          <Route path="/profile" element={<ProfilePage/>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

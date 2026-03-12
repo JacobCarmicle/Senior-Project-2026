@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createReview } from "../../api/reviews";
+import { Navbar } from "../../components/Navbar/Navbar.tsx";
 
 const T = {
   bg: "#2d2d2d",
@@ -32,6 +33,7 @@ export default function ReviewsPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
+      <Navbar/>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: 24 }}>
         <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: 14 }}>← Back to Marketplace</a>
 
