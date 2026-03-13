@@ -77,7 +77,10 @@ def get_listing(listing_id: str) -> dict | None:
     res = client.table("listings").select("*").eq("id", listing_id).neq("status", "deleted").limit(1).execute().data
     if not res:
         return None
-    return _with_images(res)[0]
+    item = _with_images(res)[0]
+    user_rows = client.table("users").select("full_name").eq("id", item["seller_id"]).limit(1).execute().data
+    item["seller_name"] = user_rows[0]["full_name"] if user_rows else None
+    return item
 
 
 def list_public_listings(page: int = 1, page_size: int = 20) -> tuple[list[dict], int]:
