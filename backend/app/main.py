@@ -19,6 +19,7 @@ from app.routers.messages import router as messages_router
 from app.routers.reviews import router as reviews_router
 from app.routers.realtime import router as realtime_router
 from app.routers.uploads import router as uploads_router
+from app.routers.users import router as users_router
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
@@ -55,6 +56,7 @@ app.include_router(messages_router)
 app.include_router(reviews_router)
 app.include_router(realtime_router)
 app.include_router(uploads_router)
+app.include_router(users_router)
 
 
 @app.get("/health")

@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { Navbar } from "../../components/Navbar/Navbar.tsx";
 import { listSellerReviews, getSellerRatingSummary } from "../../api/reviews";
 import { useAuth } from "../../context/AuthContext";
+import { useParams } from "react-router-dom";
+import type { Review } from "../../types/reviews";
+import ReviewForm from "../../components/ReviewForm/ReviewForm";
+import { getUser } from "../../api/users";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -16,13 +20,13 @@ const T = {
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-interface Review {
-  id: string;
-  username: string;
-  date: string;
-  rating: number; // 1–5
-  text: string;
-}
+// interface Review {
+//   id: string;
+//   username: string;
+//   date: string;
+//   rating: number; // 1–5
+//   text: string;
+// }
 
 interface UserProfile {
   username: string;
@@ -70,13 +74,18 @@ function ReviewCard({ review }: { review: Review }) {
           paddingBottom: "6px",
         }}
       >
-        <span style={{ fontWeight: 700 }}>{review.username}</span>
-        <span style={{ fontSize: "12px", color: T.muted }}>{review.date}</span>
+        <span style={{ fontWeight: 700 }}>{review.buyer_id}</span>
+
+        <span style={{ fontSize: "12px", color: T.muted }}>
+          {new Date(review.created_at).toLocaleDateString()}
+        </span>
       </div>
 
       <StarRating rating={review.rating} />
 
-      <div style={{ fontSize: "14px", color: T.text }}>{review.text}</div>
+      <div style={{ fontSize: "14px", color: T.text }}>
+        {review.comment}
+      </div>
     </div>
   );
 }
@@ -175,33 +184,32 @@ export default function UserProfilePage() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const { user } = useAuth();
 
+    const { userId } = useParams();
+    const profileUserId = userId ?? user?.id;
 
     useEffect(() => {
-      if(!user) return;
-      const currentUser = user;
+      if (!profileUserId) return;
+
+      const sellerId = profileUserId;
+
       let cancelled = false;
 
       async function loadProfile() {
         try {
-          const [reviewsRes, ratingRes] = await Promise.all([
-            listSellerReviews(currentUser.id),
-            getSellerRatingSummary(currentUser.id),
+          const [userRes, reviewsRes, ratingRes] = await Promise.all([
+            getUser(sellerId),
+            listSellerReviews(sellerId),
+            getSellerRatingSummary(sellerId),
           ]);
 
           if (cancelled) return;
 
           const profileData: UserProfile = {
-            username: currentUser.full_name,
+            username: userRes.full_name,
             rating: ratingRes.average_rating ?? 0,
             ratingCount: ratingRes.review_count ?? 0,
             profilePicture: "",
-            reviews: (reviewsRes.items ?? []).map((r) => ({
-            id: r.id,
-            username: r.buyer_id ?? "Anonymous",
-            date: r.created_at?.slice(0, 10),
-            rating: r.rating,
-            text: r.comment ?? "",
-            })),
+            reviews: reviewsRes.items ?? [],
           };
 
           setProfile(profileData);
@@ -215,16 +223,10 @@ export default function UserProfilePage() {
       return () => {
         cancelled = true;
       };
-  }, [user]);
+    }, [profileUserId, user, userId]);
 
-  if (!user || !profile) {
-    let message = "";
-
-    if (!user) {
-      message = "Please log in to view your profile";
-    } else {
-      message = "Loading profile...";
-    }
+  if (!profile) {
+    const message = "Loading profile...";
 
     return (
       <div
@@ -257,6 +259,16 @@ export default function UserProfilePage() {
 
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "22px" }}>
         <ProfileHeader profile={profile} />
+
+        {profileUserId && user?.id !== profileUserId && (
+          <ReviewForm
+            sellerId={profileUserId}
+            onSubmitted={() => {
+              // reload profile reviews
+              setProfile(null);
+            }}
+          />
+        )}
 
         {/* Reviews Section */}
         <div

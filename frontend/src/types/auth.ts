@@ -6,6 +6,12 @@ export interface User {
   created_at: string;
 }
 
+export interface PublicUser{
+    id: string;
+    full_name: string;
+    created_at: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;

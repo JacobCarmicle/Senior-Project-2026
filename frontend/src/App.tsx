@@ -29,6 +29,7 @@ export default function App() {
           <Route path="/messages" element={<MessagingPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="/profile" element={<ProfilePage/>} />
+          <Route path="/user/:userId" element={<ProfilePage/>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

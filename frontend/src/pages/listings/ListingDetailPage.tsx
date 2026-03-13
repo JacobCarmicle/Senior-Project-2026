@@ -46,6 +46,11 @@ export default function ListingDetailPage() {
     navigate(`/messages?conversation=${convo.id}`);
   }
 
+  function handleViewSellerProfile() {
+    if (!listing) return;
+    navigate(`/user/${listing.seller_id}`);
+  }
+
   if (error) {
     return <div style={{ minHeight: "100vh", background: T.bg, padding: 24, color: T.danger }}>{error}</div>;
   }
@@ -106,35 +111,51 @@ export default function ListingDetailPage() {
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
-              <button
-                onClick={handleMessageSeller}
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: 10,
-                  background: T.accent,
-                  color: "white",
-                  border: 0,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                Message Seller
-              </button>
-              <a
-                href={`/edit-listing/${listing.id}`}
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: 10,
-                  background: "#333",
-                  color: T.text,
-                  border: `1px solid ${T.border}`,
-                  textDecoration: "none",
-                  fontWeight: 700,
-                }}
-              >
-                Edit Listing
-              </a>
-            </div>
+            <button
+              onClick={handleMessageSeller}
+              style={{
+                padding: "10px 16px",
+                borderRadius: 10,
+                background: T.accent,
+                color: "white",
+                border: 0,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Message Seller
+            </button>
+
+            <button
+              onClick={handleViewSellerProfile}
+              style={{
+                padding: "10px 16px",
+                borderRadius: 10,
+                background: "#333",
+                color: T.text,
+                border: `1px solid ${T.border}`,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              View Seller Profile
+            </button>
+
+            <a
+              href={`/edit-listing/${listing.id}`}
+              style={{
+                padding: "10px 16px",
+                borderRadius: 10,
+                background: "#333",
+                color: T.text,
+                border: `1px solid ${T.border}`,
+                textDecoration: "none",
+                fontWeight: 700,
+              }}
+            >
+              Edit Listing
+            </a>
+          </div>
           </div>
         </div>
       </div>
