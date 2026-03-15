@@ -129,6 +129,14 @@ function Navbar() {
                 fontSize: "0.95rem",
               }}>{link.label}</a>
             ))}
+            {user.role === "admin" && (
+              <a href="/admin" style={{
+                textDecoration: "none", color: "#c084fc",
+                background: "rgba(168,85,247,0.12)", padding: "8px 12px",
+                borderRadius: "10px", border: "1px solid rgba(168,85,247,0.35)",
+                fontSize: "0.95rem", fontWeight: 700,
+              }}>Admin</a>
+            )}
             <a href="/create-listing" style={{
               textDecoration: "none", color: "#fff",
               background: T.accent, padding: "8px 12px",

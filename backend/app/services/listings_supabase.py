@@ -98,12 +98,12 @@ def list_public_listings(page: int = 1, page_size: int = 20) -> tuple[list[dict]
     return _with_images(rows.data), rows.count or 0
 
 
-def update_listing(listing_id: str, seller_id: str, patch: dict) -> dict | None:
+def update_listing(listing_id: str, seller_id: str, patch: dict, is_admin: bool = False) -> dict | None:
     client = _get_client()
     existing = client.table("listings").select("id,seller_id,status").eq("id", listing_id).limit(1).execute().data
     if not existing or existing[0].get("status") == "deleted":
         return None
-    if existing[0]["seller_id"] != seller_id:
+    if existing[0]["seller_id"] != seller_id and not is_admin:
         raise PermissionError("Forbidden")
 
     images = patch.get("images") if "images" in patch else None
@@ -139,12 +139,12 @@ def update_listing(listing_id: str, seller_id: str, patch: dict) -> dict | None:
     return get_listing(listing_id)
 
 
-def delete_listing(listing_id: str, seller_id: str) -> bool:
+def delete_listing(listing_id: str, seller_id: str, is_admin: bool = False) -> bool:
     client = _get_client()
     existing = client.table("listings").select("id,seller_id,status").eq("id", listing_id).limit(1).execute().data
     if not existing or existing[0].get("status") == "deleted":
         return False
-    if existing[0]["seller_id"] != seller_id:
+    if existing[0]["seller_id"] != seller_id and not is_admin:
         raise PermissionError("Forbidden")
 
     media = client.table("listing_media").select("object_key").eq("listing_id", listing_id).execute().data
@@ -160,6 +160,19 @@ def delete_listing(listing_id: str, seller_id: str) -> bool:
 
     client.table("listings").update({"status": "deleted"}).eq("id", listing_id).execute()
     return True
+
+
+def list_all_listings() -> list[dict]:
+    client = _get_client()
+    rows = client.table("listings").select("*").order("created_at", desc=True).execute()
+    items = _with_images(rows.data)
+    ids = list({item["seller_id"] for item in items})
+    if ids:
+        users = client.table("users").select("id,full_name").in_("id", ids).execute().data
+        name_map = {u["id"]: u["full_name"] for u in users}
+        for item in items:
+            item["seller_name"] = name_map.get(item["seller_id"])
+    return items
 
 
 def search_listings(keyword, category, min_price, max_price, page, page_size):

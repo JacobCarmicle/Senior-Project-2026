@@ -30,16 +30,22 @@ def list_public_listings(page: int = 1, page_size: int = 20) -> tuple[list[dict]
     return memory.list_public_listings(page, page_size)
 
 
-def update_listing(listing_id: str, seller_id: str, patch: dict) -> dict | None:
+def update_listing(listing_id: str, seller_id: str, patch: dict, is_admin: bool = False) -> dict | None:
     if _use_supabase():
-        return listings_supabase.update_listing(listing_id, seller_id, patch)
-    return memory.update_listing(listing_id, seller_id, patch)
+        return listings_supabase.update_listing(listing_id, seller_id, patch, is_admin=is_admin)
+    return memory.update_listing(listing_id, seller_id, patch, is_admin=is_admin)
 
 
-def delete_listing(listing_id: str, seller_id: str) -> bool:
+def delete_listing(listing_id: str, seller_id: str, is_admin: bool = False) -> bool:
     if _use_supabase():
-        return listings_supabase.delete_listing(listing_id, seller_id)
-    return memory.delete_listing(listing_id, seller_id)
+        return listings_supabase.delete_listing(listing_id, seller_id, is_admin=is_admin)
+    return memory.delete_listing(listing_id, seller_id, is_admin=is_admin)
+
+
+def list_all_listings() -> list[dict]:
+    if _use_supabase():
+        return listings_supabase.list_all_listings()
+    return memory.list_all_listings()
 
 
 def search_listings(keyword, category, min_price, max_price, page, page_size):

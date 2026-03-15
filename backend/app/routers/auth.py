@@ -44,6 +44,8 @@ def get_current_user(
         user = google_auth.get_user_by_id(user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    if user.get("status") == "disabled":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Your account has been disabled. If you believe this is an error, please contact customer service.")
     return user
 
 
@@ -60,7 +62,10 @@ def signup(payload: RegisterRequest):
 
 @router.post("/login", response_model=AuthResponse)
 def login(payload: LoginRequest):
-    user = auth_local.authenticate_user(payload.email, payload.password)
+    try:
+        user = auth_local.authenticate_user(payload.email, payload.password)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
@@ -124,6 +129,10 @@ def oauth_google(payload: GoogleOAuthRequest):
         )
 
     user = google_auth.get_or_create_user(claims)
+
+    if user.get("status") == "disabled":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Your account has been disabled. If you believe this is an error, please contact customer service.")
+
     token = google_auth.create_access_token(user)
 
     return AuthResponse(access_token=token, token_type="bearer", user=_to_user_response(user))

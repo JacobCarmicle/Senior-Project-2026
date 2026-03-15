@@ -206,6 +206,9 @@ function Navbar() {
         <a href="/saved"     style={{ textDecoration: "none", color: T.text, background: "#404040", padding: "8px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, fontSize: "0.95rem" }}>Saved</a>
         {user ? (
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {user.role === "admin" && (
+              <a href="/admin" style={{ textDecoration: "none", color: "#c084fc", background: "rgba(168,85,247,0.12)", padding: "8px 12px", borderRadius: "10px", border: "1px solid rgba(168,85,247,0.35)", fontSize: "0.95rem", fontWeight: 700 }}>Admin</a>
+            )}
             <a href="/create-listing" style={{ textDecoration: "none", color: "#fff", background: T.accent, padding: "8px 12px", borderRadius: "10px", border: `1px solid ${T.accent}`, fontSize: "0.95rem", fontWeight: 700 }}>+ Create Listing</a>
             <button onClick={logout} style={{ width: "38px", height: "38px", borderRadius: "10px", background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.35)", color: T.accent, fontWeight: 900, fontSize: "14px", cursor: "pointer" }} title={user.full_name}>{initials}</button>
           </div>
