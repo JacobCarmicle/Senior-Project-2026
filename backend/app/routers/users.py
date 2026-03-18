@@ -36,4 +36,4 @@ def get_user(user_id: str):
             detail="User not found",
         )
 
-    return _to_user_response(user)
+    return _to_public_user(user)

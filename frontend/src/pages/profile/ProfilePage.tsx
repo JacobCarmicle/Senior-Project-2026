@@ -50,7 +50,7 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 // ── Review Card ───────────────────────────────────────────────────────────────
-function ReviewCard({ review }: { review: Review }) {
+function ReviewCard({ review, username }: { review: Review; username: string; }) {
   return (
     <div
       style={{
@@ -74,7 +74,7 @@ function ReviewCard({ review }: { review: Review }) {
           paddingBottom: "6px",
         }}
       >
-        <span style={{ fontWeight: 700 }}>{review.buyer_id}</span>
+        <span style={{ fontWeight: 700 }}>{username}</span>
 
         <span style={{ fontSize: "12px", color: T.muted }}>
           {new Date(review.created_at).toLocaleDateString()}
@@ -182,6 +182,9 @@ function MessageCard({ message }: { message: string }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function UserProfilePage() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [userMap, setUserMap] = useState<Record<string, string>>({});
+    const [reloadKey, setReloadKey] = useState(0);
+    const [error, setError] = useState<string | null>(null);
     const { user } = useAuth();
 
     const { userId } = useParams();
@@ -204,6 +207,27 @@ export default function UserProfilePage() {
 
           if (cancelled) return;
 
+          const reviews = reviewsRes.items ?? [];
+
+          const uniqueUserIds = [
+            ...new Set(reviews.map((r) => r.buyer_id)),
+          ];
+
+          const users = await Promise.all(
+            uniqueUserIds.map((id) =>
+              getUser(id).catch(() => null) // prevent crash if one fails
+            )
+          );
+
+          const userLookup: Record<string, string> = {};
+          users.forEach((u) => {
+            if (u) userLookup[u.id] = u.full_name;
+          });
+
+          if(cancelled) return;
+
+          setUserMap(userLookup);
+
           const profileData: UserProfile = {
             username: userRes.full_name,
             rating: ratingRes.average_rating ?? 0,
@@ -213,8 +237,12 @@ export default function UserProfilePage() {
           };
 
           setProfile(profileData);
-        } catch (err) {
-          console.error("Failed to load reviews", err);
+        }catch (err: any) {
+          if (err?.response?.status === 404) {
+            setError("User not found.");
+          } else {
+            setError("Failed to load profile. Please try again.");
+          }
         }
       }
 
@@ -223,7 +251,63 @@ export default function UserProfilePage() {
       return () => {
         cancelled = true;
       };
-    }, [profileUserId, user, userId]);
+    }, [profileUserId, user, userId, reloadKey]);
+
+  if (error) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: T.bg,
+          color: T.text,
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        <Navbar />
+
+        <div style={{ maxWidth: "900px", margin: "0 auto", padding: "22px" }}>
+          <div
+            style={{
+              background: T.card,
+              border: `1px solid rgba(239,68,68,0.4)`,
+              borderRadius: "14px",
+              padding: "24px",
+              textAlign: "center",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+            }}
+          >
+            <div style={{ fontSize: "40px", marginBottom: "10px" }}>⚠️</div>
+
+            <div style={{ fontSize: "18px", fontWeight: 800, marginBottom: "6px" }}>
+              Unable to load profile
+            </div>
+
+            <div style={{ fontSize: "14px", color: T.muted, marginBottom: "16px" }}>
+              {error}
+            </div>
+
+            <button
+              onClick={() => {
+                setError(null);
+                setProfile(null); // triggers reload
+              }}
+              style={{
+                background: T.accent,
+                color: "#fff",
+                border: "none",
+                borderRadius: "10px",
+                padding: "10px 20px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!profile) {
     const message = "Loading profile...";
@@ -264,8 +348,7 @@ export default function UserProfilePage() {
           <ReviewForm
             sellerId={profileUserId}
             onSubmitted={() => {
-              // reload profile reviews
-              setProfile(null);
+              setReloadKey((k) => k + 1);
             }}
           />
         )}
@@ -288,7 +371,11 @@ export default function UserProfilePage() {
         {/* Reviews List */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {profile.reviews.map((review) => (
-            <ReviewCard key={review.id} review={review} />
+            <ReviewCard
+              key={review.id}
+              review={review}
+              username={userMap[review.buyer_id] || "Loading..."}
+            />
           ))}
         </div>
       </div>

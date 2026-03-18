@@ -45,7 +45,7 @@ export default function MessagingPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
-      <Navbar/>
+      <Navbar exclude={["inbox"]}/>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: 20 }}>
         <div
           style={{

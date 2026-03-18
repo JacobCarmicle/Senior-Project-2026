@@ -33,7 +33,7 @@ export default function ReviewsPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
-      <Navbar/>
+      <Navbar exclude={["reviews"]}/>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: 24 }}>
         <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: 14 }}>← Back to Marketplace</a>
 

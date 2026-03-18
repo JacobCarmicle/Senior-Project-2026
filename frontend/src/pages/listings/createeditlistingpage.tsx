@@ -348,7 +348,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
   if (success) {
     return (
       <div style={{ minHeight: "100vh", background: T.bg, fontFamily: "Arial, sans-serif" }}>
-        <Navbar />
+        <Navbar exclude={["create"]}/>
         <div style={{ maxWidth: "540px", margin: "80px auto", textAlign: "center", padding: "0 20px" }}>
           <div style={{ fontSize: "56px", marginBottom: "16px" }}>✅</div>
           <h2 style={{ fontSize: "22px", fontWeight: 800, color: T.text, marginBottom: "10px" }}>
@@ -368,7 +368,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
-      <Navbar />
+      <Navbar exclude={["create"]}/>
 
       <div style={{ maxWidth: "780px", margin: "0 auto", padding: "28px 20px 60px" }}>
 

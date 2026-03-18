@@ -2,10 +2,70 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import styles from "./Navbar.module.css";
 
-export function Navbar() {
+type NavItem = {
+  id: string;
+  label: string;
+  href: string;
+};
+
+type Role = "guest" | "user" | "admin";
+
+type NavbarProps = {
+  exclude?: string[];
+  excludeAll?: boolean;
+};
+
+export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const NAV_CONFIG: Record<Role, NavItem[]> = {
+    guest: [
+      { id: "marketplace", label: "Marketplace", href: "/" },
+    ],
+    user: [
+      { id: "marketplace", label: "Marketplace", href: "/" },
+      { id: "inbox", label: "Inbox", href: "/messages" },
+      { id: "reviews", label: "Reviews", href: "/reviews" },
+      { id: "saved", label: "Saved", href: "/saved" },
+      { id: "create", label: "+ Create Listing", href: "/create-listing" },
+    ],
+    admin: [
+      { id: "marketplace", label: "Marketplace", href: "/" },
+      { id: "inbox", label: "Inbox", href: "/messages" },
+      { id: "reviews", label: "Reviews", href: "/reviews" },
+      { id: "saved", label: "Saved", href: "/saved" },
+      { id: "admin", label: "Admin Dashboard", href: "/admin" },
+    ],
+  };
+
+  const role: Role = !user
+    ? "guest"
+    : user.role === "admin"
+    ? "admin"
+    : "user";
+
+  const links = excludeAll ? [] : NAV_CONFIG[role].filter((item) => !exclude.includes(item.id));
+
+  const DROPDOWN_CONFIG: Record<Role, NavItem[]> = {
+    guest: [],
+    user: [
+      { id: "profile", label: "My Profile", href: "/profile" },
+      { id: "listings", label: "My Listings", href: "/my-listings" },
+      { id: "saved", label: "Saved", href: "/saved" },
+      { id: "inbox", label: "Inbox", href: "/messages" },
+    ],
+    admin: [
+      { id: "profile", label: "My Profile", href: "/profile" },
+      { id: "listings", label: "My Listings", href: "/my-listings" },
+      { id: "saved", label: "Saved", href: "/saved" },
+      { id: "inbox", label: "Inbox", href: "/messages" },
+      { id: "admin", label: "Admin Dashboard", href: "/admin" },
+    ],
+  };
+
+  const dropdownLinks = excludeAll ? [] : DROPDOWN_CONFIG[role].filter((item) => !exclude.includes(item.id));
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -27,20 +87,20 @@ export function Navbar() {
         .slice(0, 2)
     : "?";
 
-  const links = [
-    { label: "Marketplace", href: "/" },
-    { label: "Inbox", href: "/messages" },
-    { label: "Reviews", href: "/reviews" },
-    { label: "Saved", href: "/saved" },
-  ];
+  // const links = [
+  //   { label: "Marketplace", href: "/" },
+  //   { label: "Inbox", href: "/messages" },
+  //   { label: "Reviews", href: "/reviews" },
+  //   { label: "Saved", href: "/saved" },
+  // ];
 
-  const dropdownLinks = [
-    { label: "My Profile", href: "/profile" },
-    { label: "My Listings", href: "/my-listings" },
-    { label: "Saved", href: "/saved" },
-    { label: "Inbox", href: "/messages" },
-    ...(user?.role === "admin" ? [{ label: "Admin Dashboard", href: "/admin" }] : []),
-  ];
+  // const dropdownLinks = [
+  //   { label: "My Profile", href: "/profile" },
+  //   { label: "My Listings", href: "/my-listings" },
+  //   { label: "Saved", href: "/saved" },
+  //   { label: "Inbox", href: "/messages" },
+  //   ...(user?.role === "admin" ? [{ label: "Admin Dashboard", href: "/admin" }] : []),
+  // ];
 
   return (
     <header className={styles.navbar}>
@@ -52,16 +112,20 @@ export function Navbar() {
 
       <nav className={styles.navLinks}>
         {links.map((link) => (
-          <a key={link.href} href={link.href} className={styles.link}>
+          <a
+              key={link.href}
+              href={link.href}
+              className={
+                link.id === "create"
+                  ? styles.createListing
+                  : styles.link
+              }
+            >
             {link.label}
           </a>
         ))}
 
-        <a href="/create-listing" className={styles.createListing}>
-          + Create Listing
-        </a>
-
-        {!user && (
+        {!excludeAll && !user && (
           <a href="/login" className={styles.link}>
             Login
           </a>
