@@ -23,6 +23,8 @@ export default function ReviewForm({
   const [error, setError] = useState("");
 
   async function submit() {
+    console.log("submitting review");
+
     setMessage("");
     setError("");
 
@@ -37,8 +39,9 @@ export default function ReviewForm({
       setComment("");
 
       if (onSubmitted) onSubmitted();
-    } catch {
-      setError("Failed to submit review.");
+    }catch (err: any) {
+      console.error(err);
+      setError(err?.response?.data?.detail || "Failed to submit review.");
     }
   }
 
