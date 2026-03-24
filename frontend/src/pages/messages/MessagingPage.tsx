@@ -63,7 +63,10 @@ export default function MessagingPage() {
   async function handleSend() {
     if (!activeId || !draft.trim()) return;
     const msg = await sendMessage(activeId, draft.trim());
-    setMessages((m) => [...m, msg]);
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === msg.id)) return prev;
+      return [...prev, msg];
+    });
     setDraft("");
   }
 
