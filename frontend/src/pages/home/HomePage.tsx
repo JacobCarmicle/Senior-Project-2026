@@ -41,6 +41,7 @@ const SORT_OPTIONS = [
   { value:"price-desc",label:"Price: High to Low" },
 ];
 const PAGE_SIZE = 8;
+const DEBUG_IMAGES = import.meta.env.VITE_DEBUG_IMAGES === "true";
 
 function toUiListing(listing: ApiListing): Listing {
   return {
@@ -77,6 +78,7 @@ function ListingCard({ listing, onSave, onClick }: {
   onClick: (id: string) => void;
 }) {
   const [hovered, setHovered] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
   const cc = catColor(listing.category);
 
   return (
@@ -113,10 +115,41 @@ function ListingCard({ listing, onSave, onClick }: {
         flexShrink:0,
         overflow:"hidden",
       }}>
-        {listing.imageUrl ? (
-          <img src={listing.imageUrl} alt={listing.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        {listing.imageUrl && !imageFailed ? (
+          <img
+            src={listing.imageUrl}
+            alt={listing.title}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            onLoad={() => {
+              if (DEBUG_IMAGES) {
+                console.debug("[image-debug] loaded", {
+                  listingId: listing.id,
+                  title: listing.title,
+                  url: listing.imageUrl,
+                });
+              }
+            }}
+            onError={(e) => {
+              setImageFailed(true);
+              if (DEBUG_IMAGES) {
+                console.error("[image-debug] failed", {
+                  listingId: listing.id,
+                  title: listing.title,
+                  url: listing.imageUrl,
+                  currentSrc: (e.currentTarget as HTMLImageElement).currentSrc,
+                });
+              }
+            }}
+          />
         ) : (
-          "No Image"
+          <div style={{ textAlign: "center", padding: "0 10px" }}>
+            <div>No Image</div>
+            {DEBUG_IMAGES && listing.imageUrl && (
+              <div style={{ fontSize: "10px", color: "#888", marginTop: "6px", wordBreak: "break-all" }}>
+                {listing.imageUrl}
+              </div>
+            )}
+          </div>
         )}
         {/* Save Button */}
         <button
@@ -201,6 +234,21 @@ export default function HomePage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!DEBUG_IMAGES || listings.length === 0) return;
+
+    const samples = listings.slice(0, 20).map((l) => ({
+      id: l.id,
+      title: l.title,
+      imageUrl: l.imageUrl,
+      hasImage: Boolean(l.imageUrl),
+      isAbsoluteHttp: Boolean(l.imageUrl && /^https?:\/\//i.test(l.imageUrl)),
+      isRelative: Boolean(l.imageUrl && l.imageUrl.startsWith("/")),
+    }));
+
+    console.debug("[image-debug] listings image URL sample", samples);
+  }, [listings]);
 
   // ── Filter + Sort ───────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
