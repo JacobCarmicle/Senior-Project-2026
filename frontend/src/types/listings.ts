@@ -1,6 +1,7 @@
 export interface Listing {
   id: string;
   seller_id: string;
+  seller_name?: string;
   title: string;
   description: string;
   price: number;

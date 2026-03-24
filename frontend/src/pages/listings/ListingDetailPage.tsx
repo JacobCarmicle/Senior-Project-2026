@@ -5,6 +5,7 @@ import { openConversationFromListing } from "../../api/messaging";
 import { getSellerRatingSummary } from "../../api/reviews";
 import { Navbar } from "../../components/Navbar/Navbar";
 import type { Listing } from "../../types/listings";
+import { useAuth } from "../../context/AuthContext";
 
 const T = {
   bg: "#2d2d2d",
@@ -19,6 +20,7 @@ const T = {
 export default function ListingDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [listing, setListing] = useState<Listing | null>(null);
   const [rating, setRating] = useState<{ average_rating: number; review_count: number } | null>(null);
   const [error, setError] = useState("");
@@ -109,55 +111,46 @@ export default function ListingDetailPage() {
                 fontSize: 14,
               }}
             >
-              Seller rating: <strong style={{ color: T.text }}>{rating?.average_rating ?? 0}</strong> / 5 ({rating?.review_count ?? 0} reviews)
+              <div>Posted by: <strong style={{ color: T.text }}>{listing.seller_name ?? "Unknown"}</strong></div>
+              <div style={{ marginTop: 6 }}>
+                Seller rating: <strong style={{ color: T.text }}>{rating?.average_rating ?? 0}</strong> / 5 ({rating?.review_count ?? 0} reviews)
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
-            <button
-              onClick={handleMessageSeller}
-              style={{
-                padding: "10px 16px",
-                borderRadius: 10,
-                background: T.accent,
-                color: "white",
-                border: 0,
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              Message Seller
-            </button>
-
-            <button
-              onClick={handleViewSellerProfile}
-              style={{
-                padding: "10px 16px",
-                borderRadius: 10,
-                background: "#333",
-                color: T.text,
-                border: `1px solid ${T.border}`,
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              View Seller Profile
-            </button>
-
-            <a
-              href={`/edit-listing/${listing.id}`}
-              style={{
-                padding: "10px 16px",
-                borderRadius: 10,
-                background: "#333",
-                color: T.text,
-                border: `1px solid ${T.border}`,
-                textDecoration: "none",
-                fontWeight: 700,
-              }}
-            >
-              Edit Listing
-            </a>
-          </div>
+              {user?.id !== listing.seller_id && (
+                <button
+                  onClick={handleMessageSeller}
+                  style={{
+                    padding: "10px 16px",
+                    borderRadius: 10,
+                    background: T.accent,
+                    color: "white",
+                    border: 0,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Message Seller
+                </button>
+              )}
+              {user?.id === listing.seller_id && (
+                <a
+                  href={`/edit-listing/${listing.id}`}
+                  style={{
+                    padding: "10px 16px",
+                    borderRadius: 10,
+                    background: "#333",
+                    color: T.text,
+                    border: `1px solid ${T.border}`,
+                    textDecoration: "none",
+                    fontWeight: 700,
+                  }}
+                >
+                  Edit Listing
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>

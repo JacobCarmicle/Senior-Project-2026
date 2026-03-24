@@ -56,6 +56,9 @@ env/
 # Docker
 *.pid
 
+# Claude Code
+.claude/
+
 # Misc
 *.tgz
 *.tsbuildinfo

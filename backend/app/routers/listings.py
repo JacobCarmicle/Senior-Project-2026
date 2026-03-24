@@ -56,8 +56,9 @@ def update_listing(
     payload: ListingUpdateRequest,
     current_user: dict = Depends(get_current_user),
 ):
+    is_admin = current_user.get("role") == "admin"
     try:
-        item = listings.update_listing(listing_id, current_user["id"], payload.model_dump(exclude_unset=True))
+        item = listings.update_listing(listing_id, current_user["id"], payload.model_dump(exclude_unset=True), is_admin=is_admin)
     except PermissionError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from exc
 
@@ -68,8 +69,9 @@ def update_listing(
 
 @router.delete("/{listing_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_listing(listing_id: str, current_user: dict = Depends(get_current_user)):
+    is_admin = current_user.get("role") == "admin"
     try:
-        ok = listings.delete_listing(listing_id, current_user["id"])
+        ok = listings.delete_listing(listing_id, current_user["id"], is_admin=is_admin)
     except PermissionError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from exc
 

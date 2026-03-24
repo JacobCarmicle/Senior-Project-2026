@@ -48,11 +48,11 @@ def list_public_listings(page: int = 1, page_size: int = 20) -> tuple[list[dict]
     return items[start:end], total
 
 
-def update_listing(listing_id: str, seller_id: str, patch: dict) -> dict | None:
+def update_listing(listing_id: str, seller_id: str, patch: dict, is_admin: bool = False) -> dict | None:
     listing = LISTINGS_BY_ID.get(listing_id)
     if not listing or listing["status"] == "deleted":
         return None
-    if listing["seller_id"] != seller_id:
+    if listing["seller_id"] != seller_id and not is_admin:
         raise PermissionError("Forbidden")
 
     for key in ["title", "description", "price", "category", "location", "status", "images"]:
@@ -65,16 +65,22 @@ def update_listing(listing_id: str, seller_id: str, patch: dict) -> dict | None:
     return listing
 
 
-def delete_listing(listing_id: str, seller_id: str) -> bool:
+def delete_listing(listing_id: str, seller_id: str, is_admin: bool = False) -> bool:
     listing = LISTINGS_BY_ID.get(listing_id)
     if not listing or listing["status"] == "deleted":
         return False
-    if listing["seller_id"] != seller_id:
+    if listing["seller_id"] != seller_id and not is_admin:
         raise PermissionError("Forbidden")
 
     listing["status"] = "deleted"
     listing["updated_at"] = _now()
     return True
+
+
+def list_all_listings() -> list[dict]:
+    items = list(LISTINGS_BY_ID.values())
+    items.sort(key=lambda x: x["created_at"], reverse=True)
+    return items
 
 
 def search_listings(

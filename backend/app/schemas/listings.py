@@ -26,6 +26,7 @@ class ListingUpdateRequest(BaseModel):
 class ListingResponse(BaseModel):
     id: str
     seller_id: str
+    seller_name: str | None = None
     title: str
     description: str
     price: Decimal
