@@ -106,7 +106,6 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
     <header className={styles.navbar}>
       {/* Brand */}
       <a href="/" className={styles.brand}>
-        <span className={styles.brandDot}></span>
         TradeForge
       </a>
 
