@@ -1,0 +1,178 @@
+.navbar {
+  background: #1a1a1a;
+  border-bottom: 1px solid #404040;
+  padding: 12px 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  text-decoration: none;
+  font-weight: 800;
+  color: #22c55e;
+  font-size: 1.2rem;
+}
+
+.brandDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.navLinks {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.link {
+  text-decoration: none;
+  color: #e5e5e5;
+
+  background: #404040;
+  padding: 8px 12px;
+
+  border-radius: 10px;
+  border: 1px solid #404040;
+
+  font-size: 0.95rem;
+}
+
+.link:hover {
+  background: #505050;
+}
+
+.createListing {
+  text-decoration: none;
+  color: white;
+
+  background: #22c55e;
+  padding: 8px 12px;
+
+  border-radius: 10px;
+  border: 1px solid #22c55e;
+
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.dropdownWrapper {
+  position: relative;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+
+  border-radius: 10px;
+
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+
+  color: #22c55e;
+  font-weight: 900;
+  font-size: 14px;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown {
+  position: absolute;
+  top: 46px;
+  right: 0;
+
+  background: #1a1a1a;
+  border: 1px solid #404040;
+
+  border-radius: 12px;
+  min-width: 200px;
+
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+
+  overflow: hidden;
+  z-index: 100;
+}
+
+.userInfo {
+  padding: 14px 16px;
+  border-bottom: 1px solid #404040;
+}
+
+.userName {
+  font-weight: 700;
+  color: #e5e5e5;
+  font-size: 14px;
+}
+
+.userEmail {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.adminBadge {
+  margin-top: 6px;
+  display: inline-block;
+
+  font-size: 11px;
+  background: rgba(168,85,247,0.15);
+  color: #c084fc;
+
+  border: 1px solid rgba(168,85,247,0.3);
+
+  padding: 2px 8px;
+  border-radius: 6px;
+
+  font-weight: 700;
+}
+
+.dropdownItem {
+  display: block;
+  padding: 11px 16px;
+
+  text-decoration: none;
+  color: #e5e5e5;
+  font-size: 14px;
+
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.dropdownItem:hover {
+  background: #252525;
+}
+
+.logout {
+  width: 100%;
+  padding: 11px 16px;
+
+  text-align: left;
+  background: transparent;
+  border: none;
+
+  color: #ef4444;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.logout:hover {
+  background: rgba(239,68,68,0.08);
+}

@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import { getApiErrorMessage } from "../../api/errors";
 import { createListing, getListing, updateListing, uploadListingImages } from "../../api/listings";
+import { Navbar } from "../../components/Navbar/Navbar.tsx";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -15,7 +15,8 @@ const T = {
   accent2: "#16a34a",
   danger:  "#ef4444",
   surface: "#2d2d2d",
-  input:   "#252525",
+  // input:   "#252525",
+  input:   "#333333",
   error:   "#ef4444",
 };
 
@@ -187,39 +188,6 @@ function ImageUploadZone({ images, onAdd, onRemove, onSetPrimary, error }: {
   );
 }
 
-// ── Navbar ────────────────────────────────────────────────────────────────────
-function Navbar() {
-  const { user, logout } = useAuth();
-  const initials = user?.full_name
-    ? user.full_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
-    : "?";
-
-  return (
-    <header style={{ background: T.card, borderBottom: `1px solid ${T.border}`, padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 10 }}>
-      <a href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none", fontWeight: 800, color: T.accent, fontSize: "1.2rem" }}>
-        <span style={{ width: 10, height: 10, borderRadius: "50%", background: T.accent, display: "inline-block" }}></span>
-        TradeForge
-      </a>
-      <nav style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-        <a href="/"          style={{ textDecoration: "none", color: T.text, background: "#404040", padding: "8px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, fontSize: "0.95rem" }}>Marketplace</a>
-        <a href="/messages"  style={{ textDecoration: "none", color: T.text, background: "#404040", padding: "8px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, fontSize: "0.95rem" }}>Inbox</a>
-        <a href="/saved"     style={{ textDecoration: "none", color: T.text, background: "#404040", padding: "8px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, fontSize: "0.95rem" }}>Saved</a>
-        {user ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            {user.role === "admin" && (
-              <a href="/admin" style={{ textDecoration: "none", color: "#c084fc", background: "rgba(168,85,247,0.12)", padding: "8px 12px", borderRadius: "10px", border: "1px solid rgba(168,85,247,0.35)", fontSize: "0.95rem", fontWeight: 700 }}>Admin</a>
-            )}
-            <a href="/create-listing" style={{ textDecoration: "none", color: "#fff", background: T.accent, padding: "8px 12px", borderRadius: "10px", border: `1px solid ${T.accent}`, fontSize: "0.95rem", fontWeight: 700 }}>+ Create Listing</a>
-            <button onClick={logout} style={{ width: "38px", height: "38px", borderRadius: "10px", background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.35)", color: T.accent, fontWeight: 900, fontSize: "14px", cursor: "pointer" }} title={user.full_name}>{initials}</button>
-          </div>
-        ) : (
-          <a href="/login" style={{ textDecoration: "none", color: T.text, background: "#404040", padding: "8px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, fontSize: "0.95rem", fontWeight: 600 }}>Login</a>
-        )}
-      </nav>
-    </header>
-  );
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
 // Pass listingId prop to enter edit mode. Leave undefined for create mode.
 export default function CreateEditListingPage({ listingId }: { listingId?: string }) {
@@ -379,7 +347,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
   if (success) {
     return (
       <div style={{ minHeight: "100vh", background: T.bg, fontFamily: "Arial, sans-serif" }}>
-        <Navbar />
+        <Navbar exclude={["create"]}/>
         <div style={{ maxWidth: "540px", margin: "80px auto", textAlign: "center", padding: "0 20px" }}>
           <div style={{ fontSize: "56px", marginBottom: "16px" }}>✅</div>
           <h2 style={{ fontSize: "22px", fontWeight: 800, color: T.text, marginBottom: "10px" }}>
@@ -399,7 +367,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
-      <Navbar />
+      <Navbar exclude={["create"]}/>
 
       <div style={{ maxWidth: "780px", margin: "0 auto", padding: "28px 20px 60px" }}>
 

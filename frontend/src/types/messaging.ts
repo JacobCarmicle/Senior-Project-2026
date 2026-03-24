@@ -1,6 +1,7 @@
 export interface Conversation {
   id: string;
   listing_id: string;
+  listing_title?: string | null;
   buyer_id: string;
   seller_id: string;
   status: "open" | "closed" | "blocked";
