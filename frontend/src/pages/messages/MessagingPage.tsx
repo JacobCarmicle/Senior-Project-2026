@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { listMessages, listMyConversations, sendMessage } from "../../api/messaging";
+import { connectConversationRealtime, listMessages, listMyConversations, sendMessage } from "../../api/messaging";
 import type { Conversation, Message } from "../../types/messaging";
 import { Navbar } from "../../components/Navbar/Navbar.tsx";
 
@@ -32,6 +32,32 @@ export default function MessagingPage() {
   useEffect(() => {
     if (!activeId) return;
     listMessages(activeId).then((r) => setMessages(r.items));
+  }, [activeId]);
+
+  useEffect(() => {
+    if (!activeId) return;
+
+    const ws = connectConversationRealtime(activeId, {
+      onEvent: (event) => {
+        if (event.type === "message.sent") {
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === event.message.id)) return prev;
+            return [...prev, event.message];
+          });
+        }
+
+        if (event.type === "message.read") {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === event.message.id ? event.message : m)),
+          );
+        }
+      },
+    });
+
+    return () => {
+      if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+      if (ws && ws.readyState === WebSocket.CONNECTING) ws.close();
+    };
   }, [activeId]);
 
   async function handleSend() {
