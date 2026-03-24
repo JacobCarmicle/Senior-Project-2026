@@ -47,6 +47,10 @@ export async function listListings(): Promise<ListingListResponse> {
   };
 }
 
+export async function deleteListing(id: string): Promise<void> {
+  await client.delete(`/listings/${id}`);
+}
+
 export async function uploadListingImages(files: File[]): Promise<UploadedImage[]> {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));
