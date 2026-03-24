@@ -104,7 +104,9 @@ export default function MessagingPage() {
                   cursor: "pointer",
                 }}
               >
-                <div style={{ fontWeight: 700, fontSize: 13 }}>Listing {c.listing_id.slice(0, 8)}...</div>
+                <div style={{ fontWeight: 700, fontSize: 13 }}>
+                  {c.listing_title?.trim() || `Listing ${c.listing_id.slice(0, 8)}...`}
+                </div>
                 <div style={{ color: T.muted, fontSize: 12, marginTop: 3 }}>{c.status.toUpperCase()}</div>
               </button>
             ))}

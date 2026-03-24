@@ -12,6 +12,14 @@ from app.services import conversations, listings
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
 
+def _with_listing_title(convo: dict) -> dict:
+    listing = listings.get_listing(convo["listing_id"])
+    return {
+        **convo,
+        "listing_title": listing.get("title") if listing else None,
+    }
+
+
 @router.post("", response_model=ConversationResponse)
 def create_conversation(
     payload: ConversationCreateRequest,
@@ -35,16 +43,17 @@ def create_conversation(
     )
     if not created:
         response.status_code = status.HTTP_200_OK
-        return ConversationResponse(**convo)
+        return ConversationResponse(**_with_listing_title(convo))
 
     response.status_code = status.HTTP_201_CREATED
-    return ConversationResponse(**convo)
+    return ConversationResponse(**_with_listing_title(convo))
 
 
 @router.get("", response_model=ConversationListResponse)
 def list_conversations(current_user: dict = Depends(get_current_user)):
     rows = conversations.list_for_user(current_user["id"])
-    return ConversationListResponse(items=[ConversationResponse(**x) for x in rows], total=len(rows))
+    hydrated = [_with_listing_title(x) for x in rows]
+    return ConversationListResponse(items=[ConversationResponse(**x) for x in hydrated], total=len(hydrated))
 
 
 @router.get("/{conversation_id}", response_model=ConversationResponse)
@@ -56,7 +65,7 @@ def get_conversation(conversation_id: str, current_user: dict = Depends(get_curr
 
     if not convo:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    return ConversationResponse(**convo)
+    return ConversationResponse(**_with_listing_title(convo))
 
 
 @router.patch("/{conversation_id}", response_model=ConversationResponse)
@@ -72,4 +81,4 @@ def update_conversation_status(
 
     if not convo:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    return ConversationResponse(**convo)
+    return ConversationResponse(**_with_listing_title(convo))

@@ -25,6 +25,7 @@ class ConversationCreateRequest(BaseModel):
 class ConversationResponse(BaseModel):
     id: str
     listing_id: str
+    listing_title: str | None = None
     buyer_id: str
     seller_id: str
     status: ConversationStatus
