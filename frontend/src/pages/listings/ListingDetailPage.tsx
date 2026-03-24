@@ -49,10 +49,6 @@ export default function ListingDetailPage() {
     navigate(`/messages?conversation=${convo.id}`);
   }
 
-  function handleViewSellerProfile() {
-    if (!listing) return;
-    navigate(`/user/${listing.seller_id}`);
-  }
 
   if (error) {
     return <div style={{ minHeight: "100vh", background: T.bg, padding: 24, color: T.danger }}>{error}</div>;
