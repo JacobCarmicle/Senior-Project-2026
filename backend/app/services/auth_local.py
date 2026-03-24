@@ -61,6 +61,7 @@ def _normalize_db_user(row: dict) -> dict:
         "email": row["email"],
         "full_name": row.get("full_name") or "",
         "role": row.get("role") or "user",
+        "status": row.get("status") or "active",
         "created_at": row.get("created_at") or _now_iso(),
         "password_hash": row.get("password_hash"),
         "google_sub": row.get("google_sub"),
@@ -122,6 +123,8 @@ def authenticate_user(email: str, password: str) -> dict | None:
         return None
     if not verify_password(password, user["password_hash"]):
         return None
+    if user.get("status") == "disabled":
+        raise ValueError("Account is disabled")
     return user
 
 
@@ -230,3 +233,42 @@ def apply_password_reset(token: str, new_password: str) -> None:
         user["password_hash"] = hash_password(new_password)
 
     RESET_TOKENS.pop(token, None)
+
+
+# ── Admin user management ──────────────────────────────────────────────────────
+
+def list_users() -> list[dict]:
+    if _users_backend() == "supabase":
+        rows = _supabase().table("users").select("*").order("created_at", desc=True).execute().data
+        return [_normalize_db_user(r) for r in rows]
+    return [_normalize_db_user(u) for u in USERS_BY_EMAIL.values()]
+
+
+def set_user_role(user_id: str, role: str) -> dict | None:
+    if role not in ("user", "admin"):
+        raise ValueError("Invalid role")
+    if _users_backend() == "supabase":
+        rows = _supabase().table("users").update({"role": role}).eq("id", user_id).execute().data
+        if not rows:
+            return None
+        return _normalize_db_user(rows[0])
+    for user in USERS_BY_EMAIL.values():
+        if user["id"] == user_id:
+            user["role"] = role
+            return _normalize_db_user(user)
+    return None
+
+
+def set_user_status(user_id: str, status: str) -> dict | None:
+    if status not in ("active", "disabled"):
+        raise ValueError("Invalid status")
+    if _users_backend() == "supabase":
+        rows = _supabase().table("users").update({"status": status}).eq("id", user_id).execute().data
+        if not rows:
+            return None
+        return _normalize_db_user(rows[0])
+    for user in USERS_BY_EMAIL.values():
+        if user["id"] == user_id:
+            user["status"] = status
+            return _normalize_db_user(user)
+    return None

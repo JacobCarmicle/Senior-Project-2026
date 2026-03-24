@@ -107,26 +107,44 @@ function Navbar() {
 
       {/* Nav Links + Auth */}
       <nav style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-        {[
-          { label: "Marketplace", href: "/" },
-          { label: "Inbox",       href: "/messages" },
-          { label: "Reviews",     href: "/reviews" },
-          { label: "Saved",       href: "/saved" },
-        ].map(link => (
-          <a key={link.href} href={link.href} style={{
-            textDecoration: "none", color: T.text,
-            background: "#404040", padding: "8px 12px",
-            borderRadius: "10px", border: `1px solid ${T.border}`,
-            fontSize: "0.95rem",
-          }}>{link.label}</a>
-        ))}
+        {/* Always visible */}
+        <a href="/" style={{
+          textDecoration: "none", color: T.text,
+          background: "#404040", padding: "8px 12px",
+          borderRadius: "10px", border: `1px solid ${T.border}`,
+          fontSize: "0.95rem",
+        }}>Marketplace</a>
 
-        <a href="/create-listing" style={{
-          textDecoration: "none", color: "#fff",
-          background: T.accent, padding: "8px 12px",
-          borderRadius: "10px", border: `1px solid ${T.accent}`,
-          fontSize: "0.95rem", fontWeight: 700,
-        }}>+ Create Listing</a>
+        {/* Logged-in only */}
+        {user && (
+          <>
+            {[
+              { label: "Inbox", href: "/messages" },
+              { label: "Saved", href: "/saved" },
+            ].map(link => (
+              <a key={link.href} href={link.href} style={{
+                textDecoration: "none", color: T.text,
+                background: "#404040", padding: "8px 12px",
+                borderRadius: "10px", border: `1px solid ${T.border}`,
+                fontSize: "0.95rem",
+              }}>{link.label}</a>
+            ))}
+            {user.role === "admin" && (
+              <a href="/admin" style={{
+                textDecoration: "none", color: "#c084fc",
+                background: "rgba(168,85,247,0.12)", padding: "8px 12px",
+                borderRadius: "10px", border: "1px solid rgba(168,85,247,0.35)",
+                fontSize: "0.95rem", fontWeight: 700,
+              }}>Admin</a>
+            )}
+            <a href="/create-listing" style={{
+              textDecoration: "none", color: "#fff",
+              background: T.accent, padding: "8px 12px",
+              borderRadius: "10px", border: `1px solid ${T.accent}`,
+              fontSize: "0.95rem", fontWeight: 700,
+            }}>+ Create Listing</a>
+          </>
+        )}
 
         {/* ── Logged Out: Login Button ── */}
         {!user && (
@@ -179,6 +197,7 @@ function Navbar() {
                 {/* Menu Items */}
                 {[
                   { label: "My Listings",  href: "/my-listings" },
+                  { label: "Reviews",      href: "/reviews" },
                   { label: "Saved",        href: "/saved" },
                   { label: "Inbox",        href: "/messages" },
                   ...(user.role === "admin" ? [{ label: "Admin Dashboard", href: "/admin" }] : []),
