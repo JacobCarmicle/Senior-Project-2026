@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getListing } from "../../api/listings";
+import { deleteListing, getListing, updateListing } from "../../api/listings";
 import { openConversationFromListing } from "../../api/messaging";
 import { getSellerRatingSummary } from "../../api/reviews";
+import { createReport, REPORT_REASONS, type ReportReason } from "../../api/reports";
 import type { Listing } from "../../types/listings";
 import { useAuth } from "../../context/AuthContext";
 
@@ -24,6 +25,14 @@ export default function ListingDetailPage() {
   const [rating, setRating] = useState<{ average_rating: number; review_count: number } | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [adminConfirm, setAdminConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null);
+  const [adminWorking, setAdminWorking] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState<ReportReason>(REPORT_REASONS[0]);
+  const [reportDesc, setReportDesc] = useState("");
+  const [reportWorking, setReportWorking] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
+  const [reportError, setReportError] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -48,6 +57,61 @@ export default function ListingDetailPage() {
     navigate(`/messages?conversation=${convo.id}`);
   }
 
+  function adminAsk(message: string, onConfirm: () => void) {
+    setAdminConfirm({ message, onConfirm });
+  }
+
+  async function adminRemoveListing() {
+    if (!listing) return;
+    setAdminWorking(true);
+    try {
+      await deleteListing(listing.id);
+      navigate("/");
+    } finally {
+      setAdminWorking(false);
+    }
+  }
+
+  async function adminMarkSold() {
+    if (!listing) return;
+    setAdminWorking(true);
+    try {
+      const updated = await updateListing(listing.id, { status: "sold" });
+      setListing(updated);
+    } finally {
+      setAdminWorking(false);
+    }
+  }
+
+  async function adminMarkActive() {
+    if (!listing) return;
+    setAdminWorking(true);
+    try {
+      const updated = await updateListing(listing.id, { status: "active" });
+      setListing(updated);
+    } finally {
+      setAdminWorking(false);
+    }
+  }
+
+  async function handleReport() {
+    if (!listing) return;
+    setReportWorking(true);
+    setReportError("");
+    try {
+      await createReport({ listing_id: listing.id, reason: reportReason, description: reportDesc });
+      setReportOpen(false);
+      setReportDesc("");
+      setReportDone(true);
+      setTimeout(() => setReportDone(false), 6000);
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setReportError(detail ?? "Failed to submit report. Please try again.");
+    } finally {
+      setReportWorking(false);
+    }
+  }
+
   if (error) {
     return <div style={{ minHeight: "100vh", background: T.bg, padding: 24, color: T.danger }}>{error}</div>;
   }
@@ -56,8 +120,75 @@ export default function ListingDetailPage() {
     return <div style={{ minHeight: "100vh", background: T.bg, padding: 24, color: T.muted }}>Loading listing...</div>;
   }
 
+  const isAdmin = user?.role === "admin";
+  const isOwnListing = user?.id === listing?.seller_id;
+
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
+
+      {/* Admin Confirm Modal */}
+      {adminConfirm && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
+          <div style={{ background: "#1a1a1a", border: "1px solid #404040", borderRadius: 14, padding: "28px 32px", maxWidth: 380, width: "90%", boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}>
+            <div style={{ fontSize: 15, color: T.text, marginBottom: 22, lineHeight: 1.6 }}>{adminConfirm.message}</div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => setAdminConfirm(null)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, cursor: "pointer", fontSize: 13 }}>Cancel</button>
+              <button onClick={() => { adminConfirm.onConfirm(); setAdminConfirm(null); }} style={{ padding: "8px 18px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.15)", color: "#ef4444", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>Confirm</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Toast */}
+      {reportDone && (
+        <div style={{ position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)", zIndex: 60, background: "#1a1a1a", border: "1px solid rgba(34,197,94,0.4)", borderRadius: 12, padding: "14px 22px", boxShadow: "0 8px 30px rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-start", gap: 12, maxWidth: 420, width: "90%" }}>
+          <span style={{ fontSize: 18, lineHeight: 1 }}>✅</span>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>Your report was submitted successfully!</div>
+            <div style={{ fontSize: 12, color: T.muted, marginTop: 3 }}>Reports take 2–3 days to review. Thank you for helping keep TradeForge safe.</div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Modal */}
+      {reportOpen && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
+          <div style={{ background: "#1a1a1a", border: "1px solid #404040", borderRadius: 14, padding: "28px 32px", maxWidth: 420, width: "90%", boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 4 }}>Report Listing</div>
+            <div style={{ fontSize: 13, color: T.muted, marginBottom: 18 }}>Let us know what's wrong with this listing.</div>
+            <label style={{ fontSize: 12, fontWeight: 700, color: T.muted, display: "block", marginBottom: 6 }}>REASON</label>
+            <select
+              value={reportReason}
+              onChange={e => setReportReason(e.target.value as ReportReason)}
+              style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, fontSize: 13, marginBottom: 14, outline: "none" }}
+            >
+              {REPORT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <label style={{ fontSize: 12, fontWeight: 700, color: T.muted, display: "block", marginBottom: 6 }}>ADDITIONAL DETAILS (optional)</label>
+            <textarea
+              value={reportDesc}
+              onChange={e => setReportDesc(e.target.value)}
+              placeholder="Describe the issue..."
+              rows={3}
+              style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }}
+            />
+            {reportError && (
+              <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontSize: 13 }}>
+                {reportError}
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
+              <button onClick={() => setReportOpen(false)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, cursor: "pointer", fontSize: 13 }}>Cancel</button>
+              <button
+                disabled={reportWorking}
+                onClick={handleReport}
+                style={{ padding: "8px 18px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.15)", color: "#ef4444", cursor: "pointer", fontSize: 13, fontWeight: 700, opacity: reportWorking ? 0.6 : 1 }}
+              >{reportWorking ? "Submitting…" : "Submit Report"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
         <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: 14 }}>← Back to Marketplace</a>
 
@@ -111,7 +242,7 @@ export default function ListingDetailPage() {
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
-              {user?.id !== listing.seller_id && (
+              {!isOwnListing && !isAdmin && (
                 <button
                   onClick={handleMessageSeller}
                   style={{
@@ -127,7 +258,7 @@ export default function ListingDetailPage() {
                   Message Seller
                 </button>
               )}
-              {user?.id === listing.seller_id && (
+              {isOwnListing && !isAdmin && (
                 <a
                   href={`/edit-listing/${listing.id}`}
                   style={{
@@ -143,7 +274,91 @@ export default function ListingDetailPage() {
                   Edit Listing
                 </a>
               )}
+              {user && !isOwnListing && !isAdmin && (
+                <button
+                  onClick={() => setReportOpen(true)}
+                  style={{
+                    padding: "10px 16px",
+                    borderRadius: 10,
+                    background: "rgba(239,68,68,0.08)",
+                    color: "#ef4444",
+                    border: "1px solid rgba(239,68,68,0.3)",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    fontSize: 14,
+                    marginLeft: "auto",
+                  }}
+                >
+                  Report Listing
+                </button>
+              )}
             </div>
+
+            {/* ── Admin Controls Panel ── */}
+            {isAdmin && (
+              <div style={{
+                marginTop: 22,
+                border: "1px solid rgba(168,85,247,0.4)",
+                borderRadius: 12,
+                overflow: "hidden",
+              }}>
+                <div style={{
+                  background: "rgba(168,85,247,0.1)",
+                  borderBottom: "1px solid rgba(168,85,247,0.3)",
+                  padding: "10px 16px",
+                  display: "flex", alignItems: "center", gap: 8,
+                }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#c084fc" }}>Admin Controls</span>
+                  <span style={{ fontSize: 11, color: "#9ca3af" }}>— Seller: {listing.seller_name ?? listing.seller_id}</span>
+                </div>
+                <div style={{ padding: "14px 16px", background: "rgba(168,85,247,0.04)", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+
+                  {/* Edit */}
+                  <a href={`/edit-listing/${listing.id}`} style={{
+                    padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700,
+                    background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.35)",
+                    color: "#c084fc", textDecoration: "none",
+                  }}>Edit Listing</a>
+
+                  {/* Mark Sold / Restore Active */}
+                  {listing.status === "active" && (
+                    <button
+                      disabled={adminWorking}
+                      onClick={() => adminAsk("Mark this listing as sold?", adminMarkSold)}
+                      style={{ padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.35)", color: "#60a5fa" }}
+                    >Mark as Sold</button>
+                  )}
+                  {listing.status === "sold" && (
+                    <button
+                      disabled={adminWorking}
+                      onClick={() => adminAsk("Restore this listing to active?", adminMarkActive)}
+                      style={{ padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.35)", color: "#22c55e" }}
+                    >Restore to Active</button>
+                  )}
+
+                  {/* View Seller Profile */}
+                  <a href={`/profile/${listing.seller_id}`} style={{
+                    padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700,
+                    background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.3)",
+                    color: "#eab308", textDecoration: "none",
+                  }}>View Seller Profile</a>
+
+                  {/* Message Seller */}
+                  <button
+                    onClick={handleMessageSeller}
+                    style={{ padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", background: "rgba(156,163,175,0.1)", border: "1px solid rgba(156,163,175,0.3)", color: "#9ca3af" }}
+                  >Message Seller</button>
+
+                  {/* Remove */}
+                  <button
+                    disabled={adminWorking}
+                    onClick={() => adminAsk(`Permanently remove "${listing.title}"? This cannot be undone.`, adminRemoveListing)}
+                    style={{ padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", color: "#ef4444", marginLeft: "auto" }}
+                  >Remove Listing</button>
+
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

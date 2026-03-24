@@ -41,8 +41,7 @@ export default function LoginPage() {
       await loginWithGoogle(idToken);
       navigate("/");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Google sign-in failed. Please try again.";
-      setError(message);
+      setError(getApiErrorMessage(err, "Google sign-in failed. Please try again."));
     } finally {
       setSubmitting(false);
     }

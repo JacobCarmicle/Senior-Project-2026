@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { listUsers, patchUser, listAllListings, adminDeleteListing, adminRestoreListing, type AdminUser } from "../../api/admin";
+import { listAdminReports, patchReport, type Report } from "../../api/reports";
+import type { Listing } from "../../types/listings";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -17,56 +20,14 @@ const T = {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type ReportStatus  = "pending" | "reviewed" | "dismissed";
-type UserStatus    = "active"  | "suspended" | "banned";
-type ListingStatus = "active"  | "sold"      | "deleted";
+type UserStatus    = "active"  | "disabled";
 type TabId         = "overview" | "reports"  | "users" | "listings";
-
-interface Report {
-  id: string; type: "listing" | "user" | "message";
-  reason: string; description: string;
-  reporter: string; target: string;
-  status: ReportStatus; createdAt: string;
-}
-interface ManagedUser {
-  id: string; fullName: string; email: string;
-  role: "user" | "admin"; status: UserStatus;
-  listings: number; reports: number; joinedAt: string;
-}
-interface ManagedListing {
-  id: string; title: string; seller: string;
-  category: string; price: number;
-  status: ListingStatus; reports: number; createdAt: string;
-}
-
-// ── Mock Data ─────────────────────────────────────────────────────────────────
-const MOCK_REPORTS: Report[] = [
-  { id:"r1", type:"listing", reason:"Inappropriate content", description:"Listing contains prohibited items per platform rules.", reporter:"alice@example.com", target:"Hunting Rifle Listing", status:"pending", createdAt:"2026-03-04" },
-  { id:"r2", type:"user",    reason:"Harassment",            description:"User sent threatening messages repeatedly.", reporter:"bob@example.com", target:"john_doe", status:"pending", createdAt:"2026-03-04" },
-  { id:"r3", type:"message", reason:"Spam",                  description:"User is flooding conversations with spam.", reporter:"carol@example.com", target:"Message #4821", status:"pending", createdAt:"2026-03-03" },
-  { id:"r4", type:"listing", reason:"Misrepresentation",     description:"Item condition does not match description.", reporter:"dave@example.com", target:"iPhone 14 Pro", status:"reviewed", createdAt:"2026-03-02" },
-  { id:"r5", type:"user",    reason:"No-show",               description:"Seller did not attend confirmed meetup.", reporter:"eve@example.com", target:"seller_mike", status:"dismissed", createdAt:"2026-03-01" },
-];
-const MOCK_USERS: ManagedUser[] = [
-  { id:"u1", fullName:"John Doe",     email:"john@example.com",  role:"user",  status:"active",    listings:5,  reports:2, joinedAt:"2026-01-10" },
-  { id:"u2", fullName:"Sarah Miller", email:"sarah@example.com", role:"admin", status:"active",    listings:0,  reports:0, joinedAt:"2026-01-01" },
-  { id:"u3", fullName:"Mike Torres",  email:"mike@example.com",  role:"user",  status:"suspended", listings:3,  reports:5, joinedAt:"2026-02-14" },
-  { id:"u4", fullName:"Lisa Chen",    email:"lisa@example.com",  role:"user",  status:"active",    listings:12, reports:0, joinedAt:"2026-01-22" },
-  { id:"u5", fullName:"Ravi Patel",   email:"ravi@example.com",  role:"user",  status:"banned",    listings:1,  reports:8, joinedAt:"2026-02-05" },
-];
-const MOCK_LISTINGS: ManagedListing[] = [
-  { id:"l1", title:"2019 Honda Civic",      seller:"john@example.com",  category:"Automotive",  price:14500, status:"active",  reports:0, createdAt:"2026-03-01" },
-  { id:"l2", title:"iPhone 14 Pro 256GB",   seller:"lisa@example.com",  category:"Electronics", price:750,   status:"active",  reports:1, createdAt:"2026-03-02" },
-  { id:"l3", title:"Vintage Leather Couch", seller:"mike@example.com",  category:"Furniture",   price:300,   status:"deleted", reports:3, createdAt:"2026-02-20" },
-  { id:"l4", title:"Trek Mountain Bike",    seller:"ravi@example.com",  category:"Sports",      price:480,   status:"active",  reports:0, createdAt:"2026-03-03" },
-  { id:"l5", title:"MacBook Pro M3",        seller:"lisa@example.com",  category:"Electronics", price:1800,  status:"sold",    reports:0, createdAt:"2026-02-28" },
-];
 
 // ── Badge ─────────────────────────────────────────────────────────────────────
 function Badge({ value }: { value: string }) {
   const map: Record<string, { bg: string; color: string; border: string }> = {
-    active:    { bg:"rgba(34,197,94,0.1)",  color:"#22c55e", border:"rgba(34,197,94,0.3)"  },
-    suspended: { bg:"rgba(234,179,8,0.1)",  color:"#eab308", border:"rgba(234,179,8,0.3)"  },
-    banned:    { bg:"rgba(239,68,68,0.1)",  color:"#ef4444", border:"rgba(239,68,68,0.3)"  },
+    active:   { bg:"rgba(34,197,94,0.1)",  color:"#22c55e", border:"rgba(34,197,94,0.3)"  },
+    disabled: { bg:"rgba(239,68,68,0.1)",  color:"#ef4444", border:"rgba(239,68,68,0.3)"  },
     sold:      { bg:"rgba(59,130,246,0.1)", color:"#60a5fa", border:"rgba(59,130,246,0.3)" },
     deleted:   { bg:"rgba(156,163,175,0.1)",color:"#9ca3af", border:"rgba(156,163,175,0.3)"},
     pending:   { bg:"rgba(234,179,8,0.1)",  color:"#eab308", border:"rgba(234,179,8,0.3)"  },
@@ -87,19 +48,6 @@ function Badge({ value }: { value: string }) {
   );
 }
 
-// ── Stat Card ─────────────────────────────────────────────────────────────────
-function StatCard({ label, value, accent }: { label: string; value: number | string; accent: string }) {
-  return (
-    <div style={{
-      background: T.card, border: `1px solid ${T.border}`,
-      borderRadius:"14px", padding:"20px 22px",
-      boxShadow:"0 2px 10px rgba(0,0,0,0.3)",
-    }}>
-      <div style={{ fontSize:"28px", fontWeight:900, color: accent }}>{value}</div>
-      <div style={{ fontSize:"13px", color: T.muted, marginTop:"5px" }}>{label}</div>
-    </div>
-  );
-}
 
 // ── Action Buttons ────────────────────────────────────────────────────────────
 function Btn({ label, color, onClick }: { label: string; color: "green"|"yellow"|"red"|"purple"|"muted"; onClick: () => void }) {
@@ -177,56 +125,18 @@ function TD({ children, muted }: { children: React.ReactNode; muted?: boolean })
 
 // ── Overview Tab ──────────────────────────────────────────────────────────────
 function OverviewTab() {
-  const pendingReports  = MOCK_REPORTS.filter(r => r.status === "pending").length;
-  const activeUsers     = MOCK_USERS.filter(u => u.status === "active").length;
-  const activeListings  = MOCK_LISTINGS.filter(l => l.status === "active").length;
-  const flaggedListings = MOCK_LISTINGS.filter(l => l.reports > 0).length;
-
   return (
     <div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(160px, 1fr))", gap:"14px", marginBottom:"28px" }}>
-        <StatCard label="Pending Reports"  value={pendingReports}       accent="#ef4444" />
-        <StatCard label="Active Users"     value={activeUsers}          accent="#22c55e" />
-        <StatCard label="Active Listings"  value={activeListings}       accent="#22c55e" />
-        <StatCard label="Flagged Listings" value={flaggedListings}      accent="#eab308" />
-        <StatCard label="Total Users"      value={MOCK_USERS.length}    accent="#c084fc" />
-        <StatCard label="Total Reports"    value={MOCK_REPORTS.length}  accent="#9ca3af" />
-      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr", gap:"16px" }}>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"16px" }}>
-        {/* Pending Reports Panel */}
+        {/* Placeholder for future reports-by-user panel */}
         <div style={{ background: T.card, border:`1px solid ${T.border}`, borderRadius:"14px", overflow:"hidden", boxShadow:"0 2px 10px rgba(0,0,0,0.3)" }}>
           <div style={{ padding:"14px 18px", borderBottom:`1px solid ${T.border}`, fontWeight:700, fontSize:"14px", color: T.text }}>
-            Recent Pending Reports
+            User Management
           </div>
-          {MOCK_REPORTS.filter(r => r.status === "pending").map(r => (
-            <div key={r.id} style={{ padding:"13px 18px", borderBottom:`1px solid #333`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-              <div>
-                <div style={{ fontSize:"13px", fontWeight:600, color: T.text }}>{r.reason}</div>
-                <div style={{ fontSize:"12px", color: T.muted, marginTop:"2px" }}>Target: {r.target}</div>
-              </div>
-              <Badge value={r.type} />
-            </div>
-          ))}
-        </div>
-
-        {/* Flagged Users Panel */}
-        <div style={{ background: T.card, border:`1px solid ${T.border}`, borderRadius:"14px", overflow:"hidden", boxShadow:"0 2px 10px rgba(0,0,0,0.3)" }}>
-          <div style={{ padding:"14px 18px", borderBottom:`1px solid ${T.border}`, fontWeight:700, fontSize:"14px", color: T.text }}>
-            Users with Reports
+          <div style={{ padding:"16px 18px", color: T.muted, fontSize:"13px" }}>
+            Go to the <strong style={{ color: T.text }}>Users</strong> tab to manage accounts, disable users, and assign admin roles.
           </div>
-          {MOCK_USERS.filter(u => u.reports > 0).map(u => (
-            <div key={u.id} style={{ padding:"13px 18px", borderBottom:`1px solid #333`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-              <div>
-                <div style={{ fontSize:"13px", fontWeight:600, color: T.text }}>{u.fullName}</div>
-                <div style={{ fontSize:"12px", color: T.muted, marginTop:"2px" }}>{u.email}</div>
-              </div>
-              <div style={{ display:"flex", gap:"8px", alignItems:"center" }}>
-                <span style={{ fontSize:"12px", color: u.reports > 3 ? "#ef4444" : T.muted, fontWeight:700 }}>{u.reports} reports</span>
-                <Badge value={u.status} />
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>
@@ -235,13 +145,28 @@ function OverviewTab() {
 
 // ── Reports Tab ───────────────────────────────────────────────────────────────
 function ReportsTab() {
-  const [reports,  setReports]  = useState<Report[]>(MOCK_REPORTS);
+  const [reports,  setReports]  = useState<Report[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState("");
   const [filter,   setFilter]   = useState<ReportStatus | "all">("all");
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  useEffect(() => {
+    listAdminReports()
+      .then(setReports)
+      .catch(e => setError(e?.response?.data?.detail ?? e?.message ?? "Failed to load reports"))
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = filter === "all" ? reports : reports.filter(r => r.status === filter);
-  const update   = (id: string, status: ReportStatus) =>
-    setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+
+  const update = (id: string, s: "reviewed" | "dismissed") =>
+    patchReport(id, s).then(updated =>
+      setReports(prev => prev.map(r => r.id === id ? { ...r, ...updated } : r))
+    );
+
+  if (loading) return <div style={{ color: T.muted, padding: 16 }}>Loading reports...</div>;
+  if (error)   return <div style={{ color: "#ef4444", padding: 16 }}>Error: {error}</div>;
 
   return (
     <div>
@@ -265,23 +190,26 @@ function ReportsTab() {
         ))}
       </div>
 
-      <Table headers={["Type","Reason","Target","Reporter","Date","Status","Actions"]} empty={filtered.length === 0}>
+      <Table headers={["Listing","Reason","Reporter","Date","Status","Actions"]} empty={filtered.length === 0}>
         {filtered.map((r, i) => (
           <>
             <TR key={r.id} i={i}>
-              <TD><Badge value={r.type} /></TD>
+              <TD>
+                <a href={`/listing/${r.listing_id}`} target="_blank" rel="noreferrer" style={{ color: T.text, fontWeight: 600, textDecoration: "none", borderBottom: "1px solid #555" }}>
+                  {r.listing_title}
+                </a>
+              </TD>
               <TD>{r.reason}</TD>
-              <TD muted>{r.target}</TD>
-              <TD muted>{r.reporter}</TD>
-              <TD muted>{r.createdAt}</TD>
+              <TD muted>{r.reporter_name}</TD>
+              <TD muted>{r.created_at.slice(0, 10)}</TD>
               <TD><Badge value={r.status} /></TD>
               <TD>
                 <div style={{ display:"flex", gap:"6px" }}>
                   <Btn label={expanded === r.id ? "Hide" : "View"} color="muted" onClick={() => setExpanded(expanded === r.id ? null : r.id)} />
                   {r.status === "pending" && (
                     <>
-                      <Btn label="Resolve" color="green"  onClick={() => update(r.id, "reviewed")}  />
-                      <Btn label="Dismiss" color="muted"  onClick={() => update(r.id, "dismissed")} />
+                      <Btn label="Resolve" color="green" onClick={() => update(r.id, "reviewed")}  />
+                      <Btn label="Dismiss" color="muted" onClick={() => update(r.id, "dismissed")} />
                     </>
                   )}
                 </div>
@@ -289,8 +217,8 @@ function ReportsTab() {
             </TR>
             {expanded === r.id && (
               <tr key={`${r.id}-exp`} style={{ background:"rgba(34,197,94,0.05)", borderBottom:`1px solid ${T.border}` }}>
-                <td colSpan={7} style={{ padding:"12px 20px", color: T.text, fontSize:"13px" }}>
-                  <span style={{ color: T.muted }}>Description: </span>{r.description}
+                <td colSpan={6} style={{ padding:"12px 20px", color: T.text, fontSize:"13px" }}>
+                  <span style={{ color: T.muted }}>Description: </span>{r.description || <em style={{ color: T.muted }}>No details provided.</em>}
                 </td>
               </tr>
             )}
@@ -303,46 +231,63 @@ function ReportsTab() {
 
 // ── Users Tab ─────────────────────────────────────────────────────────────────
 function UsersTab() {
-  const [users,   setUsers]   = useState<ManagedUser[]>(MOCK_USERS);
+  const [users,   setUsers]   = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState("");
   const [search,  setSearch]  = useState("");
   const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
+  useEffect(() => {
+    listUsers()
+      .then(setUsers)
+      .catch((e) => setError(e?.response?.data?.detail ?? e?.message ?? "Failed to load users"))
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = users.filter(u =>
-    u.fullName.toLowerCase().includes(search.toLowerCase()) ||
+    u.full_name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
-  const ask       = (msg: string, fn: () => void) => setConfirm({ message: msg, onConfirm: () => { fn(); setConfirm(null); } });
-  const setStatus = (id: string, s: UserStatus)         => setUsers(prev => prev.map(u => u.id === id ? { ...u, status: s } : u));
-  const setRole   = (id: string, r: "user" | "admin")   => setUsers(prev => prev.map(u => u.id === id ? { ...u, role: r }   : u));
+
+  const ask = (msg: string, fn: () => void) =>
+    setConfirm({ message: msg, onConfirm: () => { fn(); setConfirm(null); } });
+
+  const applyStatus = (id: string, s: UserStatus) =>
+    patchUser(id, { status: s }).then(updated =>
+      setUsers(prev => prev.map(u => u.id === id ? updated : u))
+    );
+
+  const applyRole = (id: string, r: "user" | "admin") =>
+    patchUser(id, { role: r }).then(updated =>
+      setUsers(prev => prev.map(u => u.id === id ? updated : u))
+    );
+
+  if (loading) return <div style={{ color: T.muted, padding: 16 }}>Loading users...</div>;
+  if (error)   return <div style={{ color: "#ef4444", padding: 16 }}>Error: {error}</div>;
 
   return (
     <div>
       {confirm && <ConfirmModal message={confirm.message} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
       <SearchInput value={search} onChange={setSearch} placeholder="Search by name or email..." />
 
-      <Table headers={["Name","Email","Role","Status","Listings","Reports","Joined","Actions"]} empty={filtered.length === 0}>
+      <Table headers={["Name","Email","Role","Status","Joined","Actions"]} empty={filtered.length === 0}>
         {filtered.map((u, i) => (
           <TR key={u.id} i={i}>
-            <td style={{ padding:"12px 14px", fontWeight:700, color: T.text }}>{u.fullName}</td>
+            <td style={{ padding:"12px 14px", fontWeight:700, color: T.text }}>{u.full_name}</td>
             <TD muted>{u.email}</TD>
             <TD><Badge value={u.role} /></TD>
             <TD><Badge value={u.status} /></TD>
-            <TD muted>{u.listings}</TD>
-            <td style={{ padding:"12px 14px", color: u.reports > 3 ? "#ef4444" : T.muted, fontWeight: u.reports > 3 ? 700 : 400 }}>{u.reports}</td>
-            <TD muted>{u.joinedAt}</TD>
+            <TD muted>{u.created_at.slice(0, 10)}</TD>
             <TD>
               <div style={{ display:"flex", gap:"5px", flexWrap:"wrap" }}>
                 {u.status === "active" && (
-                  <>
-                    <Btn label="Suspend"    color="yellow" onClick={() => ask(`Suspend ${u.fullName}?`, () => setStatus(u.id, "suspended"))} />
-                    <Btn label="Ban"        color="red"    onClick={() => ask(`Ban ${u.fullName}? This is a severe action.`, () => setStatus(u.id, "banned"))} />
-                  </>
+                  <Btn label="Disable" color="red" onClick={() => ask(`Disable ${u.full_name}? They won't be able to log in.`, () => applyStatus(u.id, "disabled"))} />
                 )}
-                {(u.status === "suspended" || u.status === "banned") && (
-                  <Btn label="Reinstate" color="green"  onClick={() => ask(`Reinstate ${u.fullName}?`, () => setStatus(u.id, "active"))} />
+                {u.status === "disabled" && (
+                  <Btn label="Enable" color="green" onClick={() => ask(`Re-enable ${u.full_name}?`, () => applyStatus(u.id, "active"))} />
                 )}
-                {u.role === "user"  && <Btn label="Make Admin" color="purple" onClick={() => ask(`Promote ${u.fullName} to Admin?`,   () => setRole(u.id, "admin"))} />}
-                {u.role === "admin" && <Btn label="Demote"     color="muted"  onClick={() => ask(`Demote ${u.fullName} to User?`,      () => setRole(u.id, "user"))}  />}
+                {u.role === "user"  && <Btn label="Make Admin" color="purple" onClick={() => ask(`Promote ${u.full_name} to Admin?`, () => applyRole(u.id, "admin"))} />}
+                {u.role === "admin" && <Btn label="Demote"     color="muted"  onClick={() => ask(`Demote ${u.full_name} to User?`,   () => applyRole(u.id, "user"))}  />}
               </div>
             </TD>
           </TR>
@@ -354,37 +299,59 @@ function UsersTab() {
 
 // ── Listings Tab ──────────────────────────────────────────────────────────────
 function ListingsTab() {
-  const [listings, setListings] = useState<ManagedListing[]>(MOCK_LISTINGS);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState("");
   const [search,   setSearch]   = useState("");
   const [confirm,  setConfirm]  = useState<{ message: string; onConfirm: () => void } | null>(null);
 
+  useEffect(() => {
+    listAllListings()
+      .then(setListings)
+      .catch((e) => setError(e?.response?.data?.detail ?? e?.message ?? "Failed to load listings"))
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = listings.filter(l =>
     l.title.toLowerCase().includes(search.toLowerCase()) ||
-    l.seller.toLowerCase().includes(search.toLowerCase())
+    (l.seller_name ?? "").toLowerCase().includes(search.toLowerCase())
   );
-  const ask     = (msg: string, fn: () => void) => setConfirm({ message: msg, onConfirm: () => { fn(); setConfirm(null); } });
-  const remove  = (id: string) => setListings(prev => prev.map(l => l.id === id ? { ...l, status: "deleted"  as ListingStatus } : l));
-  const restore = (id: string) => setListings(prev => prev.map(l => l.id === id ? { ...l, status: "active"   as ListingStatus } : l));
+
+  const ask = (msg: string, fn: () => void) =>
+    setConfirm({ message: msg, onConfirm: () => { fn(); setConfirm(null); } });
+
+  const applyDelete = (id: string) =>
+    adminDeleteListing(id).then(() =>
+      setListings(prev => prev.map(l => l.id === id ? { ...l, status: "deleted" } : l))
+    );
+
+  const applyRestore = (id: string) =>
+    adminRestoreListing(id).then(updated =>
+      setListings(prev => prev.map(l => l.id === id ? updated : l))
+    );
+
+  if (loading) return <div style={{ color: T.muted, padding: 16 }}>Loading listings...</div>;
+  if (error)   return <div style={{ color: "#ef4444", padding: 16 }}>Error: {error}</div>;
 
   return (
     <div>
       {confirm && <ConfirmModal message={confirm.message} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
       <SearchInput value={search} onChange={setSearch} placeholder="Search by title or seller..." />
 
-      <Table headers={["Title","Seller","Category","Price","Status","Reports","Created","Actions"]} empty={filtered.length === 0}>
+      <Table headers={["Title","Seller","Category","Price","Status","Created","Actions"]} empty={filtered.length === 0}>
         {filtered.map((l, i) => (
           <TR key={l.id} i={i}>
             <td style={{ padding:"12px 14px", fontWeight:700, color: T.text }}>{l.title}</td>
-            <TD muted>{l.seller}</TD>
+            <TD muted>{l.seller_name ?? l.seller_id}</TD>
             <TD muted>{l.category}</TD>
-            <TD>${l.price.toLocaleString()}</TD>
+            <TD>${Number(l.price).toLocaleString()}</TD>
             <TD><Badge value={l.status} /></TD>
-            <td style={{ padding:"12px 14px", color: l.reports > 1 ? "#ef4444" : T.muted, fontWeight: l.reports > 1 ? 700 : 400 }}>{l.reports}</td>
-            <TD muted>{l.createdAt}</TD>
+            <TD muted>{l.created_at.slice(0, 10)}</TD>
             <TD>
               <div style={{ display:"flex", gap:"5px" }}>
-                {l.status !== "deleted" && <Btn label="Delete"  color="red"   onClick={() => ask(`Delete listing "${l.title}"?`,   () => remove(l.id))}  />}
-                {l.status === "deleted" && <Btn label="Restore" color="green" onClick={() => ask(`Restore listing "${l.title}"?`,  () => restore(l.id))} />}
+                <a href={`/listing/${l.id}`} style={{ padding:"4px 10px", fontSize:"12px", fontWeight:600, borderRadius:"6px", border:"1px solid rgba(156,163,175,0.3)", background:"rgba(156,163,175,0.1)", color:"#9ca3af", textDecoration:"none" }}>View</a>
+                {l.status !== "deleted" && <Btn label="Delete"  color="red"   onClick={() => ask(`Delete "${l.title}"?`,  () => applyDelete(l.id))}  />}
+                {l.status === "deleted" && <Btn label="Restore" color="green" onClick={() => ask(`Restore "${l.title}"?`, () => applyRestore(l.id))} />}
               </div>
             </TD>
           </TR>
@@ -400,9 +367,9 @@ export default function AdminDashboardPage() {
 
   const tabs: { id: TabId; label: string; count?: number }[] = [
     { id:"overview",  label:"Overview" },
-    { id:"reports",   label:"Reports",  count: MOCK_REPORTS.filter(r => r.status === "pending").length },
-    { id:"users",     label:"Users",    count: MOCK_USERS.length },
-    { id:"listings",  label:"Listings", count: MOCK_LISTINGS.length },
+    { id:"reports",   label:"Reports" },
+    { id:"users",     label:"Users" },
+    { id:"listings",  label:"Listings" },
   ];
 
   return (
