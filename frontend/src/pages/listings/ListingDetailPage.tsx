@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { deleteListing, getListing, updateListing } from "../../api/listings";
 import { openConversationFromListing } from "../../api/messaging";
 import { getSellerRatingSummary } from "../../api/reviews";
+import { Navbar } from "../../components/Navbar/Navbar";
 import { createReport, REPORT_REASONS, type ReportReason } from "../../api/reports";
 import type { Listing } from "../../types/listings";
 import { useAuth } from "../../context/AuthContext";
@@ -125,6 +126,7 @@ export default function ListingDetailPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
+      <Navbar />
 
       {/* Admin Confirm Modal */}
       {adminConfirm && (
