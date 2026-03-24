@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { listMessages, listMyConversations, sendMessage } from "../../api/messaging";
 import type { Conversation, Message } from "../../types/messaging";
+import { Navbar } from "../../components/Navbar/Navbar.tsx";
 
 const T = {
   bg: "#2d2d2d",
@@ -44,6 +45,7 @@ export default function MessagingPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
+      <Navbar exclude={["inbox"]}/>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: 20 }}>
         <div
           style={{
@@ -56,6 +58,7 @@ export default function MessagingPage() {
             minHeight: "78vh",
           }}
         >
+
           <aside style={{ borderRight: `1px solid ${T.border}`, padding: 12 }}>
             <h3 style={{ marginTop: 4 }}>Inbox</h3>
             {conversations.length === 0 && <p style={{ color: T.muted, fontSize: 13 }}>No conversations yet.</p>}

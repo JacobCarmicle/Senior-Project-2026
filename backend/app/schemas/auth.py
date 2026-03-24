@@ -48,6 +48,10 @@ class UserResponse(BaseModel):
     role: str
     created_at: str
 
+class PublicUser(BaseModel):
+    id: str
+    full_name: str
+    created_at: str
 
 class AuthResponse(BaseModel):
     access_token: str

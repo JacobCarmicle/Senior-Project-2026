@@ -1,18 +1,18 @@
-from app.services import reviews
+from backend.app.services import reviews_memory
 
 
 def test_seller_rating_aggregation_empty_defaults():
-    summary = reviews.get_seller_rating_summary("seller-none")
+    summary = reviews_memory.get_seller_rating_summary("seller-none")
     assert summary["average_rating"] == 0.0
     assert summary["review_count"] == 0
 
 
 def test_seller_rating_aggregation_computes_average_and_count():
-    reviews.create_review(buyer_id="b1", seller_id="seller-agg", rating=5, comment="Great")
-    reviews.create_review(buyer_id="b2", seller_id="seller-agg", rating=3, comment="Okay")
-    reviews.create_review(buyer_id="b3", seller_id="seller-agg", rating=4, comment="Good")
+    reviews_memory.create_review(buyer_id="b1", seller_id="seller-agg", rating=5, comment="Great")
+    reviews_memory.create_review(buyer_id="b2", seller_id="seller-agg", rating=3, comment="Okay")
+    reviews_memory.create_review(buyer_id="b3", seller_id="seller-agg", rating=4, comment="Good")
 
-    summary = reviews.get_seller_rating_summary("seller-agg")
+    summary = reviews_memory.get_seller_rating_summary("seller-agg")
 
     assert summary["review_count"] == 3
     assert summary["average_rating"] == 4.0

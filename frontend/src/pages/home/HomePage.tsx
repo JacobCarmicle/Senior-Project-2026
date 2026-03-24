@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { listListings } from "../../api/listings";
 import type { Listing as ApiListing } from "../../types/listings";
+import { Navbar } from "../../components/Navbar/Navbar.tsx";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -425,7 +426,7 @@ export default function HomePage() {
   return (
     <div style={{ minHeight:"100vh", background: T.bg, color: T.text, fontFamily:"Arial, sans-serif" }}>
 
-      <Navbar />
+      <Navbar exclude={["marketplace"]}/>
 
       <div style={{ maxWidth:"1200px", margin:"0 auto", padding:"22px 20px 40px" }}>
 

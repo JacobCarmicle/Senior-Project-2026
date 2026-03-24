@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getListing } from "../../api/listings";
 import { openConversationFromListing } from "../../api/messaging";
 import { getSellerRatingSummary } from "../../api/reviews";
+import { Navbar } from "../../components/Navbar/Navbar";
 import type { Listing } from "../../types/listings";
 import { useAuth } from "../../context/AuthContext";
 
@@ -48,6 +49,11 @@ export default function ListingDetailPage() {
     navigate(`/messages?conversation=${convo.id}`);
   }
 
+  function handleViewSellerProfile() {
+    if (!listing) return;
+    navigate(`/user/${listing.seller_id}`);
+  }
+
   if (error) {
     return <div style={{ minHeight: "100vh", background: T.bg, padding: 24, color: T.danger }}>{error}</div>;
   }
@@ -58,6 +64,7 @@ export default function ListingDetailPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
+      <Navbar/>
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
         <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: 14 }}>← Back to Marketplace</a>
 
