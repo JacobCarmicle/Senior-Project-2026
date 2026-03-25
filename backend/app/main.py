@@ -51,10 +51,6 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, unhandled_exception_handler)
 
-uploads_dir = Path(__file__).resolve().parents[1] / "uploads"
-uploads_dir.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
-
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(listings_router)
@@ -64,6 +60,10 @@ app.include_router(reviews_router)
 app.include_router(realtime_router)
 app.include_router(uploads_router)
 app.include_router(reports_router)
+
+uploads_dir = Path(__file__).resolve().parents[1] / "uploads"
+uploads_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 
 
 @app.get("/health")
