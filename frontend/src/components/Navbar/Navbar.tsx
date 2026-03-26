@@ -27,14 +27,14 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
     user: [
       { id: "marketplace", label: "Marketplace", href: "/" },
       { id: "inbox", label: "Inbox", href: "/messages" },
-      { id: "reviews", label: "Reviews", href: "/reviews" },
+      // { id: "reviews", label: "Reviews", href: "/reviews" },
       { id: "saved", label: "Saved", href: "/saved" },
       { id: "create", label: "+ Create Listing", href: "/create-listing" },
     ],
     admin: [
       { id: "marketplace", label: "Marketplace", href: "/" },
       { id: "inbox", label: "Inbox", href: "/messages" },
-      { id: "reviews", label: "Reviews", href: "/reviews" },
+      // { id: "reviews", label: "Reviews", href: "/reviews" },
       { id: "saved", label: "Saved", href: "/saved" },
       { id: "admin", label: "Admin Dashboard", href: "/admin" },
     ],

@@ -58,6 +58,11 @@ export default function ListingDetailPage() {
     navigate(`/messages?conversation=${convo.id}`);
   }
 
+  function handleViewSellerProfile() {
+    if (!listing) return;
+    navigate(`/user/${listing.seller_id}`);
+  }
+
   function adminAsk(message: string, onConfirm: () => void) {
     setAdminConfirm({ message, onConfirm });
   }
@@ -244,7 +249,7 @@ export default function ListingDetailPage() {
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
-              {!isOwnListing && !isAdmin && (
+              {user && !isOwnListing && !isAdmin && (
                 <button
                   onClick={handleMessageSeller}
                   style={{
@@ -260,6 +265,20 @@ export default function ListingDetailPage() {
                   Message Seller
                 </button>
               )}
+                <button
+                onClick={handleViewSellerProfile}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: 10,
+                  background: "#333",
+                  color: T.text,
+                  border: `1px solid ${T.border}`,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                View Seller Profile
+              </button>
               {isOwnListing && !isAdmin && (
                 <a
                   href={`/edit-listing/${listing.id}`}

@@ -22,6 +22,7 @@ from app.routers.reviews import router as reviews_router
 from app.routers.realtime import router as realtime_router
 from app.routers.uploads import router as uploads_router
 from app.routers.reports import router as reports_router
+from app.routers.users import router as users_router
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
@@ -60,6 +61,7 @@ app.include_router(reviews_router)
 app.include_router(realtime_router)
 app.include_router(uploads_router)
 app.include_router(reports_router)
+app.include_router(users_router)
 
 uploads_dir = Path(__file__).resolve().parents[1] / "uploads"
 uploads_dir.mkdir(parents=True, exist_ok=True)
