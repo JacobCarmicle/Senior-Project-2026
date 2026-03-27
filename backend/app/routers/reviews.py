@@ -54,3 +54,13 @@ def seller_rating_summary(seller_id: str):
         summary = memory.get_seller_rating_summary(seller_id)
     
     return SellerRatingSummaryResponse(**summary)
+
+@router.delete("/delete/{review_id}")
+def delete_review_endpoint(review_id: str, user=Depends(get_current_user)):
+    print("Hello!")
+    success = reviews_supabase.delete_review(
+        review_id=review_id,
+        user_id=user["id"],
+        is_admin=user.get("role") == "admin",
+    )
+    return {"success": success}

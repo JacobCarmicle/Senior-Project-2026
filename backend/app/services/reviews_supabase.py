@@ -83,3 +83,28 @@ def get_seller_rating_summary(seller_id: str) -> dict:
         "review_count": count,
         "average_rating": avg,
     }
+
+def delete_review(review_id: str, user_id: str, is_admin: bool = False) -> bool:
+    client = _get_client()
+    review = client.table("reviews").select("")
+
+    existing = (
+        client.table("reviews")
+        .select("id,buyer_id")
+        .eq("id", review_id)
+        .limit(1)
+        .execute()
+        .data
+    )
+
+    if not existing:
+        return False
+    
+    review = existing[0]
+
+    if review["buyer_id"] != user_id and not is_admin:
+        raise PermissionError("Forbidden")
+
+    client.table("reviews").delete().eq("id", review_id).execute()
+
+    return True
