@@ -106,7 +106,7 @@ function ListingCard({ listing, onSave, onClick }: {
         display:"flex",
         alignItems:"center",
         justifyContent:"center",
-        color:"#555",
+        color:T.muted,
         fontSize:"13px",
         fontWeight:600,
         position:"relative",
@@ -479,8 +479,8 @@ export default function HomePage() {
               disabled={page === 1}
               style={{
                 padding:"8px 16px", borderRadius:"8px", fontSize:"13px", fontWeight:600, cursor: page === 1 ? "not-allowed" : "pointer",
-                background: T.surface, border:`1px solid ${T.border}`,
-                color: page === 1 ? T.muted : T.text, opacity: page === 1 ? 0.5 : 1,
+                background: page === 1 ? "#3a3a3a" : T.surface, border:`1px solid ${T.border}`,
+                color: page === 1 ? "#cbd5e1" : T.text,
               }}>← Prev</button>
 
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
@@ -499,8 +499,8 @@ export default function HomePage() {
               disabled={page === totalPages}
               style={{
                 padding:"8px 16px", borderRadius:"8px", fontSize:"13px", fontWeight:600, cursor: page === totalPages ? "not-allowed" : "pointer",
-                background: T.surface, border:`1px solid ${T.border}`,
-                color: page === totalPages ? T.muted : T.text, opacity: page === totalPages ? 0.5 : 1,
+                background: page === totalPages ? "#3a3a3a" : T.surface, border:`1px solid ${T.border}`,
+                color: page === totalPages ? "#cbd5e1" : T.text,
               }}>Next →</button>
           </div>
         )}
