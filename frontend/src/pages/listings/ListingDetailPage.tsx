@@ -26,6 +26,7 @@ export default function ListingDetailPage() {
   const [rating, setRating] = useState<{ average_rating: number; review_count: number } | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [adminConfirm, setAdminConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null);
   const [adminWorking, setAdminWorking] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -41,6 +42,7 @@ export default function ListingDetailPage() {
     getListing(id)
       .then(async (l) => {
         setListing(l);
+        setSelectedImageIndex(0);
         try {
           const summary = await getSellerRatingSummary(l.seller_id);
           setRating(summary);
@@ -51,6 +53,36 @@ export default function ListingDetailPage() {
       .catch(() => setError("Unable to load listing."))
       .finally(() => setLoading(false));
   }, [id]);
+
+  const imageCount = listing?.images?.length ?? 0;
+
+  function goToPreviousImage() {
+    if (!listing?.images?.length) return;
+    setSelectedImageIndex((prev) => (prev - 1 + listing.images.length) % listing.images.length);
+  }
+
+  function goToNextImage() {
+    if (!listing?.images?.length) return;
+    setSelectedImageIndex((prev) => (prev + 1) % listing.images.length);
+  }
+
+  useEffect(() => {
+    if (!listing?.images?.length || listing.images.length <= 1) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        goToPreviousImage();
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        goToNextImage();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [listing]);
 
   async function handleMessageSeller() {
     if (!listing) return;
@@ -209,13 +241,115 @@ export default function ListingDetailPage() {
             boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
           }}
         >
-          {listing.images?.[0] && (
-            <img
-              src={listing.images[0]}
-              alt={listing.title}
-              style={{ width: "100%", maxHeight: 460, objectFit: "cover", borderBottom: `1px solid ${T.border}` }}
-            />
-          )}
+          {listing.images?.length ? (
+            <div style={{ borderBottom: `1px solid ${T.border}`, padding: 12 }}>
+              <div style={{ position: "relative" }}>
+                <img
+                  src={listing.images[selectedImageIndex] ?? listing.images[0]}
+                  alt={`${listing.title} image ${selectedImageIndex + 1}`}
+                  style={{ width: "100%", maxHeight: 460, objectFit: "cover", borderRadius: 10 }}
+                />
+
+                {imageCount > 1 && (
+                  <>
+                    <button
+                      onClick={goToPreviousImage}
+                      aria-label="Previous image"
+                      style={{
+                        position: "absolute",
+                        left: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 38,
+                        height: 38,
+                        borderRadius: 999,
+                        border: `1px solid ${T.border}`,
+                        background: "rgba(0,0,0,0.5)",
+                        color: "#fff",
+                        fontSize: 20,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ‹
+                    </button>
+
+                    <button
+                      onClick={goToNextImage}
+                      aria-label="Next image"
+                      style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 38,
+                        height: 38,
+                        borderRadius: 999,
+                        border: `1px solid ${T.border}`,
+                        background: "rgba(0,0,0,0.5)",
+                        color: "#fff",
+                        fontSize: 20,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ›
+                    </button>
+
+                    <div
+                      style={{
+                        position: "absolute",
+                        right: 12,
+                        bottom: 12,
+                        padding: "4px 8px",
+                        borderRadius: 8,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        background: "rgba(0,0,0,0.55)",
+                        color: "#fff",
+                      }}
+                    >
+                      {selectedImageIndex + 1} / {imageCount}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {listing.images.length > 1 && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(84px, 1fr))",
+                    gap: 8,
+                    marginTop: 10,
+                  }}
+                >
+                  {listing.images.map((imageUrl, index) => {
+                    const active = index === selectedImageIndex;
+                    return (
+                      <button
+                        key={`${imageUrl}-${index}`}
+                        onClick={() => setSelectedImageIndex(index)}
+                        style={{
+                          padding: 0,
+                          borderRadius: 8,
+                          border: active ? `2px solid ${T.accent}` : `1px solid ${T.border}`,
+                          background: "transparent",
+                          cursor: "pointer",
+                          overflow: "hidden",
+                        }}
+                        aria-label={`View image ${index + 1}`}
+                      >
+                        <img
+                          src={imageUrl}
+                          alt={`${listing.title} thumbnail ${index + 1}`}
+                          style={{ width: "100%", height: 64, objectFit: "cover", display: "block" }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : null}
 
           <div style={{ padding: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
