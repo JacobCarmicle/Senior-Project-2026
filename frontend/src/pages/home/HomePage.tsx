@@ -8,7 +8,7 @@ const T = {
   bg:      "#2d2d2d",
   card:    "#1a1a1a",
   text:    "#e5e5e5",
-  muted:   "#9ca3af",
+  muted:   "#cbd5e1",
   border:  "#404040",
   accent:  "#22c55e",
   accent2: "#16a34a",
@@ -308,12 +308,24 @@ export default function HomePage() {
     appearance:"none" as const,
   };
 
+  const srOnly: React.CSSProperties = {
+    position: "absolute",
+    width: 1,
+    height: 1,
+    padding: 0,
+    margin: -1,
+    overflow: "hidden",
+    clip: "rect(0, 0, 0, 0)",
+    whiteSpace: "nowrap",
+    border: 0,
+  };
+
   return (
     <div style={{ minHeight:"100vh", background: T.bg, color: T.text, fontFamily:"Arial, sans-serif" }}>
 
       <Navbar exclude={["marketplace"]}/>
 
-      <div style={{ maxWidth:"1200px", margin:"0 auto", padding:"22px 20px 40px" }}>
+      <main style={{ maxWidth:"1200px", margin:"0 auto", padding:"22px 20px 40px" }}>
 
         {/* ── Search Bar ── */}
         <div style={{
@@ -324,7 +336,9 @@ export default function HomePage() {
         }}>
           <div style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>
             {/* Keyword */}
+            <label htmlFor="search-listings" style={srOnly}>Search listings</label>
             <input
+              id="search-listings"
               placeholder="Search listings..."
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -332,18 +346,23 @@ export default function HomePage() {
               style={{ ...inputStyle, flex:"1", minWidth:"200px" }}
             />
             {/* Category */}
-            <select value={category} onChange={e => { setCategory(e.target.value); setPage(1); }} style={{ ...selectStyle, minWidth:"150px" }}>
+            <label htmlFor="category-filter" style={srOnly}>Category</label>
+            <select id="category-filter" value={category} onChange={e => { setCategory(e.target.value); setPage(1); }} style={{ ...selectStyle, minWidth:"150px" }}>
               {CATEGORIES.map(c => <option key={c} value={c}>{c === "All" ? "All Categories" : c}</option>)}
             </select>
             {/* Min Price */}
+            <label htmlFor="min-price" style={srOnly}>Minimum price</label>
             <input
+              id="min-price"
               placeholder="Min $"
               value={minPrice}
               onChange={e => setMinPrice(e.target.value.replace(/\D/g, ""))}
               style={{ ...inputStyle, width:"90px" }}
             />
             {/* Max Price */}
+            <label htmlFor="max-price" style={srOnly}>Maximum price</label>
             <input
+              id="max-price"
               placeholder="Max $"
               value={maxPrice}
               onChange={e => setMaxPrice(e.target.value.replace(/\D/g, ""))}
@@ -408,8 +427,8 @@ export default function HomePage() {
               : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, filtered.length)} of ${filtered.length} listing${filtered.length !== 1 ? "s" : ""}`}
           </span>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-            <span style={{ fontSize:"13px", color: T.muted }}>Sort:</span>
-            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} style={{ ...selectStyle, fontSize:"13px", padding:"7px 12px" }}>
+            <label htmlFor="sort-listings" style={{ fontSize:"13px", color: T.muted }}>Sort:</label>
+            <select id="sort-listings" value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} style={{ ...selectStyle, fontSize:"13px", padding:"7px 12px" }}>
               {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
@@ -485,7 +504,7 @@ export default function HomePage() {
               }}>Next →</button>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

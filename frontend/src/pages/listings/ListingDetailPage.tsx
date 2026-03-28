@@ -228,7 +228,7 @@ export default function ListingDetailPage() {
         </div>
       )}
 
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
+      <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
         <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: 14 }}>← Back to Marketplace</a>
 
         <div
@@ -516,7 +516,7 @@ export default function ListingDetailPage() {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
