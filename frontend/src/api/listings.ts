@@ -7,24 +7,44 @@ import type {
   UploadedImage,
 } from "../types/listings";
 
+function normalizeImageUrl(url: string): string {
+  if (!url) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+
+  const base = (client.defaults.baseURL || "").replace(/\/$/, "");
+  if (!base) return url;
+
+  return `${base}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+function normalizeListing(item: Listing): Listing {
+  return {
+    ...item,
+    images: (item.images || []).map(normalizeImageUrl),
+  };
+}
+
 export async function createListing(payload: CreateListingRequest): Promise<Listing> {
   const res = await client.post<Listing>("/listings", payload);
-  return res.data;
+  return normalizeListing(res.data);
 }
 
 export async function updateListing(id: string, payload: UpdateListingRequest): Promise<Listing> {
   const res = await client.patch<Listing>(`/listings/${id}`, payload);
-  return res.data;
+  return normalizeListing(res.data);
 }
 
 export async function getListing(id: string): Promise<Listing> {
   const res = await client.get<Listing>(`/listings/${id}`);
-  return res.data;
+  return normalizeListing(res.data);
 }
 
 export async function listListings(): Promise<ListingListResponse> {
   const res = await client.get<ListingListResponse>("/listings");
-  return res.data;
+  return {
+    ...res.data,
+    items: (res.data.items || []).map(normalizeListing),
+  };
 }
 
 export async function deleteListing(id: string): Promise<void> {

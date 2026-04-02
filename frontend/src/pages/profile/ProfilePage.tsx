@@ -344,7 +344,7 @@ export default function UserProfilePage() {
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "22px" }}>
         <ProfileHeader profile={profile} />
 
-        {profileUserId && user?.id !== profileUserId && (
+        {user && profileUserId && user?.id !== profileUserId && (
           <ReviewForm
             sellerId={profileUserId}
             onSubmitted={() => {
