@@ -92,7 +92,7 @@ def patch_report(
     current_user: dict = Depends(_require_admin),
 ):
     try:
-        updated = reports_service.update_report_status(report_id, payload.status)
+        updated = reports_service.update_report_status(report_id, payload.status, resolved_by=current_user["id"])
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     if not updated:

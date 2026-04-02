@@ -4,7 +4,7 @@ import { deleteListing, getListing, updateListing } from "../../api/listings";
 import { openConversationFromListing } from "../../api/messaging";
 import { getSellerRatingSummary } from "../../api/reviews";
 import { Navbar } from "../../components/Navbar/Navbar";
-import { createReport, REPORT_REASONS, type ReportReason } from "../../api/reports";
+import ReportModal from "../../components/ReportModal/ReportModal";
 import type { Listing } from "../../types/listings";
 import { useAuth } from "../../context/AuthContext";
 
@@ -30,11 +30,6 @@ export default function ListingDetailPage() {
   const [adminConfirm, setAdminConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null);
   const [adminWorking, setAdminWorking] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const [reportReason, setReportReason] = useState<ReportReason>(REPORT_REASONS[0]);
-  const [reportDesc, setReportDesc] = useState("");
-  const [reportWorking, setReportWorking] = useState(false);
-  const [reportDone, setReportDone] = useState(false);
-  const [reportError, setReportError] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -132,25 +127,7 @@ export default function ListingDetailPage() {
     }
   }
 
-  async function handleReport() {
-    if (!listing) return;
-    setReportWorking(true);
-    setReportError("");
-    try {
-      await createReport({ listing_id: listing.id, reason: reportReason, description: reportDesc });
-      setReportOpen(false);
-      setReportDesc("");
-      setReportDone(true);
-      setTimeout(() => setReportDone(false), 6000);
-    } catch (err: unknown) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setReportError(detail ?? "Failed to submit report. Please try again.");
-    } finally {
-      setReportWorking(false);
-    }
-  }
-
-  if (error) {
+if (error) {
     return <div style={{ minHeight: "100vh", background: T.bg, padding: 24, color: T.danger }}>{error}</div>;
   }
 
@@ -178,54 +155,14 @@ export default function ListingDetailPage() {
         </div>
       )}
 
-      {/* Report Toast */}
-      {reportDone && (
-        <div style={{ position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)", zIndex: 60, background: "#1a1a1a", border: "1px solid rgba(34,197,94,0.4)", borderRadius: 12, padding: "14px 22px", boxShadow: "0 8px 30px rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-start", gap: 12, maxWidth: 420, width: "90%" }}>
-          <span style={{ fontSize: 18, lineHeight: 1 }}>✅</span>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>Your report was submitted successfully!</div>
-            <div style={{ fontSize: 12, color: T.muted, marginTop: 3 }}>Reports take 2–3 days to review. Thank you for helping keep TradeForge safe.</div>
-          </div>
-        </div>
-      )}
-
-      {/* Report Modal */}
-      {reportOpen && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
-          <div style={{ background: "#1a1a1a", border: "1px solid #404040", borderRadius: 14, padding: "28px 32px", maxWidth: 420, width: "90%", boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 4 }}>Report Listing</div>
-            <div style={{ fontSize: 13, color: T.muted, marginBottom: 18 }}>Let us know what's wrong with this listing.</div>
-            <label style={{ fontSize: 12, fontWeight: 700, color: T.muted, display: "block", marginBottom: 6 }}>REASON</label>
-            <select
-              value={reportReason}
-              onChange={e => setReportReason(e.target.value as ReportReason)}
-              style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, fontSize: 13, marginBottom: 14, outline: "none" }}
-            >
-              {REPORT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
-            <label style={{ fontSize: 12, fontWeight: 700, color: T.muted, display: "block", marginBottom: 6 }}>ADDITIONAL DETAILS (optional)</label>
-            <textarea
-              value={reportDesc}
-              onChange={e => setReportDesc(e.target.value)}
-              placeholder="Describe the issue..."
-              rows={3}
-              style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }}
-            />
-            {reportError && (
-              <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontSize: 13 }}>
-                {reportError}
-              </div>
-            )}
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
-              <button onClick={() => setReportOpen(false)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, cursor: "pointer", fontSize: 13 }}>Cancel</button>
-              <button
-                disabled={reportWorking}
-                onClick={handleReport}
-                style={{ padding: "8px 18px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.15)", color: "#ef4444", cursor: "pointer", fontSize: 13, fontWeight: 700, opacity: reportWorking ? 0.6 : 1 }}
-              >{reportWorking ? "Submitting…" : "Submit Report"}</button>
-            </div>
-          </div>
-        </div>
+      {reportOpen && listing && (
+        <ReportModal
+          targetType="listing"
+          targetId={listing.id}
+          targetName={listing.title}
+          listingId={listing.id}
+          onClose={() => setReportOpen(false)}
+        />
       )}
 
       <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
@@ -376,7 +313,7 @@ export default function ListingDetailPage() {
                 fontSize: 14,
               }}
             >
-              <div>Posted by: <strong style={{ color: T.text }}>{listing.seller_name ?? "Unknown"}</strong></div>
+              <div>Posted by: <a href={`/user/${listing.seller_id}`} style={{ color: T.accent, fontWeight: 700, textDecoration: "none" }}>{listing.seller_name ?? "Unknown"}</a></div>
               <div style={{ marginTop: 6 }}>
                 Seller rating: <strong style={{ color: T.text }}>{rating?.average_rating ?? 0}</strong> / 5 ({rating?.review_count ?? 0} reviews)
               </div>

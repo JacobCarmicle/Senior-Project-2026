@@ -15,9 +15,13 @@ VALID_REASONS = [
     "Other",
 ]
 
+VALID_TARGET_TYPES = {"listing", "user", "message"}
+
 
 class CreateReportRequest(BaseModel):
-    listing_id: str
+    target_type: str
+    target_id: str
+    listing_id: str | None = None
     reason: str
     description: str | None = None
 
@@ -27,13 +31,17 @@ def create_report(
     payload: CreateReportRequest,
     current_user: dict = Depends(get_current_user),
 ):
+    if payload.target_type not in VALID_TARGET_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid target_type")
     if payload.reason not in VALID_REASONS:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid reason")
 
     report = reports_service.create_report(
         reporter_id=current_user["id"],
-        listing_id=payload.listing_id,
+        target_type=payload.target_type,
+        target_id=payload.target_id,
         reason=payload.reason,
         description=payload.description,
+        listing_id=payload.listing_id,
     )
     return report

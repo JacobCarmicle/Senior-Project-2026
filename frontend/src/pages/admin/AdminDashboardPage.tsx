@@ -143,13 +143,29 @@ function OverviewTab() {
   );
 }
 
+// ── Target type badge ─────────────────────────────────────────────────────────
+function TargetTypeBadge({ type }: { type: string }) {
+  const map: Record<string, { bg: string; color: string; border: string }> = {
+    listing: { bg:"rgba(59,130,246,0.1)",  color:"#60a5fa", border:"rgba(59,130,246,0.3)"  },
+    user:    { bg:"rgba(168,85,247,0.1)",  color:"#c084fc", border:"rgba(168,85,247,0.3)"  },
+    message: { bg:"rgba(234,179,8,0.1)",   color:"#eab308", border:"rgba(234,179,8,0.3)"   },
+  };
+  const s = map[type] ?? map["listing"];
+  return (
+    <span style={{ background: s.bg, color: s.color, border:`1px solid ${s.border}`, fontSize:"11px", fontWeight:600, padding:"3px 9px", borderRadius:"6px", textTransform:"capitalize" }}>
+      {type}
+    </span>
+  );
+}
+
 // ── Reports Tab ───────────────────────────────────────────────────────────────
 function ReportsTab() {
-  const [reports,  setReports]  = useState<Report[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState("");
-  const [filter,   setFilter]   = useState<ReportStatus | "all">("all");
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [reports,    setReports]    = useState<Report[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState("");
+  const [statusFilter, setStatusFilter] = useState<ReportStatus | "all">("all");
+  const [typeFilter,   setTypeFilter]   = useState<"all" | "listing" | "user" | "message">("all");
+  const [expanded,   setExpanded]   = useState<string | null>(null);
 
   useEffect(() => {
     listAdminReports()
@@ -158,7 +174,10 @@ function ReportsTab() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = filter === "all" ? reports : reports.filter(r => r.status === filter);
+  const filtered = reports.filter(r =>
+    (statusFilter === "all" || r.status === statusFilter) &&
+    (typeFilter   === "all" || r.target_type === typeFilter)
+  );
 
   const update = (id: string, s: "reviewed" | "dismissed") =>
     patchReport(id, s).then(updated =>
@@ -170,19 +189,44 @@ function ReportsTab() {
 
   return (
     <div>
-      {/* Filter Pills */}
-      <div style={{ display:"flex", gap:"8px", marginBottom:"16px" }}>
+      {/* Type filter pills */}
+      <div style={{ display:"flex", gap:"8px", marginBottom:"12px", flexWrap:"wrap" }}>
+        {(["all","listing","user","message"] as const).map(f => {
+          const typeColors: Record<string, string> = { listing:"#60a5fa", user:"#c084fc", message:"#eab308", all:"#22c55e" };
+          const active = typeFilter === f;
+          const col = typeColors[f];
+          return (
+            <button key={f} onClick={() => setTypeFilter(f)} style={{
+              padding:"5px 13px", borderRadius:"8px", fontSize:"12px", cursor:"pointer",
+              border: active ? `1.5px solid ${col}` : `1px solid ${T.border}`,
+              background: active ? `${col}1a` : T.surface,
+              color: active ? col : T.muted,
+              fontWeight: active ? 700 : 400,
+            }}>
+              {f === "all" ? "All Types" : f.charAt(0).toUpperCase() + f.slice(1) + "s"}
+              {f !== "all" && (
+                <span style={{ marginLeft:"5px", background:"#333", borderRadius:"99px", padding:"1px 5px", fontSize:"10px", color: T.muted }}>
+                  {reports.filter(r => r.target_type === f).length}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Status filter pills */}
+      <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
         {(["all","pending","reviewed","dismissed"] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)} style={{
-            padding:"6px 14px", borderRadius:"8px", fontSize:"13px", cursor:"pointer",
-            border: filter === f ? "1.5px solid #22c55e" : `1px solid ${T.border}`,
-            background: filter === f ? "rgba(34,197,94,0.12)" : T.surface,
-            color: filter === f ? "#22c55e" : T.muted,
-            fontWeight: filter === f ? 700 : 400,
+          <button key={f} onClick={() => setStatusFilter(f)} style={{
+            padding:"5px 13px", borderRadius:"8px", fontSize:"12px", cursor:"pointer",
+            border: statusFilter === f ? "1.5px solid #22c55e" : `1px solid ${T.border}`,
+            background: statusFilter === f ? "rgba(34,197,94,0.12)" : T.surface,
+            color: statusFilter === f ? "#22c55e" : T.muted,
+            fontWeight: statusFilter === f ? 700 : 400,
           }}>
-            {f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
+            {f === "all" ? "All Statuses" : f.charAt(0).toUpperCase() + f.slice(1)}
             {f !== "all" && (
-              <span style={{ marginLeft:"6px", background:"#333", borderRadius:"99px", padding:"1px 6px", fontSize:"11px", color: T.muted }}>
+              <span style={{ marginLeft:"5px", background:"#333", borderRadius:"99px", padding:"1px 5px", fontSize:"10px", color: T.muted }}>
                 {reports.filter(r => r.status === f).length}
               </span>
             )}
@@ -190,17 +234,22 @@ function ReportsTab() {
         ))}
       </div>
 
-      <Table headers={["Listing","Reason","Reporter","Date","Status","Actions"]} empty={filtered.length === 0}>
+      <Table headers={["Type","Target","Reporter","Reason","Date","Status","Actions"]} empty={filtered.length === 0}>
         {filtered.map((r, i) => (
           <>
             <TR key={r.id} i={i}>
+              <TD><TargetTypeBadge type={r.target_type} /></TD>
               <TD>
-                <a href={`/listing/${r.listing_id}`} target="_blank" rel="noreferrer" style={{ color: T.text, fontWeight: 600, textDecoration: "none", borderBottom: "1px solid #555" }}>
-                  {r.listing_title}
-                </a>
+                {r.target_type === "listing" ? (
+                  <a href={`/listing/${r.target_id}`} target="_blank" rel="noreferrer" style={{ color: T.text, fontWeight:600, textDecoration:"none", borderBottom:"1px solid #555" }}>
+                    {r.target_name}
+                  </a>
+                ) : (
+                  <span style={{ fontWeight:600 }}>{r.target_name}</span>
+                )}
               </TD>
-              <TD>{r.reason}</TD>
               <TD muted>{r.reporter_name}</TD>
+              <TD muted>{r.reason}</TD>
               <TD muted>{r.created_at.slice(0, 10)}</TD>
               <TD><Badge value={r.status} /></TD>
               <TD>
@@ -217,7 +266,7 @@ function ReportsTab() {
             </TR>
             {expanded === r.id && (
               <tr key={`${r.id}-exp`} style={{ background:"rgba(34,197,94,0.05)", borderBottom:`1px solid ${T.border}` }}>
-                <td colSpan={6} style={{ padding:"12px 20px", color: T.text, fontSize:"13px" }}>
+                <td colSpan={7} style={{ padding:"12px 20px", color: T.text, fontSize:"13px" }}>
                   <span style={{ color: T.muted }}>Description: </span>{r.description || <em style={{ color: T.muted }}>No details provided.</em>}
                 </td>
               </tr>

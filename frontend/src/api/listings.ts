@@ -51,6 +51,18 @@ export async function deleteListing(id: string): Promise<void> {
   await client.delete(`/listings/${id}`);
 }
 
+export async function getSavedListings(): Promise<ListingListResponse> {
+  const res = await client.get<ListingListResponse>("/user/me/saved");
+  return {
+    ...res.data,
+    items: (res.data.items || []).map(normalizeListing),
+  };
+}
+
+export async function toggleSaveListing(listingId: string): Promise<void> {
+  await client.post(`/listings/${listingId}/save`);
+}
+
 export async function uploadListingImages(files: File[]): Promise<UploadedImage[]> {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));

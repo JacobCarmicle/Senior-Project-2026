@@ -10,12 +10,16 @@ export const REPORT_REASONS = [
 ] as const;
 
 export type ReportReason = (typeof REPORT_REASONS)[number];
+export type ReportTargetType = "listing" | "user" | "message";
 
 export interface Report {
   id: string;
   reporter_id: string;
   reporter_name: string;
-  listing_id: string;
+  target_type: ReportTargetType;
+  target_id: string;
+  target_name: string;
+  listing_id: string | null;
   listing_title: string;
   reason: string;
   description: string;
@@ -24,7 +28,9 @@ export interface Report {
 }
 
 export async function createReport(payload: {
-  listing_id: string;
+  target_type: ReportTargetType;
+  target_id: string;
+  listing_id?: string;
   reason: ReportReason;
   description?: string;
 }): Promise<Report> {

@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
-import { listListings } from "../../api/listings";
+import { listListings, toggleSaveListing, getSavedListings } from "../../api/listings";
 import type { Listing as ApiListing } from "../../types/listings";
 import { Navbar } from "../../components/Navbar/Navbar.tsx";
+import { useAuth } from "../../context/AuthContext";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -203,6 +204,7 @@ function ListingCard({ listing, onSave, onClick }: {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
+  const { user } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loadingListings, setLoadingListings] = useState(true);
   const [listingsError, setListingsError] = useState("");
@@ -234,6 +236,16 @@ export default function HomePage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    getSavedListings()
+      .then((res) => {
+        const savedIds = new Set((res.items ?? []).map((l) => l.id));
+        setListings((prev) => prev.map((l) => ({ ...l, saved: savedIds.has(l.id) })));
+      })
+      .catch(() => {});
+  }, [user]);
 
   useEffect(() => {
     if (!DEBUG_IMAGES || listings.length === 0) return;
@@ -288,8 +300,13 @@ export default function HomePage() {
     setSort("newest"); setPage(1);
   };
 
-  const toggleSave = (id: string) =>
-    setListings(prev => prev.map(l => l.id === id ? { ...l, saved: !l.saved } : l));
+  const toggleSave = (id: string) => {
+    if (!user) { window.location.href = "/login"; return; }
+    setListings((prev) => prev.map((l) => l.id === id ? { ...l, saved: !l.saved } : l));
+    toggleSaveListing(id).catch(() => {
+      setListings((prev) => prev.map((l) => l.id === id ? { ...l, saved: !l.saved } : l));
+    });
+  };
 
   const handleCardClick = (id: string) => {
     window.location.href = `/listing/${id}`;
