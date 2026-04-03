@@ -31,3 +31,9 @@ def test_core_schema_migrations_present():
         "users",
     ]:
         assert expected in sql.lower()
+
+
+def test_migration_prefixes_are_unique():
+    files = sorted(MIGRATIONS_DIR.glob("*.sql"))
+    prefixes = [f.name.split("_")[0] for f in files]
+    assert len(prefixes) == len(set(prefixes))
