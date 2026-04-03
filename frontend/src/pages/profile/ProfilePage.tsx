@@ -239,8 +239,16 @@ export default function UserProfilePage() {
           };
 
           setProfile(profileData);
-        }catch (err: any) {
-          if (err?.response?.status === 404) {
+        } catch (err: unknown) {
+          const status =
+            typeof err === "object" &&
+            err !== null &&
+            "response" in err &&
+            typeof (err as { response?: { status?: number } }).response?.status === "number"
+              ? (err as { response?: { status?: number } }).response?.status
+              : undefined;
+
+          if (status === 404) {
             setError("User not found.");
           } else {
             setError("Failed to load profile. Please try again.");

@@ -19,6 +19,19 @@ let listings = [
 
 const BASE = "http://localhost:8000";
 
+const reviewsBySeller: Record<string, Array<{ id: string; seller_id: string; reviewer_id: string; rating: number; comment: string; created_at: string }>> = {
+  seller1: [
+    {
+      id: "r1",
+      seller_id: "seller1",
+      reviewer_id: "u1",
+      rating: 5,
+      comment: "Great seller!",
+      created_at: new Date().toISOString(),
+    },
+  ],
+};
+
 export const handlers = [
   http.post(`${BASE}/auth/login`, async ({ request }) => {
     const body = (await request.json()) as { email: string; password: string };
@@ -155,5 +168,37 @@ export const handlers = [
     const item = listings.find((x) => x.id === id);
     if (!item) return HttpResponse.json({ detail: "Listing not found" }, { status: 404 });
     return HttpResponse.json(item);
+  }),
+
+  http.post(`${BASE}/reviews`, async ({ request }) => {
+    const auth = request.headers.get("Authorization");
+    if (!auth) return HttpResponse.json({ detail: "Not authenticated" }, { status: 401 });
+
+    const body = (await request.json()) as { seller_id: string; rating: number; comment?: string };
+    const review = {
+      id: `r${Date.now()}`,
+      seller_id: body.seller_id,
+      reviewer_id: "u1",
+      rating: body.rating,
+      comment: body.comment ?? "",
+      created_at: new Date().toISOString(),
+    };
+    reviewsBySeller[body.seller_id] = [review, ...(reviewsBySeller[body.seller_id] ?? [])];
+    return HttpResponse.json(review, { status: 201 });
+  }),
+
+  http.get(`${BASE}/reviews/seller/:sellerId`, ({ params }) => {
+    const sellerId = String(params.sellerId);
+    const items = reviewsBySeller[sellerId] ?? [];
+    return HttpResponse.json({ items, total: items.length });
+  }),
+
+  http.get(`${BASE}/reviews/seller/:sellerId/rating-summary`, ({ params }) => {
+    const sellerId = String(params.sellerId);
+    const items = reviewsBySeller[sellerId] ?? [];
+    const review_count = items.length;
+    const average_rating =
+      review_count === 0 ? 0 : Number((items.reduce((sum, r) => sum + r.rating, 0) / review_count).toFixed(2));
+    return HttpResponse.json({ seller_id: sellerId, review_count, average_rating });
   }),
 ];
