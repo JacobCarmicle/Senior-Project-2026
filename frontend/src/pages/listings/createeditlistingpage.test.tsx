@@ -154,7 +154,7 @@ describe("CreateEditListingPage", () => {
       } as GeolocationPosition);
     });
 
-    Object.defineProperty(global.navigator, "geolocation", {
+    Object.defineProperty(globalThis.navigator, "geolocation", {
       value: { getCurrentPosition },
       configurable: true,
     });
@@ -180,7 +180,7 @@ describe("CreateEditListingPage", () => {
       } as GeolocationPositionError);
     });
 
-    Object.defineProperty(global.navigator, "geolocation", {
+    Object.defineProperty(globalThis.navigator, "geolocation", {
       value: { getCurrentPosition },
       configurable: true,
     });
