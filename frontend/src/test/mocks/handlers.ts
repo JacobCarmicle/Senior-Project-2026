@@ -12,6 +12,7 @@ let listings = [
     location: "Wichita, KS",
     status: "active",
     images: ["https://img.test/existing.jpg"],
+    distance_miles: 3.2,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -132,6 +133,7 @@ export const handlers = [
       location: body.location,
       status: "active",
       images: body.images,
+      distance_miles: 3.2,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -161,6 +163,17 @@ export const handlers = [
       page: 1,
       page_size: 20,
     });
+  }),
+
+  http.get(`${BASE}/listings/search`, ({ request }) => {
+    const url = new URL(request.url);
+    const keyword = (url.searchParams.get("keyword") || "").toLowerCase();
+    const sorted = [...listings].sort((a, b) => (a.distance_miles ?? 9999) - (b.distance_miles ?? 9999));
+    const items = keyword
+      ? sorted.filter((x) => x.title.toLowerCase().includes(keyword) || x.description.toLowerCase().includes(keyword))
+      : sorted;
+
+    return HttpResponse.json({ items, total: items.length, page: 1, page_size: 20 });
   }),
 
   http.get(`${BASE}/listings/:id`, ({ params }) => {

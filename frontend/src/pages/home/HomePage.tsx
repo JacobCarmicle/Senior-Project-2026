@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { listListings, toggleSaveListing, getSavedListings } from "../../api/listings";
+import { listListings, toggleSaveListing, getSavedListings, searchListings } from "../../api/listings";
 import type { Listing as ApiListing } from "../../types/listings";
 import { Navbar } from "../../components/Navbar/Navbar.tsx";
 import { useAuth } from "../../context/AuthContext";
@@ -32,6 +32,7 @@ interface Listing {
   sellerName: string;
   sellerRating: number;
   imageUrl?: string;
+  distanceMiles?: number | null;
 }
 
 const CATEGORIES = ["All", "Electronics", "Automotive", "Furniture", "Clothing", "Sports"];
@@ -40,6 +41,7 @@ const SORT_OPTIONS = [
   { value:"oldest",    label:"Oldest First" },
   { value:"price-asc", label:"Price: Low to High" },
   { value:"price-desc",label:"Price: High to Low" },
+  { value:"distance",  label:"Distance" },
 ];
 const PAGE_SIZE = 8;
 const DEBUG_IMAGES = import.meta.env.VITE_DEBUG_IMAGES === "true";
@@ -57,6 +59,7 @@ function toUiListing(listing: ApiListing): Listing {
     sellerName: "Seller",
     sellerRating: 0,
     imageUrl: listing.images?.[0],
+    distanceMiles: listing.distance_miles,
   };
 }
 
@@ -194,7 +197,9 @@ function ListingCard({ listing, onSave, onClick }: {
         </div>
 
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:"auto", paddingTop:"8px", borderTop:`1px solid ${T.border}` }}>
-          <span style={{ fontSize:"12px", color: T.muted }}>📍 {listing.location}</span>
+          <span style={{ fontSize:"12px", color: T.muted }}>
+            📍 {listing.location}{listing.distanceMiles != null ? ` • ${listing.distanceMiles.toFixed(1)} mi` : ""}
+          </span>
           <span style={{ fontSize:"12px", color: T.muted }}>{listing.postedAt}</span>
         </div>
       </div>
@@ -214,27 +219,34 @@ export default function HomePage() {
   const [maxPrice,  setMaxPrice]  = useState("");
   const [sort,      setSort]      = useState("newest");
   const [page,      setPage]      = useState(1);
+  const [radiusMiles, setRadiusMiles] = useState("25");
+  const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
+
+  function fetchListings(useSearch: boolean) {
+    setLoadingListings(true);
+    setListingsError("");
+
+    const options = {
+      keyword: search.trim() || undefined,
+      category: category !== "All" ? category : undefined,
+      min_price: minPrice !== "" ? Number(minPrice) : undefined,
+      max_price: maxPrice !== "" ? Number(maxPrice) : undefined,
+      sort: sort as "newest" | "oldest" | "price-asc" | "price-desc" | "distance",
+      user_lat: geo?.lat,
+      user_lng: geo?.lng,
+      radius_miles: geo ? Number(radiusMiles) : undefined,
+    };
+
+    const req = useSearch ? searchListings(options) : listListings(options);
+    req
+      .then((res) => setListings((res.items ?? []).map(toUiListing)))
+      .catch(() => setListingsError("Unable to load marketplace listings."))
+      .finally(() => setLoadingListings(false));
+  }
 
   useEffect(() => {
-    let cancelled = false;
-
-    listListings()
-      .then((res) => {
-        if (cancelled) return;
-        setListings((res.items ?? []).map(toUiListing));
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setListingsError("Unable to load marketplace listings.");
-      })
-      .finally(() => {
-        if (cancelled) return;
-        setLoadingListings(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+    fetchListings(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -262,42 +274,35 @@ export default function HomePage() {
     console.debug("[image-debug] listings image URL sample", samples);
   }, [listings]);
 
-  // ── Filter + Sort ───────────────────────────────────────────────────────────
+  // ── Client-side fallback sort/filter (server handles primary query) ─────────
   const filtered = useMemo(() => {
-    let result = [...listings];
-
-    if (search.trim())
-      result = result.filter(l => l.title.toLowerCase().includes(search.toLowerCase()));
-
-    if (category !== "All")
-      result = result.filter(l => l.category === category);
-
-    if (minPrice !== "")
-      result = result.filter(l => l.price >= Number(minPrice));
-
-    if (maxPrice !== "")
-      result = result.filter(l => l.price <= Number(maxPrice));
-
-    result.sort((a, b) => {
-      if (sort === "newest")     return b.postedAt.localeCompare(a.postedAt);
-      if (sort === "oldest")     return a.postedAt.localeCompare(b.postedAt);
-      if (sort === "price-asc")  return a.price - b.price;
-      if (sort === "price-desc") return b.price - a.price;
-      return 0;
-    });
-
+    const result = [...listings];
+    if (sort === "price-asc") result.sort((a, b) => a.price - b.price);
+    if (sort === "price-desc") result.sort((a, b) => b.price - a.price);
+    if (sort === "newest") result.sort((a, b) => b.postedAt.localeCompare(a.postedAt));
+    if (sort === "oldest") result.sort((a, b) => a.postedAt.localeCompare(b.postedAt));
+    if (sort === "distance") {
+      result.sort(
+        (a, b) =>
+          (a.distanceMiles ?? Number.POSITIVE_INFINITY) - (b.distanceMiles ?? Number.POSITIVE_INFINITY),
+      );
+    }
     return result;
-  }, [listings, search, category, minPrice, maxPrice, sort]);
+  }, [listings, sort]);
 
   // ── Pagination ──────────────────────────────────────────────────────────────
   const totalPages  = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated   = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const handleSearch = () => setPage(1);
+  const handleSearch = () => {
+    setPage(1);
+    fetchListings(true);
+  };
   const resetFilters = () => {
     setSearch(""); setCategory("All");
     setMinPrice(""); setMaxPrice("");
-    setSort("newest"); setPage(1);
+    setSort("newest"); setRadiusMiles("25"); setPage(1);
+    fetchListings(false);
   };
 
   const toggleSave = (id: string) => {
@@ -385,6 +390,42 @@ export default function HomePage() {
               onChange={e => setMaxPrice(e.target.value.replace(/\D/g, ""))}
               style={{ ...inputStyle, width:"90px" }}
             />
+            <button
+              onClick={() => {
+                if (!navigator.geolocation) {
+                  setListingsError("Geolocation is not supported on this browser.");
+                  return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                  (pos) => {
+                    setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                    setSort("distance");
+                    setPage(1);
+                    setTimeout(() => fetchListings(true), 0);
+                  },
+                  () => setListingsError("Location access denied. Showing standard results."),
+                );
+              }}
+              style={{
+                background: geo ? "rgba(34,197,94,0.15)" : "transparent", color: geo ? T.accent : T.muted,
+                border:`1px solid ${geo ? "rgba(34,197,94,0.45)" : T.border}`, borderRadius:"10px",
+                padding:"9px 12px", fontSize:"13px", cursor:"pointer",
+              }}
+            >
+              📍 Near me
+            </button>
+            {geo && (
+              <select
+                value={radiusMiles}
+                onChange={(e) => setRadiusMiles(e.target.value)}
+                style={{ ...selectStyle, width:"110px" }}
+              >
+                <option value="5">5 mi</option>
+                <option value="10">10 mi</option>
+                <option value="25">25 mi</option>
+                <option value="50">50 mi</option>
+              </select>
+            )}
             {/* Search Button */}
             <button onClick={handleSearch} style={{
               background: T.accent, color:"#fff",

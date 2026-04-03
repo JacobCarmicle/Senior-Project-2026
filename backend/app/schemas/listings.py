@@ -34,6 +34,7 @@ class ListingResponse(BaseModel):
     location: str
     status: str
     images: list[str]
+    distance_miles: float | None = None
     created_at: datetime
     updated_at: datetime
 

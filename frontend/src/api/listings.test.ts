@@ -2,6 +2,7 @@ import {
   createListing,
   getListing,
   listListings,
+  searchListings,
   updateListing,
 } from "./listings";
 
@@ -31,8 +32,14 @@ describe("listings API service", () => {
     expect(res.title).toBe("Updated");
   });
 
-  it("lists listings", async () => {
-    const res = await listListings();
+  it("lists listings with location params", async () => {
+    const res = await listListings({ user_lat: 37.6872, user_lng: -97.3301, radius_miles: 50, sort: "distance" });
     expect(res.items).toBeDefined();
+    expect(res.items[0].distance_miles).toBeDefined();
+  });
+
+  it("searches listings with distance sort", async () => {
+    const res = await searchListings({ keyword: "existing", user_lat: 37.6872, user_lng: -97.3301, sort: "distance" });
+    expect(res.items.length).toBeGreaterThan(0);
   });
 });
