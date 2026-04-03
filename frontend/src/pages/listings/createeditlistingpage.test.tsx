@@ -27,6 +27,7 @@ async function fillRequiredFields(user: ReturnType<typeof userEvent.setup>) {
 describe("CreateEditListingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllGlobals();
     vi.mocked(listingsApi.getListing).mockResolvedValue({
       id: "l1",
       seller_id: "u1",
@@ -158,6 +159,14 @@ describe("CreateEditListingPage", () => {
       value: { getCurrentPosition },
       configurable: true,
     });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ address: { city: "Wichita", state_code: "KS" } }),
+      }),
+    );
 
     renderWithProviders(<CreateEditListingPage />, { route: "/create-listing" });
 

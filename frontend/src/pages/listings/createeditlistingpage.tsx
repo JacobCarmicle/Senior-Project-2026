@@ -29,31 +29,28 @@ const MAX_IMAGES    = 4;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
-const KNOWN_LOCATIONS: Array<{ label: string; lat: number; lng: number }> = [
-  { label: "Wichita, KS", lat: 37.6872, lng: -97.3301 },
-  { label: "Kansas City, MO", lat: 39.0997, lng: -94.5786 },
-  { label: "Topeka, KS", lat: 39.0473, lng: -95.6752 },
-  { label: "Chicago, IL", lat: 41.8781, lng: -87.6298 },
-  { label: "New York, NY", lat: 40.7128, lng: -74.006 },
-  { label: "Los Angeles, CA", lat: 34.0522, lng: -118.2437 },
-  { label: "Dallas, TX", lat: 32.7767, lng: -96.797 },
-];
+async function reverseGeocodeToCityState(lat: number, lng: number): Promise<string | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}`;
+    const res = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
 
-function resolveNearestKnownLocation(lat: number, lng: number): string {
-  let best = KNOWN_LOCATIONS[0];
-  let bestDist = Number.POSITIVE_INFINITY;
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      address?: { city?: string; town?: string; village?: string; state?: string; state_code?: string };
+    };
 
-  for (const city of KNOWN_LOCATIONS) {
-    const dLat = city.lat - lat;
-    const dLng = city.lng - lng;
-    const distSq = dLat * dLat + dLng * dLng;
-    if (distSq < bestDist) {
-      bestDist = distSq;
-      best = city;
-    }
+    const city = data.address?.city || data.address?.town || data.address?.village;
+    const state = data.address?.state_code || data.address?.state;
+
+    if (!city || !state) return null;
+    return `${city}, ${state}`;
+  } catch {
+    return null;
   }
-
-  return best.label;
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -284,9 +281,11 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
 
     setLocationLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const label = resolveNearestKnownLocation(position.coords.latitude, position.coords.longitude);
-        setField("location", label);
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const label = await reverseGeocodeToCityState(lat, lng);
+        setField("location", label ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
         setLocationLoading(false);
       },
       () => {
