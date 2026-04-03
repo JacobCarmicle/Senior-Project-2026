@@ -29,6 +29,33 @@ const MAX_IMAGES    = 4;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
+const KNOWN_LOCATIONS: Array<{ label: string; lat: number; lng: number }> = [
+  { label: "Wichita, KS", lat: 37.6872, lng: -97.3301 },
+  { label: "Kansas City, MO", lat: 39.0997, lng: -94.5786 },
+  { label: "Topeka, KS", lat: 39.0473, lng: -95.6752 },
+  { label: "Chicago, IL", lat: 41.8781, lng: -87.6298 },
+  { label: "New York, NY", lat: 40.7128, lng: -74.006 },
+  { label: "Los Angeles, CA", lat: 34.0522, lng: -118.2437 },
+  { label: "Dallas, TX", lat: 32.7767, lng: -96.797 },
+];
+
+function resolveNearestKnownLocation(lat: number, lng: number): string {
+  let best = KNOWN_LOCATIONS[0];
+  let bestDist = Number.POSITIVE_INFINITY;
+
+  for (const city of KNOWN_LOCATIONS) {
+    const dLat = city.lat - lat;
+    const dLng = city.lng - lng;
+    const distSq = dLat * dLat + dLng * dLng;
+    if (distSq < bestDist) {
+      bestDist = distSq;
+      best = city;
+    }
+  }
+
+  return best.label;
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface ImageFile {
   id: string;
@@ -210,6 +237,8 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
   const [success,  setSuccess]  = useState(false);
   const [imageError, setImageError] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [locationError, setLocationError] = useState("");
+  const [locationLoading, setLocationLoading] = useState(false);
 
   // ── Load existing data in edit mode ────────────────────────────────────────
   useEffect(() => {
@@ -243,6 +272,29 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
   const setField = (field: keyof FormData, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
+  };
+
+  const useCurrentLocation = () => {
+    setLocationError("");
+
+    if (!navigator.geolocation) {
+      setLocationError("Unable to access your location on this browser.");
+      return;
+    }
+
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const label = resolveNearestKnownLocation(position.coords.latitude, position.coords.longitude);
+        setField("location", label);
+        setLocationLoading(false);
+      },
+      () => {
+        setLocationError("Unable to access your location. Please enter it manually.");
+        setLocationLoading(false);
+      },
+      { enableHighAccuracy: false, timeout: 8000 },
+    );
   };
 
   // ── Image handlers ─────────────────────────────────────────────────────────
@@ -469,7 +521,26 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
 
               {/* Location */}
               <div style={{ gridColumn: "1 / -1" }}>
-                <Label text="Meetup Location" required />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "7px" }}>
+                  <Label text="Meetup Location" required />
+                  <button
+                    type="button"
+                    onClick={useCurrentLocation}
+                    disabled={locationLoading}
+                    style={{
+                      border: `1px solid ${T.border}`,
+                      background: T.surface,
+                      color: T.muted,
+                      borderRadius: "8px",
+                      padding: "6px 10px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      cursor: locationLoading ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {locationLoading ? "Locating..." : "Use Current Location"}
+                  </button>
+                </div>
                 <input
                   value={form.location}
                   onChange={e => setField("location", e.target.value)}
@@ -477,6 +548,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
                   style={inputStyle(!!errors.location)}
                 />
                 <ErrorMsg msg={errors.location} />
+                <ErrorMsg msg={locationError} />
               </div>
             </div>
           </div>
