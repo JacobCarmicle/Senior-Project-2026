@@ -18,6 +18,7 @@ from app.routers.auth import router as auth_router
 from app.routers.listings import router as listings_router
 from app.routers.conversations import router as conversations_router
 from app.routers.messages import router as messages_router
+from app.routers.meetups import router as meetups_router
 from app.routers.reviews import router as reviews_router
 from app.routers.realtime import router as realtime_router
 from app.routers.uploads import router as uploads_router
@@ -57,6 +58,7 @@ app.include_router(auth_router)
 app.include_router(listings_router)
 app.include_router(conversations_router)
 app.include_router(messages_router)
+app.include_router(meetups_router)
 app.include_router(reviews_router)
 app.include_router(realtime_router)
 app.include_router(uploads_router)

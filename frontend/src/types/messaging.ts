@@ -19,6 +19,7 @@ export interface Message {
   id: string;
   conversation_id: string;
   sender_id: string;
+  sender_username: string,
   text?: string | null;
   image_url?: string | null;
   kind: "text" | "image" | "system";

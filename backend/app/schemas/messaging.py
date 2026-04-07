@@ -61,6 +61,7 @@ class MessageResponse(BaseModel):
     id: str
     conversation_id: str
     sender_id: str
+    sender_username: str | None = None
     text: str | None = None
     image_url: str | None = None
     kind: MessageKind = "text"
