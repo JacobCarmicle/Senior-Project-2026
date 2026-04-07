@@ -65,7 +65,6 @@ export default function MessagingPage() {
 
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const { user } = useAuth();
   const [reportTarget, setReportTarget] = useState<{ id: string; preview: string } | null>(null);
 
   useEffect(() => {
@@ -411,32 +410,6 @@ export default function MessagingPage() {
               }}
             >
               {messages.length === 0 && <p style={{ color: T.muted }}>No messages yet.</p>}
-              {messages.map((m) => {
-                const isMe = m.sender_id === user?.id;
-                return (
-                  <div key={m.id} style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start" }}>
-                    <div
-                      style={{
-                        maxWidth: "70%",
-                        background: isMe ? "#22c55e" : "#2a2a2a",
-                        color: isMe ? "#fff" : T.text,
-                        padding: 10,
-                        borderRadius: 12,
-                        border: isMe ? "none" : `1px solid ${T.border}`,
-                      }}
-                    >
-                      <div style={{ fontSize: 15, display: "flex", gap: 10 }}>
-                        <div>{isMe ? "You" : m.sender_username ?? "Unknown"}</div>
-                        <div>{new Date(m.sent_at).toLocaleString()}</div>
-                      </div>
-                      <div style={{ marginTop: 4 }}>{m.text || "[image]"}</div>
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={bottomRef} />
-            <div style={{ flex: 1, overflow: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-              {messages.length === 0 && <p style={{ color: T.muted }}>No messages yet.</p>}
               {messages.map((m) => (
                 <MessageRow
                   key={m.id}
@@ -445,6 +418,7 @@ export default function MessagingPage() {
                   onReport={(id, preview) => setReportTarget({ id, preview })}
                 />
               ))}
+              <div ref={bottomRef} />
             </div>
 
             <div style={{ display: "flex", gap: 8, padding: 12, borderTop: `1px solid ${T.border}` }}>
