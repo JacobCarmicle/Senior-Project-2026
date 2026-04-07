@@ -5,13 +5,13 @@ from app.schemas.meetups import (
     MeetupResponse,
     MeetupStatusUpdateRequest,
 )
-from app.services import meetups
+from app.services import meetups, realtime
 
 router = APIRouter(prefix="/meetups", tags=["meetups"])
 
 
 @router.post("", response_model=MeetupResponse)
-def create_meetup(
+async def create_meetup(
     payload: MeetupCreateRequest,
     response: Response,
     current_user: dict = Depends(get_current_user),
@@ -29,7 +29,12 @@ def create_meetup(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     response.status_code = status.HTTP_201_CREATED
-    return MeetupResponse(**meetup)
+    payload = MeetupResponse(**meetup)
+    await realtime.broadcast(
+        meetup["conversation_id"],
+        {"type": "meetup.created", "conversation_id": meetup["conversation_id"], "meetup": payload.model_dump(mode="json")},
+    )
+    return payload
 
 
 @router.get("/{conversation_id}", response_model=MeetupResponse | None)
@@ -45,7 +50,7 @@ def get_meetup(conversation_id: str, current_user: dict = Depends(get_current_us
 
 
 @router.patch("/{meetup_id}/status", response_model=MeetupResponse)
-def update_meetup_status(
+async def update_meetup_status(
     meetup_id: str,
     payload: MeetupStatusUpdateRequest,
     current_user: dict = Depends(get_current_user),
@@ -60,11 +65,16 @@ def update_meetup_status(
     if not meetup:
         raise HTTPException(status_code=404, detail="Meetup not found")
 
-    return MeetupResponse(**meetup)
+    payload = MeetupResponse(**meetup)
+    await realtime.broadcast(
+        meetup["conversation_id"],
+        {"type": "meetup.status_changed", "conversation_id": meetup["conversation_id"], "meetup": payload.model_dump(mode="json")},
+    )
+    return payload
 
 
 @router.delete("/{meetup_id}", response_model=MeetupResponse)
-def delete_meetup(meetup_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_meetup(meetup_id: str, current_user: dict = Depends(get_current_user)):
     try:
         meetup = meetups.delete_meetup(meetup_id, current_user["id"])
     except PermissionError as exc:
@@ -73,4 +83,9 @@ def delete_meetup(meetup_id: str, current_user: dict = Depends(get_current_user)
     if not meetup:
         raise HTTPException(status_code=404, detail="Meetup not found")
 
-    return MeetupResponse(**meetup)
+    payload = MeetupResponse(**meetup)
+    await realtime.broadcast(
+        meetup["conversation_id"],
+        {"type": "meetup.deleted", "conversation_id": meetup["conversation_id"], "meetup": payload.model_dump(mode="json")},
+    )
+    return payload

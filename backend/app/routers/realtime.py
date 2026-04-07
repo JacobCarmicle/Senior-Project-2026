@@ -16,8 +16,7 @@ def _get_user_from_token(token: str | None):
     return auth_local.get_user_by_id(user_id) or google_auth.get_user_by_id(user_id)
 
 
-@router.websocket("/ws/conversations/{conversation_id}")
-async def conversation_ws(websocket: WebSocket, conversation_id: str):
+async def _conversation_channel_ws(websocket: WebSocket, conversation_id: str):
     token = websocket.query_params.get("token")
     user = _get_user_from_token(token)
     if not user:
@@ -45,3 +44,13 @@ async def conversation_ws(websocket: WebSocket, conversation_id: str):
         pass
     finally:
         await realtime.unsubscribe(conversation_id, queue)
+
+
+@router.websocket("/ws/conversations/{conversation_id}")
+async def conversation_ws(websocket: WebSocket, conversation_id: str):
+    await _conversation_channel_ws(websocket, conversation_id)
+
+
+@router.websocket("/ws/meetups/{conversation_id}")
+async def meetup_ws(websocket: WebSocket, conversation_id: str):
+    await _conversation_channel_ws(websocket, conversation_id)
