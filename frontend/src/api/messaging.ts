@@ -2,12 +2,17 @@ import client from "./client";
 import type { Conversation, ConversationListResponse, Message, MessageListResponse } from "../types/messaging";
 
 function buildConversationWsUrl(conversationId: string, token: string): string {
-  const base = new URL(client.defaults.baseURL || window.location.origin, window.location.origin);
+  const base = client.defaults.baseURL
+    ? new URL(client.defaults.baseURL, window.location.origin)
+    : new URL(window.location.origin);
+
   const protocol = base.protocol === "https:" ? "wss:" : "ws:";
+  
   const wsUrl = new URL(base.toString());
   wsUrl.protocol = protocol;
   wsUrl.pathname = `/ws/conversations/${conversationId}`;
   wsUrl.searchParams.set("token", token);
+
   return wsUrl.toString();
 }
 

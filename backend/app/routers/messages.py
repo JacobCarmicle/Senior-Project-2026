@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.routers.auth import get_current_user
 from app.schemas.messaging import MessageCreateRequest, MessageListResponse, MessageResponse
-from app.services import messages, realtime
+from app.services import realtime
+from app.services import messages as memory
+from app.services import messages_supabase as messages
 
 router = APIRouter(prefix="/conversations", tags=["messages"])
 
@@ -35,9 +37,14 @@ async def send_message(
 @router.get("/{conversation_id}/messages", response_model=MessageListResponse)
 def list_messages(conversation_id: str, current_user: dict = Depends(get_current_user)):
     rows = messages.list_messages_for_user(conversation_id, current_user["id"])
+
     if rows is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    return MessageListResponse(items=[MessageResponse(**x) for x in rows], total=len(rows))
+
+    return MessageListResponse(
+        items=[MessageResponse(**x) for x in rows],
+        total=len(rows),
+    )
 
 
 @router.patch("/{conversation_id}/messages/{message_id}/read", response_model=MessageResponse)

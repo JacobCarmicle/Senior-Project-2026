@@ -7,7 +7,10 @@ from app.schemas.messaging import (
     ConversationResponse,
     ConversationStatusUpdateRequest,
 )
-from app.services import conversations, listings
+
+from app.services import listings
+# from app.services import conversations
+from app.services import conversations_supabase as conversations
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 

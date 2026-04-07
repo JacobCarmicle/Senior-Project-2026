@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "../../components/Navbar/Navbar.tsx";
-import { listSellerReviews, getSellerRatingSummary } from "../../api/reviews";
+import { listSellerReviews, getSellerRatingSummary, deleteReview } from "../../api/reviews";
 import { useAuth } from "../../context/AuthContext";
 import { useParams } from "react-router-dom";
 import type { Review } from "../../types/reviews";
@@ -51,7 +51,17 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 // ── Review Card ───────────────────────────────────────────────────────────────
-function ReviewCard({ review, username }: { review: Review; username: string; }) {
+function ReviewCard({
+  review,
+  username,
+  canDelete,
+  onDelete,
+}: {
+  review: Review;
+  username: string;
+  canDelete?: boolean;
+  onDelete?: () => void;
+}) {
   return (
     <div
       style={{
@@ -69,17 +79,32 @@ function ReviewCard({ review, username }: { review: Review; username: string; })
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          borderBottom: `1px solid ${T.border}`,
-          paddingBottom: "6px",
+          gap: "8px",
         }}
       >
         <span style={{ fontWeight: 700 }}>{username}</span>
-
-        <span style={{ fontSize: "12px", color: T.muted }}>
+        <span style={{ fontSize: "14px", color: T.muted }}>
           {new Date(review.created_at).toLocaleDateString()}
         </span>
+
+        {canDelete && (
+          <button
+            onClick={onDelete}
+            style={{
+              padding: "4px 10px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              background: "rgba(239,68,68,0.12)",
+              border: "1px solid rgba(239,68,68,0.35)",
+              color: "#ef4444",
+            }}
+          >
+            Delete
+          </button>
+        )}
       </div>
 
       <StarRating rating={review.rating} />
@@ -191,6 +216,20 @@ export default function UserProfilePage() {
 
     const { userId } = useParams();
     const profileUserId = userId ?? user?.id;
+
+    async function handleDeleteReview(reviewId: string) {
+      if (!confirm("Delete this review? This cannot be undone.")) return;
+
+      try {
+        await deleteReview(reviewId);
+
+        // refresh reviews
+        setReloadKey((k) => k + 1);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete review.");
+      }
+    }
 
     useEffect(() => {
       if (!profileUserId) return;
@@ -404,6 +443,8 @@ export default function UserProfilePage() {
               key={review.id}
               review={review}
               username={userMap[review.buyer_id] || "Loading..."}
+              canDelete={user?.role === "admin" || user?.id === review.buyer_id}
+              onDelete={() => handleDeleteReview(review.id)}
             />
           ))}
         </div>
