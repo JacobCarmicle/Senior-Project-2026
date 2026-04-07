@@ -1,14 +1,15 @@
 import { useState, useMemo, useEffect } from "react";
-import { listListings } from "../../api/listings";
+import { listListings, toggleSaveListing, getSavedListings, searchListings } from "../../api/listings";
 import type { Listing as ApiListing } from "../../types/listings";
 import { Navbar } from "../../components/Navbar/Navbar.tsx";
+import { useAuth } from "../../context/AuthContext";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
   bg:      "#2d2d2d",
   card:    "#1a1a1a",
   text:    "#e5e5e5",
-  muted:   "#9ca3af",
+  muted:   "#cbd5e1",
   border:  "#404040",
   accent:  "#22c55e",
   accent2: "#16a34a",
@@ -31,6 +32,7 @@ interface Listing {
   sellerName: string;
   sellerRating: number;
   imageUrl?: string;
+  distanceMiles?: number | null;
 }
 
 const CATEGORIES = ["All", "Electronics", "Automotive", "Furniture", "Clothing", "Sports"];
@@ -39,6 +41,7 @@ const SORT_OPTIONS = [
   { value:"oldest",    label:"Oldest First" },
   { value:"price-asc", label:"Price: Low to High" },
   { value:"price-desc",label:"Price: High to Low" },
+  { value:"distance",  label:"Distance" },
 ];
 const PAGE_SIZE = 8;
 const DEBUG_IMAGES = import.meta.env.VITE_DEBUG_IMAGES === "true";
@@ -56,6 +59,7 @@ function toUiListing(listing: ApiListing): Listing {
     sellerName: "Seller",
     sellerRating: 0,
     imageUrl: listing.images?.[0],
+    distanceMiles: listing.distance_miles,
   };
 }
 
@@ -106,7 +110,7 @@ function ListingCard({ listing, onSave, onClick }: {
         display:"flex",
         alignItems:"center",
         justifyContent:"center",
-        color:"#555",
+        color:T.muted,
         fontSize:"13px",
         fontWeight:600,
         position:"relative",
@@ -193,7 +197,9 @@ function ListingCard({ listing, onSave, onClick }: {
         </div>
 
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:"auto", paddingTop:"8px", borderTop:`1px solid ${T.border}` }}>
-          <span style={{ fontSize:"12px", color: T.muted }}>📍 {listing.location}</span>
+          <span style={{ fontSize:"12px", color: T.muted }}>
+            📍 {listing.location}{listing.distanceMiles != null ? ` • ${listing.distanceMiles.toFixed(1)} mi` : ""}
+          </span>
           <span style={{ fontSize:"12px", color: T.muted }}>{listing.postedAt}</span>
         </div>
       </div>
@@ -203,6 +209,7 @@ function ListingCard({ listing, onSave, onClick }: {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
+  const { user } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loadingListings, setLoadingListings] = useState(true);
   const [listingsError, setListingsError] = useState("");
@@ -212,28 +219,45 @@ export default function HomePage() {
   const [maxPrice,  setMaxPrice]  = useState("");
   const [sort,      setSort]      = useState("newest");
   const [page,      setPage]      = useState(1);
+  const [radiusMiles, setRadiusMiles] = useState("25");
+  const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
+
+  function fetchListings(useSearch: boolean) {
+    setLoadingListings(true);
+    setListingsError("");
+
+    const options = {
+      keyword: search.trim() || undefined,
+      category: category !== "All" ? category : undefined,
+      min_price: minPrice !== "" ? Number(minPrice) : undefined,
+      max_price: maxPrice !== "" ? Number(maxPrice) : undefined,
+      sort: sort as "newest" | "oldest" | "price-asc" | "price-desc" | "distance",
+      user_lat: geo?.lat,
+      user_lng: geo?.lng,
+      radius_miles: geo ? Number(radiusMiles) : undefined,
+    };
+
+    const req = useSearch ? searchListings(options) : listListings(options);
+    req
+      .then((res) => setListings((res.items ?? []).map(toUiListing)))
+      .catch(() => setListingsError("Unable to load marketplace listings."))
+      .finally(() => setLoadingListings(false));
+  }
 
   useEffect(() => {
-    let cancelled = false;
-
-    listListings()
-      .then((res) => {
-        if (cancelled) return;
-        setListings((res.items ?? []).map(toUiListing));
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setListingsError("Unable to load marketplace listings.");
-      })
-      .finally(() => {
-        if (cancelled) return;
-        setLoadingListings(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+    fetchListings(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    getSavedListings()
+      .then((res) => {
+        const savedIds = new Set((res.items ?? []).map((l) => l.id));
+        setListings((prev) => prev.map((l) => ({ ...l, saved: savedIds.has(l.id) })));
+      })
+      .catch(() => {});
+  }, [user]);
 
   useEffect(() => {
     if (!DEBUG_IMAGES || listings.length === 0) return;
@@ -250,46 +274,44 @@ export default function HomePage() {
     console.debug("[image-debug] listings image URL sample", samples);
   }, [listings]);
 
-  // ── Filter + Sort ───────────────────────────────────────────────────────────
+  // ── Client-side fallback sort/filter (server handles primary query) ─────────
   const filtered = useMemo(() => {
-    let result = [...listings];
-
-    if (search.trim())
-      result = result.filter(l => l.title.toLowerCase().includes(search.toLowerCase()));
-
-    if (category !== "All")
-      result = result.filter(l => l.category === category);
-
-    if (minPrice !== "")
-      result = result.filter(l => l.price >= Number(minPrice));
-
-    if (maxPrice !== "")
-      result = result.filter(l => l.price <= Number(maxPrice));
-
-    result.sort((a, b) => {
-      if (sort === "newest")     return b.postedAt.localeCompare(a.postedAt);
-      if (sort === "oldest")     return a.postedAt.localeCompare(b.postedAt);
-      if (sort === "price-asc")  return a.price - b.price;
-      if (sort === "price-desc") return b.price - a.price;
-      return 0;
-    });
-
+    const result = [...listings];
+    if (sort === "price-asc") result.sort((a, b) => a.price - b.price);
+    if (sort === "price-desc") result.sort((a, b) => b.price - a.price);
+    if (sort === "newest") result.sort((a, b) => b.postedAt.localeCompare(a.postedAt));
+    if (sort === "oldest") result.sort((a, b) => a.postedAt.localeCompare(b.postedAt));
+    if (sort === "distance") {
+      result.sort(
+        (a, b) =>
+          (a.distanceMiles ?? Number.POSITIVE_INFINITY) - (b.distanceMiles ?? Number.POSITIVE_INFINITY),
+      );
+    }
     return result;
-  }, [listings, search, category, minPrice, maxPrice, sort]);
+  }, [listings, sort]);
 
   // ── Pagination ──────────────────────────────────────────────────────────────
   const totalPages  = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated   = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const handleSearch = () => setPage(1);
+  const handleSearch = () => {
+    setPage(1);
+    fetchListings(true);
+  };
   const resetFilters = () => {
     setSearch(""); setCategory("All");
     setMinPrice(""); setMaxPrice("");
-    setSort("newest"); setPage(1);
+    setSort("newest"); setRadiusMiles("25"); setPage(1);
+    fetchListings(false);
   };
 
-  const toggleSave = (id: string) =>
-    setListings(prev => prev.map(l => l.id === id ? { ...l, saved: !l.saved } : l));
+  const toggleSave = (id: string) => {
+    if (!user) { window.location.href = "/login"; return; }
+    setListings((prev) => prev.map((l) => l.id === id ? { ...l, saved: !l.saved } : l));
+    toggleSaveListing(id).catch(() => {
+      setListings((prev) => prev.map((l) => l.id === id ? { ...l, saved: !l.saved } : l));
+    });
+  };
 
   const handleCardClick = (id: string) => {
     window.location.href = `/listing/${id}`;
@@ -308,12 +330,24 @@ export default function HomePage() {
     appearance:"none" as const,
   };
 
+  const srOnly: React.CSSProperties = {
+    position: "absolute",
+    width: 1,
+    height: 1,
+    padding: 0,
+    margin: -1,
+    overflow: "hidden",
+    clip: "rect(0, 0, 0, 0)",
+    whiteSpace: "nowrap",
+    border: 0,
+  };
+
   return (
     <div style={{ minHeight:"100vh", background: T.bg, color: T.text, fontFamily:"Arial, sans-serif" }}>
 
       <Navbar exclude={["marketplace"]}/>
 
-      <div style={{ maxWidth:"1200px", margin:"0 auto", padding:"22px 20px 40px" }}>
+      <main style={{ maxWidth:"1200px", margin:"0 auto", padding:"22px 20px 40px" }}>
 
         {/* ── Search Bar ── */}
         <div style={{
@@ -324,7 +358,9 @@ export default function HomePage() {
         }}>
           <div style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>
             {/* Keyword */}
+            <label htmlFor="search-listings" style={srOnly}>Search listings</label>
             <input
+              id="search-listings"
               placeholder="Search listings..."
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -332,23 +368,64 @@ export default function HomePage() {
               style={{ ...inputStyle, flex:"1", minWidth:"200px" }}
             />
             {/* Category */}
-            <select value={category} onChange={e => { setCategory(e.target.value); setPage(1); }} style={{ ...selectStyle, minWidth:"150px" }}>
+            <label htmlFor="category-filter" style={srOnly}>Category</label>
+            <select id="category-filter" value={category} onChange={e => { setCategory(e.target.value); setPage(1); }} style={{ ...selectStyle, minWidth:"150px" }}>
               {CATEGORIES.map(c => <option key={c} value={c}>{c === "All" ? "All Categories" : c}</option>)}
             </select>
             {/* Min Price */}
+            <label htmlFor="min-price" style={srOnly}>Minimum price</label>
             <input
+              id="min-price"
               placeholder="Min $"
               value={minPrice}
               onChange={e => setMinPrice(e.target.value.replace(/\D/g, ""))}
               style={{ ...inputStyle, width:"90px" }}
             />
             {/* Max Price */}
+            <label htmlFor="max-price" style={srOnly}>Maximum price</label>
             <input
+              id="max-price"
               placeholder="Max $"
               value={maxPrice}
               onChange={e => setMaxPrice(e.target.value.replace(/\D/g, ""))}
               style={{ ...inputStyle, width:"90px" }}
             />
+            <button
+              onClick={() => {
+                if (!navigator.geolocation) {
+                  setListingsError("Geolocation is not supported on this browser.");
+                  return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                  (pos) => {
+                    setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                    setSort("distance");
+                    setPage(1);
+                    setTimeout(() => fetchListings(true), 0);
+                  },
+                  () => setListingsError("Location access denied. Showing standard results."),
+                );
+              }}
+              style={{
+                background: geo ? "rgba(34,197,94,0.15)" : "transparent", color: geo ? T.accent : T.muted,
+                border:`1px solid ${geo ? "rgba(34,197,94,0.45)" : T.border}`, borderRadius:"10px",
+                padding:"9px 12px", fontSize:"13px", cursor:"pointer",
+              }}
+            >
+              📍 Near me
+            </button>
+            {geo && (
+              <select
+                value={radiusMiles}
+                onChange={(e) => setRadiusMiles(e.target.value)}
+                style={{ ...selectStyle, width:"110px" }}
+              >
+                <option value="5">5 mi</option>
+                <option value="10">10 mi</option>
+                <option value="25">25 mi</option>
+                <option value="50">50 mi</option>
+              </select>
+            )}
             {/* Search Button */}
             <button onClick={handleSearch} style={{
               background: T.accent, color:"#fff",
@@ -408,8 +485,8 @@ export default function HomePage() {
               : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, filtered.length)} of ${filtered.length} listing${filtered.length !== 1 ? "s" : ""}`}
           </span>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-            <span style={{ fontSize:"13px", color: T.muted }}>Sort:</span>
-            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} style={{ ...selectStyle, fontSize:"13px", padding:"7px 12px" }}>
+            <label htmlFor="sort-listings" style={{ fontSize:"13px", color: T.muted }}>Sort:</label>
+            <select id="sort-listings" value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} style={{ ...selectStyle, fontSize:"13px", padding:"7px 12px" }}>
               {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
@@ -460,8 +537,8 @@ export default function HomePage() {
               disabled={page === 1}
               style={{
                 padding:"8px 16px", borderRadius:"8px", fontSize:"13px", fontWeight:600, cursor: page === 1 ? "not-allowed" : "pointer",
-                background: T.surface, border:`1px solid ${T.border}`,
-                color: page === 1 ? T.muted : T.text, opacity: page === 1 ? 0.5 : 1,
+                background: page === 1 ? "#3a3a3a" : T.surface, border:`1px solid ${T.border}`,
+                color: page === 1 ? "#cbd5e1" : T.text,
               }}>← Prev</button>
 
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
@@ -480,12 +557,12 @@ export default function HomePage() {
               disabled={page === totalPages}
               style={{
                 padding:"8px 16px", borderRadius:"8px", fontSize:"13px", fontWeight:600, cursor: page === totalPages ? "not-allowed" : "pointer",
-                background: T.surface, border:`1px solid ${T.border}`,
-                color: page === totalPages ? T.muted : T.text, opacity: page === totalPages ? 0.5 : 1,
+                background: page === totalPages ? "#3a3a3a" : T.surface, border:`1px solid ${T.border}`,
+                color: page === totalPages ? "#cbd5e1" : T.text,
               }}>Next →</button>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

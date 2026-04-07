@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useParams } from "react-router-dom";
 import type { Review } from "../../types/reviews";
 import ReviewForm from "../../components/ReviewForm/ReviewForm";
+import ReportModal from "../../components/ReportModal/ReportModal";
 import { getUser } from "../../api/users";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
@@ -210,6 +211,7 @@ export default function UserProfilePage() {
     const [userMap, setUserMap] = useState<Record<string, string>>({});
     const [reloadKey, setReloadKey] = useState(0);
     const [error, setError] = useState<string | null>(null);
+    const [reportOpen, setReportOpen] = useState(false);
     const { user } = useAuth();
 
     const { userId } = useParams();
@@ -276,8 +278,16 @@ export default function UserProfilePage() {
           };
 
           setProfile(profileData);
-        }catch (err: any) {
-          if (err?.response?.status === 404) {
+        } catch (err: unknown) {
+          const status =
+            typeof err === "object" &&
+            err !== null &&
+            "response" in err &&
+            typeof (err as { response?: { status?: number } }).response?.status === "number"
+              ? (err as { response?: { status?: number } }).response?.status
+              : undefined;
+
+          if (status === 404) {
             setError("User not found.");
           } else {
             setError("Failed to load profile. Please try again.");
@@ -384,12 +394,31 @@ export default function UserProfilePage() {
         <ProfileHeader profile={profile} />
 
         {user && profileUserId && user?.id !== profileUserId && (
-          <ReviewForm
-            sellerId={profileUserId}
-            onSubmitted={() => {
-              setReloadKey((k) => k + 1);
-            }}
-          />
+          <>
+            <ReviewForm
+              sellerId={profileUserId}
+              onSubmitted={() => setReloadKey((k) => k + 1)}
+            />
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+              <button
+                onClick={() => setReportOpen(true)}
+                style={{
+                  padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444",
+                }}
+              >
+                Report User
+              </button>
+            </div>
+            {reportOpen && profile && (
+              <ReportModal
+                targetType="user"
+                targetId={profileUserId}
+                targetName={profile.username}
+                onClose={() => setReportOpen(false)}
+              />
+            )}
+          </>
         )}
 
         {/* Reviews Section */}

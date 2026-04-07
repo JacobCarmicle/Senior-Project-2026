@@ -27,6 +27,7 @@ async function fillRequiredFields(user: ReturnType<typeof userEvent.setup>) {
 describe("CreateEditListingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllGlobals();
     vi.mocked(listingsApi.getListing).mockResolvedValue({
       id: "l1",
       seller_id: "u1",
@@ -134,4 +135,69 @@ describe("CreateEditListingPage", () => {
 
     expect(await screen.findByText(/only png, jpg, and webp images are allowed/i)).toBeInTheDocument();
   }, 15000);
+
+  it("fills meetup location when current location is used", async () => {
+    const user = userEvent.setup();
+    const getCurrentPosition = vi.fn((success: PositionCallback) => {
+      success({
+        coords: {
+          latitude: 37.6872,
+          longitude: -97.3301,
+          accuracy: 10,
+          altitude: null,
+          altitudeAccuracy: null,
+          heading: null,
+          speed: null,
+          toJSON: () => ({}),
+        },
+        timestamp: Date.now(),
+        toJSON: () => ({}),
+      } as GeolocationPosition);
+    });
+
+    Object.defineProperty(globalThis.navigator, "geolocation", {
+      value: { getCurrentPosition },
+      configurable: true,
+    });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ address: { city: "Wichita", state_code: "KS" } }),
+      }),
+    );
+
+    renderWithProviders(<CreateEditListingPage />, { route: "/create-listing" });
+
+    await user.click(screen.getByRole("button", { name: /use current location/i }));
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/bowling green/i)).toHaveValue("Wichita, KS");
+    });
+  });
+
+  it("shows location error when permission is denied", async () => {
+    const user = userEvent.setup();
+    const getCurrentPosition = vi.fn((_success: PositionCallback, error?: PositionErrorCallback) => {
+      error?.({
+        code: 1,
+        message: "Denied",
+        PERMISSION_DENIED: 1,
+        POSITION_UNAVAILABLE: 2,
+        TIMEOUT: 3,
+      } as GeolocationPositionError);
+    });
+
+    Object.defineProperty(globalThis.navigator, "geolocation", {
+      value: { getCurrentPosition },
+      configurable: true,
+    });
+
+    renderWithProviders(<CreateEditListingPage />, { route: "/create-listing" });
+
+    await user.click(screen.getByRole("button", { name: /use current location/i }));
+
+    expect(await screen.findByText(/unable to access your location/i)).toBeInTheDocument();
+  });
 });

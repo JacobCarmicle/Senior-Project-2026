@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from supabase import Client, create_client
 
+from app.services.geo import haversine_miles, parse_location_coords
+
 
 _client: Client | None = None
 
@@ -83,7 +85,41 @@ def get_listing(listing_id: str) -> dict | None:
     return item
 
 
-def list_public_listings(page: int = 1, page_size: int = 20) -> tuple[list[dict], int]:
+def _apply_distance(
+    items: list[dict],
+    user_lat: float | None,
+    user_lng: float | None,
+    radius_miles: float | None,
+    sort: str | None,
+) -> list[dict]:
+    out: list[dict] = []
+    for item in items:
+        row = dict(item)
+        row["distance_miles"] = None
+        if user_lat is not None and user_lng is not None:
+            coords = parse_location_coords(row.get("location"))
+            if coords:
+                row["distance_miles"] = round(haversine_miles(user_lat, user_lng, coords[0], coords[1]), 2)
+
+        if radius_miles is not None:
+            if row["distance_miles"] is None or row["distance_miles"] > radius_miles:
+                continue
+
+        out.append(row)
+
+    if sort == "distance" and user_lat is not None and user_lng is not None:
+        out.sort(key=lambda x: x["distance_miles"] if x["distance_miles"] is not None else float("inf"))
+    return out
+
+
+def list_public_listings(
+    page: int = 1,
+    page_size: int = 20,
+    user_lat: float | None = None,
+    user_lng: float | None = None,
+    radius_miles: float | None = None,
+    sort: str | None = None,
+) -> tuple[list[dict], int]:
     client = _get_client()
     start = (page - 1) * page_size
     end = start + page_size - 1
@@ -95,7 +131,9 @@ def list_public_listings(page: int = 1, page_size: int = 20) -> tuple[list[dict]
         .range(start, end)
         .execute()
     )
-    return _with_images(rows.data), rows.count or 0
+    items = _with_images(rows.data)
+    items = _apply_distance(items, user_lat, user_lng, radius_miles, sort)
+    return items, len(items) if radius_miles is not None else (rows.count or 0)
 
 
 def update_listing(listing_id: str, seller_id: str, patch: dict, is_admin: bool = False) -> dict | None:
@@ -175,7 +213,18 @@ def list_all_listings() -> list[dict]:
     return items
 
 
-def search_listings(keyword, category, min_price, max_price, page, page_size):
+def search_listings(
+    keyword,
+    category,
+    min_price,
+    max_price,
+    page,
+    page_size,
+    user_lat: float | None = None,
+    user_lng: float | None = None,
+    radius_miles: float | None = None,
+    sort: str | None = None,
+):
     client = _get_client()
     q = client.table("listings").select("*", count="exact").eq("status", "active")
 
@@ -192,4 +241,6 @@ def search_listings(keyword, category, min_price, max_price, page, page_size):
     start = (page - 1) * page_size
     end = start + page_size - 1
     rows = q.order("created_at", desc=True).range(start, end).execute()
-    return _with_images(rows.data), rows.count or 0
+    items = _with_images(rows.data)
+    items = _apply_distance(items, user_lat, user_lng, radius_miles, sort)
+    return items, len(items) if radius_miles is not None else (rows.count or 0)

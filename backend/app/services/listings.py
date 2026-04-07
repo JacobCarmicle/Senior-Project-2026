@@ -24,10 +24,17 @@ def get_listing(listing_id: str) -> dict | None:
     return memory.get_listing(listing_id)
 
 
-def list_public_listings(page: int = 1, page_size: int = 20) -> tuple[list[dict], int]:
+def list_public_listings(
+    page: int = 1,
+    page_size: int = 20,
+    user_lat: float | None = None,
+    user_lng: float | None = None,
+    radius_miles: float | None = None,
+    sort: str | None = None,
+) -> tuple[list[dict], int]:
     if _use_supabase():
-        return listings_supabase.list_public_listings(page, page_size)
-    return memory.list_public_listings(page, page_size)
+        return listings_supabase.list_public_listings(page, page_size, user_lat=user_lat, user_lng=user_lng, radius_miles=radius_miles, sort=sort)
+    return memory.list_public_listings(page, page_size, user_lat=user_lat, user_lng=user_lng, radius_miles=radius_miles, sort=sort)
 
 
 def update_listing(listing_id: str, seller_id: str, patch: dict, is_admin: bool = False) -> dict | None:
@@ -48,7 +55,40 @@ def list_all_listings() -> list[dict]:
     return memory.list_all_listings()
 
 
-def search_listings(keyword, category, min_price, max_price, page, page_size):
+def search_listings(
+    keyword,
+    category,
+    min_price,
+    max_price,
+    page,
+    page_size,
+    user_lat: float | None = None,
+    user_lng: float | None = None,
+    radius_miles: float | None = None,
+    sort: str | None = None,
+):
     if _use_supabase():
-        return listings_supabase.search_listings(keyword, category, min_price, max_price, page, page_size)
-    return memory.search_listings(keyword, category, min_price, max_price, page, page_size)
+        return listings_supabase.search_listings(
+            keyword,
+            category,
+            min_price,
+            max_price,
+            page,
+            page_size,
+            user_lat=user_lat,
+            user_lng=user_lng,
+            radius_miles=radius_miles,
+            sort=sort,
+        )
+    return memory.search_listings(
+        keyword,
+        category,
+        min_price,
+        max_price,
+        page,
+        page_size,
+        user_lat=user_lat,
+        user_lng=user_lng,
+        radius_miles=radius_miles,
+        sort=sort,
+    )

@@ -4,7 +4,7 @@ import { deleteListing, getListing, updateListing } from "../../api/listings";
 import { openConversationFromListing } from "../../api/messaging";
 import { getSellerRatingSummary } from "../../api/reviews";
 import { Navbar } from "../../components/Navbar/Navbar";
-import { createReport, REPORT_REASONS, type ReportReason } from "../../api/reports";
+import ReportModal from "../../components/ReportModal/ReportModal";
 import type { Listing } from "../../types/listings";
 import { useAuth } from "../../context/AuthContext";
 
@@ -26,14 +26,10 @@ export default function ListingDetailPage() {
   const [rating, setRating] = useState<{ average_rating: number; review_count: number } | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [adminConfirm, setAdminConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null);
   const [adminWorking, setAdminWorking] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const [reportReason, setReportReason] = useState<ReportReason>(REPORT_REASONS[0]);
-  const [reportDesc, setReportDesc] = useState("");
-  const [reportWorking, setReportWorking] = useState(false);
-  const [reportDone, setReportDone] = useState(false);
-  const [reportError, setReportError] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -41,6 +37,7 @@ export default function ListingDetailPage() {
     getListing(id)
       .then(async (l) => {
         setListing(l);
+        setSelectedImageIndex(0);
         try {
           const summary = await getSellerRatingSummary(l.seller_id);
           setRating(summary);
@@ -51,6 +48,36 @@ export default function ListingDetailPage() {
       .catch(() => setError("Unable to load listing."))
       .finally(() => setLoading(false));
   }, [id]);
+
+  const imageCount = listing?.images?.length ?? 0;
+
+  function goToPreviousImage() {
+    if (!listing?.images?.length) return;
+    setSelectedImageIndex((prev) => (prev - 1 + listing.images.length) % listing.images.length);
+  }
+
+  function goToNextImage() {
+    if (!listing?.images?.length) return;
+    setSelectedImageIndex((prev) => (prev + 1) % listing.images.length);
+  }
+
+  useEffect(() => {
+    if (!listing?.images?.length || listing.images.length <= 1) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        goToPreviousImage();
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        goToNextImage();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [listing]);
 
   async function handleMessageSeller() {
     if (!listing) return;
@@ -100,25 +127,7 @@ export default function ListingDetailPage() {
     }
   }
 
-  async function handleReport() {
-    if (!listing) return;
-    setReportWorking(true);
-    setReportError("");
-    try {
-      await createReport({ listing_id: listing.id, reason: reportReason, description: reportDesc });
-      setReportOpen(false);
-      setReportDesc("");
-      setReportDone(true);
-      setTimeout(() => setReportDone(false), 6000);
-    } catch (err: unknown) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setReportError(detail ?? "Failed to submit report. Please try again.");
-    } finally {
-      setReportWorking(false);
-    }
-  }
-
-  if (error) {
+if (error) {
     return <div style={{ minHeight: "100vh", background: T.bg, padding: 24, color: T.danger }}>{error}</div>;
   }
 
@@ -146,57 +155,17 @@ export default function ListingDetailPage() {
         </div>
       )}
 
-      {/* Report Toast */}
-      {reportDone && (
-        <div style={{ position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)", zIndex: 60, background: "#1a1a1a", border: "1px solid rgba(34,197,94,0.4)", borderRadius: 12, padding: "14px 22px", boxShadow: "0 8px 30px rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-start", gap: 12, maxWidth: 420, width: "90%" }}>
-          <span style={{ fontSize: 18, lineHeight: 1 }}>✅</span>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>Your report was submitted successfully!</div>
-            <div style={{ fontSize: 12, color: T.muted, marginTop: 3 }}>Reports take 2–3 days to review. Thank you for helping keep TradeForge safe.</div>
-          </div>
-        </div>
+      {reportOpen && listing && (
+        <ReportModal
+          targetType="listing"
+          targetId={listing.id}
+          targetName={listing.title}
+          listingId={listing.id}
+          onClose={() => setReportOpen(false)}
+        />
       )}
 
-      {/* Report Modal */}
-      {reportOpen && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
-          <div style={{ background: "#1a1a1a", border: "1px solid #404040", borderRadius: 14, padding: "28px 32px", maxWidth: 420, width: "90%", boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 4 }}>Report Listing</div>
-            <div style={{ fontSize: 13, color: T.muted, marginBottom: 18 }}>Let us know what's wrong with this listing.</div>
-            <label style={{ fontSize: 12, fontWeight: 700, color: T.muted, display: "block", marginBottom: 6 }}>REASON</label>
-            <select
-              value={reportReason}
-              onChange={e => setReportReason(e.target.value as ReportReason)}
-              style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, fontSize: 13, marginBottom: 14, outline: "none" }}
-            >
-              {REPORT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
-            <label style={{ fontSize: 12, fontWeight: 700, color: T.muted, display: "block", marginBottom: 6 }}>ADDITIONAL DETAILS (optional)</label>
-            <textarea
-              value={reportDesc}
-              onChange={e => setReportDesc(e.target.value)}
-              placeholder="Describe the issue..."
-              rows={3}
-              style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }}
-            />
-            {reportError && (
-              <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontSize: 13 }}>
-                {reportError}
-              </div>
-            )}
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
-              <button onClick={() => setReportOpen(false)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, cursor: "pointer", fontSize: 13 }}>Cancel</button>
-              <button
-                disabled={reportWorking}
-                onClick={handleReport}
-                style={{ padding: "8px 18px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.15)", color: "#ef4444", cursor: "pointer", fontSize: 13, fontWeight: 700, opacity: reportWorking ? 0.6 : 1 }}
-              >{reportWorking ? "Submitting…" : "Submit Report"}</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
+      <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
         <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: 14 }}>← Back to Marketplace</a>
 
         <div
@@ -209,13 +178,115 @@ export default function ListingDetailPage() {
             boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
           }}
         >
-          {listing.images?.[0] && (
-            <img
-              src={listing.images[0]}
-              alt={listing.title}
-              style={{ width: "100%", maxHeight: 460, objectFit: "cover", borderBottom: `1px solid ${T.border}` }}
-            />
-          )}
+          {listing.images?.length ? (
+            <div style={{ borderBottom: `1px solid ${T.border}`, padding: 12 }}>
+              <div style={{ position: "relative" }}>
+                <img
+                  src={listing.images[selectedImageIndex] ?? listing.images[0]}
+                  alt={`${listing.title} image ${selectedImageIndex + 1}`}
+                  style={{ width: "100%", maxHeight: 460, objectFit: "cover", borderRadius: 10 }}
+                />
+
+                {imageCount > 1 && (
+                  <>
+                    <button
+                      onClick={goToPreviousImage}
+                      aria-label="Previous image"
+                      style={{
+                        position: "absolute",
+                        left: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 38,
+                        height: 38,
+                        borderRadius: 999,
+                        border: `1px solid ${T.border}`,
+                        background: "rgba(0,0,0,0.5)",
+                        color: "#fff",
+                        fontSize: 20,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ‹
+                    </button>
+
+                    <button
+                      onClick={goToNextImage}
+                      aria-label="Next image"
+                      style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 38,
+                        height: 38,
+                        borderRadius: 999,
+                        border: `1px solid ${T.border}`,
+                        background: "rgba(0,0,0,0.5)",
+                        color: "#fff",
+                        fontSize: 20,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ›
+                    </button>
+
+                    <div
+                      style={{
+                        position: "absolute",
+                        right: 12,
+                        bottom: 12,
+                        padding: "4px 8px",
+                        borderRadius: 8,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        background: "rgba(0,0,0,0.55)",
+                        color: "#fff",
+                      }}
+                    >
+                      {selectedImageIndex + 1} / {imageCount}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {listing.images.length > 1 && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(84px, 1fr))",
+                    gap: 8,
+                    marginTop: 10,
+                  }}
+                >
+                  {listing.images.map((imageUrl, index) => {
+                    const active = index === selectedImageIndex;
+                    return (
+                      <button
+                        key={`${imageUrl}-${index}`}
+                        onClick={() => setSelectedImageIndex(index)}
+                        style={{
+                          padding: 0,
+                          borderRadius: 8,
+                          border: active ? `2px solid ${T.accent}` : `1px solid ${T.border}`,
+                          background: "transparent",
+                          cursor: "pointer",
+                          overflow: "hidden",
+                        }}
+                        aria-label={`View image ${index + 1}`}
+                      >
+                        <img
+                          src={imageUrl}
+                          alt={`${listing.title} thumbnail ${index + 1}`}
+                          style={{ width: "100%", height: 64, objectFit: "cover", display: "block" }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : null}
 
           <div style={{ padding: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
@@ -242,7 +313,7 @@ export default function ListingDetailPage() {
                 fontSize: 14,
               }}
             >
-              <div>Posted by: <strong style={{ color: T.text }}>{listing.seller_name ?? "Unknown"}</strong></div>
+              <div>Posted by: <a href={`/user/${listing.seller_id}`} style={{ color: T.accent, fontWeight: 700, textDecoration: "none" }}>{listing.seller_name ?? "Unknown"}</a></div>
               <div style={{ marginTop: 6 }}>
                 Seller rating: <strong style={{ color: T.text }}>{rating?.average_rating ?? 0}</strong> / 5 ({rating?.review_count ?? 0} reviews)
               </div>
@@ -382,7 +453,7 @@ export default function ListingDetailPage() {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

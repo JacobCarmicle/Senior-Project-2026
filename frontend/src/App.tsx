@@ -11,6 +11,7 @@ import ListingDetailPage from "./pages/listings/ListingDetailPage";
 import MessagingPage from "./pages/messages/MessagingPage";
 import ReviewsPage from "./pages/reviews/ReviewsPage";
 import ProfilePage from "./pages/profile/ProfilePage";
+import SavedListingsPage from "./pages/saved/SavedListingsPage";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="/profile" element={<ProfilePage/>} />
           <Route path="/user/:userId" element={<ProfilePage/>} />
+          <Route path="/saved" element={<SavedListingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

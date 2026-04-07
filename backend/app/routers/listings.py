@@ -24,8 +24,19 @@ def create_listing(payload: ListingCreateRequest, current_user: dict = Depends(g
 def list_listings(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
+    user_lat: float | None = None,
+    user_lng: float | None = None,
+    radius_miles: float | None = Query(default=None, gt=0),
+    sort: str | None = Query(default=None),
 ):
-    items, total = listings.list_public_listings(page=page, page_size=page_size)
+    items, total = listings.list_public_listings(
+        page=page,
+        page_size=page_size,
+        user_lat=user_lat,
+        user_lng=user_lng,
+        radius_miles=radius_miles,
+        sort=sort,
+    )
     return ListingListResponse(items=[ListingResponse(**x) for x in items], total=total, page=page, page_size=page_size)
 
 
@@ -37,8 +48,23 @@ def search_listings(
     max_price: Decimal | None = Query(default=None, ge=0),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
+    user_lat: float | None = None,
+    user_lng: float | None = None,
+    radius_miles: float | None = Query(default=None, gt=0),
+    sort: str | None = Query(default=None),
 ):
-    items, total = listings.search_listings(keyword, category, min_price, max_price, page, page_size)
+    items, total = listings.search_listings(
+        keyword,
+        category,
+        min_price,
+        max_price,
+        page,
+        page_size,
+        user_lat=user_lat,
+        user_lng=user_lng,
+        radius_miles=radius_miles,
+        sort=sort,
+    )
     return ListingListResponse(items=[ListingResponse(**x) for x in items], total=total, page=page, page_size=page_size)
 
 

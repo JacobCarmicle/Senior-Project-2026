@@ -9,6 +9,7 @@ export interface Listing {
   location: string;
   status: string;
   images: string[];
+  distance_miles?: number | null;
   created_at: string;
   updated_at: string;
 }

@@ -6,6 +6,7 @@ import { Navbar } from "../../components/Navbar/Navbar.tsx";
 import { useAuth } from "../../context/AuthContext";
 import type { Conversation, Message } from "../../types/messaging";
 import type { Meetup } from "../../types/meetup";
+import ReportModal from "../../components/ReportModal/ReportModal";
 
 const T = {
   bg: "#2d2d2d",
@@ -16,7 +17,41 @@ const T = {
   accent: "#22c55e",
 };
 
+function MessageRow({ message, isOwn, onReport }: {
+  message: Message;
+  isOwn: boolean;
+  onReport: (id: string, preview: string) => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ marginBottom: 4, background: "#2a2a2a", padding: 10, borderRadius: 10, border: `1px solid ${T.border}`, position: "relative" }}
+    >
+      <div style={{ fontSize: 11, color: T.muted }}>{new Date(message.sent_at).toLocaleString()}</div>
+      <div style={{ marginTop: 4 }}>{message.text || "[image]"}</div>
+      {!isOwn && hovered && (
+        <button
+          onClick={() => onReport(message.id, (message.text || "").slice(0, 60))}
+          title="Report message"
+          style={{
+            position: "absolute", top: 8, right: 8,
+            background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+            borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 700,
+            color: "#ef4444", cursor: "pointer",
+          }}
+        >
+          Report
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function MessagingPage() {
+  const { user } = useAuth();
   const [params] = useSearchParams();
   const preferred = params.get("conversation") || "";
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -31,6 +66,7 @@ export default function MessagingPage() {
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const { user } = useAuth();
+  const [reportTarget, setReportTarget] = useState<{ id: string; preview: string } | null>(null);
 
   useEffect(() => {
     listMyConversations().then((r) => {
@@ -140,7 +176,15 @@ export default function MessagingPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
-      <Navbar exclude={["inbox"]} />
+      {reportTarget && (
+        <ReportModal
+          targetType="message"
+          targetId={reportTarget.id}
+          targetName={reportTarget.preview || "Message"}
+          onClose={() => setReportTarget(null)}
+        />
+      )}
+      <Navbar exclude={["inbox"]}/>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: 20 }}>
         <div
           style={{
@@ -391,6 +435,16 @@ export default function MessagingPage() {
                 );
               })}
               <div ref={bottomRef} />
+            <div style={{ flex: 1, overflow: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+              {messages.length === 0 && <p style={{ color: T.muted }}>No messages yet.</p>}
+              {messages.map((m) => (
+                <MessageRow
+                  key={m.id}
+                  message={m}
+                  isOwn={m.sender_id === user?.id}
+                  onReport={(id, preview) => setReportTarget({ id, preview })}
+                />
+              ))}
             </div>
 
             <div style={{ display: "flex", gap: 8, padding: 12, borderTop: `1px solid ${T.border}` }}>

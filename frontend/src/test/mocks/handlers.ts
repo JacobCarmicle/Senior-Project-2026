@@ -12,12 +12,26 @@ let listings = [
     location: "Wichita, KS",
     status: "active",
     images: ["https://img.test/existing.jpg"],
+    distance_miles: 3.2,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
 ];
 
 const BASE = "http://localhost:8000";
+
+const reviewsBySeller: Record<string, Array<{ id: string; seller_id: string; reviewer_id: string; rating: number; comment: string; created_at: string }>> = {
+  seller1: [
+    {
+      id: "r1",
+      seller_id: "seller1",
+      reviewer_id: "u1",
+      rating: 5,
+      comment: "Great seller!",
+      created_at: new Date().toISOString(),
+    },
+  ],
+};
 
 export const handlers = [
   http.post(`${BASE}/auth/login`, async ({ request }) => {
@@ -119,6 +133,7 @@ export const handlers = [
       location: body.location,
       status: "active",
       images: body.images,
+      distance_miles: 3.2,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -150,10 +165,53 @@ export const handlers = [
     });
   }),
 
+  http.get(`${BASE}/listings/search`, ({ request }) => {
+    const url = new URL(request.url);
+    const keyword = (url.searchParams.get("keyword") || "").toLowerCase();
+    const sorted = [...listings].sort((a, b) => (a.distance_miles ?? 9999) - (b.distance_miles ?? 9999));
+    const items = keyword
+      ? sorted.filter((x) => x.title.toLowerCase().includes(keyword) || x.description.toLowerCase().includes(keyword))
+      : sorted;
+
+    return HttpResponse.json({ items, total: items.length, page: 1, page_size: 20 });
+  }),
+
   http.get(`${BASE}/listings/:id`, ({ params }) => {
     const id = String(params.id);
     const item = listings.find((x) => x.id === id);
     if (!item) return HttpResponse.json({ detail: "Listing not found" }, { status: 404 });
     return HttpResponse.json(item);
+  }),
+
+  http.post(`${BASE}/reviews`, async ({ request }) => {
+    const auth = request.headers.get("Authorization");
+    if (!auth) return HttpResponse.json({ detail: "Not authenticated" }, { status: 401 });
+
+    const body = (await request.json()) as { seller_id: string; rating: number; comment?: string };
+    const review = {
+      id: `r${Date.now()}`,
+      seller_id: body.seller_id,
+      reviewer_id: "u1",
+      rating: body.rating,
+      comment: body.comment ?? "",
+      created_at: new Date().toISOString(),
+    };
+    reviewsBySeller[body.seller_id] = [review, ...(reviewsBySeller[body.seller_id] ?? [])];
+    return HttpResponse.json(review, { status: 201 });
+  }),
+
+  http.get(`${BASE}/reviews/seller/:sellerId`, ({ params }) => {
+    const sellerId = String(params.sellerId);
+    const items = reviewsBySeller[sellerId] ?? [];
+    return HttpResponse.json({ items, total: items.length });
+  }),
+
+  http.get(`${BASE}/reviews/seller/:sellerId/rating-summary`, ({ params }) => {
+    const sellerId = String(params.sellerId);
+    const items = reviewsBySeller[sellerId] ?? [];
+    const review_count = items.length;
+    const average_rating =
+      review_count === 0 ? 0 : Number((items.reduce((sum, r) => sum + r.rating, 0) / review_count).toFixed(2));
+    return HttpResponse.json({ seller_id: sellerId, review_count, average_rating });
   }),
 ];
