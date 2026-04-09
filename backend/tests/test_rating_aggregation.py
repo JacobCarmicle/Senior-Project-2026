@@ -1,4 +1,4 @@
-from backend.app.services import reviews_memory
+from app.services import reviews_memory
 
 
 def test_seller_rating_aggregation_empty_defaults():

@@ -29,6 +29,30 @@ const MAX_IMAGES    = 4;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
+async function reverseGeocodeToCityState(lat: number, lng: number): Promise<string | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}`;
+    const res = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      address?: { city?: string; town?: string; village?: string; state?: string; state_code?: string };
+    };
+
+    const city = data.address?.city || data.address?.town || data.address?.village;
+    const state = data.address?.state_code || data.address?.state;
+
+    if (!city || !state) return null;
+    return `${city}, ${state}`;
+  } catch {
+    return null;
+  }
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface ImageFile {
   id: string;
@@ -210,6 +234,8 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
   const [success,  setSuccess]  = useState(false);
   const [imageError, setImageError] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [locationError, setLocationError] = useState("");
+  const [locationLoading, setLocationLoading] = useState(false);
 
   // ── Load existing data in edit mode ────────────────────────────────────────
   useEffect(() => {
@@ -243,6 +269,31 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
   const setField = (field: keyof FormData, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
+  };
+
+  const useCurrentLocation = () => {
+    setLocationError("");
+
+    if (!navigator.geolocation) {
+      setLocationError("Unable to access your location on this browser.");
+      return;
+    }
+
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const label = await reverseGeocodeToCityState(lat, lng);
+        setField("location", label ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        setLocationLoading(false);
+      },
+      () => {
+        setLocationError("Unable to access your location. Please enter it manually.");
+        setLocationLoading(false);
+      },
+      { enableHighAccuracy: false, timeout: 8000 },
+    );
   };
 
   // ── Image handlers ─────────────────────────────────────────────────────────
@@ -469,7 +520,26 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
 
               {/* Location */}
               <div style={{ gridColumn: "1 / -1" }}>
-                <Label text="Meetup Location" required />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "7px" }}>
+                  <Label text="Meetup Location" required />
+                  <button
+                    type="button"
+                    onClick={useCurrentLocation}
+                    disabled={locationLoading}
+                    style={{
+                      border: `1px solid ${T.border}`,
+                      background: T.surface,
+                      color: T.muted,
+                      borderRadius: "8px",
+                      padding: "6px 10px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      cursor: locationLoading ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {locationLoading ? "Locating..." : "Use Current Location"}
+                  </button>
+                </div>
                 <input
                   value={form.location}
                   onChange={e => setField("location", e.target.value)}
@@ -477,6 +547,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
                   style={inputStyle(!!errors.location)}
                 />
                 <ErrorMsg msg={errors.location} />
+                <ErrorMsg msg={locationError} />
               </div>
             </div>
           </div>

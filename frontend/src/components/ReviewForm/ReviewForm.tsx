@@ -39,9 +39,16 @@ export default function ReviewForm({
       setComment("");
 
       if (onSubmitted) onSubmitted();
-    }catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.response?.data?.detail || "Failed to submit review.");
+      const detail =
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof (err as { response?: { data?: { detail?: string } } }).response?.data?.detail === "string"
+          ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+          : undefined;
+      setError(detail || "Failed to submit review.");
     }
   }
 

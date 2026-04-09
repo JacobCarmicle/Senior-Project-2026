@@ -39,8 +39,30 @@ export async function getListing(id: string): Promise<Listing> {
   return normalizeListing(res.data);
 }
 
-export async function listListings(): Promise<ListingListResponse> {
-  const res = await client.get<ListingListResponse>("/listings");
+export interface ListingQueryOptions {
+  user_lat?: number;
+  user_lng?: number;
+  radius_miles?: number;
+  sort?: "newest" | "oldest" | "price-asc" | "price-desc" | "distance";
+}
+
+export interface SearchListingOptions extends ListingQueryOptions {
+  keyword?: string;
+  category?: string;
+  min_price?: number;
+  max_price?: number;
+}
+
+export async function listListings(options: ListingQueryOptions = {}): Promise<ListingListResponse> {
+  const res = await client.get<ListingListResponse>("/listings", { params: options });
+  return {
+    ...res.data,
+    items: (res.data.items || []).map(normalizeListing),
+  };
+}
+
+export async function searchListings(options: SearchListingOptions = {}): Promise<ListingListResponse> {
+  const res = await client.get<ListingListResponse>("/listings/search", { params: options });
   return {
     ...res.data,
     items: (res.data.items || []).map(normalizeListing),

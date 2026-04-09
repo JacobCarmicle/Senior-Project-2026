@@ -15,3 +15,8 @@ export async function getSellerRatingSummary(sellerId: string): Promise<RatingSu
   const res = await client.get<RatingSummary>(`/reviews/seller/${sellerId}/rating-summary`);
   return res.data;
 }
+
+export async function deleteReview(reviewId: string): Promise<boolean> {
+  const res = await client.delete<{ success: boolean }>(`/reviews/delete/${reviewId}`);
+  return res.data.success;
+}

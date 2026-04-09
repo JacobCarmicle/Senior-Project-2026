@@ -166,3 +166,51 @@ def test_search_filters(client):
     items = res.json()["items"]
     assert len(items) == 1
     assert items[0]["title"] == "Gaming chair"
+
+
+def test_location_radius_and_distance_sort(client):
+    token, _ = _signup_and_token(client, "seller-location@example.com")
+
+    client.post(
+        "/listings",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "title": "Near Wichita item",
+            "description": "Near user location",
+            "price": 50,
+            "category": "electronics",
+            "location": "Wichita, KS",
+            "images": ["https://img.test/wichita.jpg"],
+        },
+    )
+
+    client.post(
+        "/listings",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "title": "Far Kansas City item",
+            "description": "Farther from user location",
+            "price": 55,
+            "category": "electronics",
+            "location": "Kansas City, MO",
+            "images": ["https://img.test/kc.jpg"],
+        },
+    )
+
+    within_radius = client.get(
+        "/listings/search?user_lat=37.6872&user_lng=-97.3301&radius_miles=50&sort=distance"
+    )
+    assert within_radius.status_code == 200
+    within_items = within_radius.json()["items"]
+    assert len(within_items) == 1
+    assert within_items[0]["title"] == "Near Wichita item"
+    assert within_items[0]["distance_miles"] is not None
+
+    sorted_by_distance = client.get(
+        "/listings/search?user_lat=37.6872&user_lng=-97.3301&sort=distance"
+    )
+    assert sorted_by_distance.status_code == 200
+    sorted_items = sorted_by_distance.json()["items"]
+    assert len(sorted_items) >= 2
+    assert sorted_items[0]["title"] == "Near Wichita item"
+    assert sorted_items[0]["distance_miles"] <= sorted_items[1]["distance_miles"]
