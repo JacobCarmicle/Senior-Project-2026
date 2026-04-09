@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "../../components/Navbar/Navbar.tsx";
-import { listSellerReviews, getSellerRatingSummary, deleteReview } from "../../api/reviews";
+import { listSellerReviews, getSellerRatingSummary, deleteReview, getSellerTrustScore } from "../../api/reviews";
 import { useAuth } from "../../context/AuthContext";
 import { useParams } from "react-router-dom";
-import type { Review } from "../../types/reviews";
+import type { Review, SellerTrustScore } from "../../types/reviews";
 import ReviewForm from "../../components/ReviewForm/ReviewForm";
 import ReportModal from "../../components/ReportModal/ReportModal";
 import { getUser } from "../../api/users";
@@ -29,12 +29,20 @@ const T = {
 //   text: string;
 // }
 
+const BADGE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
+  "Trusted Seller":   { bg: "rgba(34,197,94,0.15)",  border: "rgba(34,197,94,0.4)",  text: "#22c55e" },
+  "Reliable Seller":  { bg: "rgba(59,130,246,0.15)", border: "rgba(59,130,246,0.4)", text: "#60a5fa" },
+  "New Seller":       { bg: "rgba(234,179,8,0.15)",  border: "rgba(234,179,8,0.4)",  text: "#eab308" },
+  "Limited Activity": { bg: "rgba(156,163,175,0.1)", border: "rgba(156,163,175,0.3)", text: "#9ca3af" },
+};
+
 interface UserProfile {
   username: string;
   rating: number;
   ratingCount: number;
   profilePicture?: string;
   reviews: Review[];
+  trust?: SellerTrustScore;
 }
 
 // ── Star Rating Component ─────────────────────────────────────────────────────
@@ -109,6 +117,12 @@ function ReviewCard({
 
       <StarRating rating={review.rating} />
 
+      {review.listing_title && (
+        <div style={{ fontSize: 12, color: T.muted }}>
+          Item: <a href={review.listing_id ? `/listing/${review.listing_id}` : undefined} style={{ color: "#60a5fa", textDecoration: "none" }}>{review.listing_title}</a>
+        </div>
+      )}
+
       <div style={{ fontSize: "14px", color: T.text }}>
         {review.comment}
       </div>
@@ -118,6 +132,9 @@ function ReviewCard({
 
 // ── Profile Header ────────────────────────────────────────────────────────────
 function ProfileHeader({ profile }: { profile: UserProfile }) {
+  const badge = profile.trust?.trust_badge;
+  const badgeColors = badge ? BADGE_COLORS[badge] : null;
+
   return (
     <div
       style={{
@@ -168,7 +185,24 @@ function ProfileHeader({ profile }: { profile: UserProfile }) {
 
       {/* Profile Info */}
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <div style={{ fontSize: "22px", fontWeight: 800 }}>{profile.username}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ fontSize: "22px", fontWeight: 800 }}>{profile.username}</div>
+          {badge && badgeColors && (
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                padding: "3px 10px",
+                borderRadius: 999,
+                background: badgeColors.bg,
+                border: `1px solid ${badgeColors.border}`,
+                color: badgeColors.text,
+              }}
+            >
+              {badge}
+            </span>
+          )}
+        </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <StarRating rating={Math.round(profile.rating)} />
@@ -176,6 +210,12 @@ function ProfileHeader({ profile }: { profile: UserProfile }) {
             {profile.rating.toFixed(1)} ({profile.ratingCount} reviews)
           </span>
         </div>
+
+        {profile.trust && (
+          <div style={{ fontSize: 13, color: T.muted }}>
+            Trust score: <strong style={{ color: T.text }}>{profile.trust.trust_score}</strong> / 100
+          </div>
+        )}
       </div>
     </div>
   );
@@ -240,10 +280,11 @@ export default function UserProfilePage() {
 
       async function loadProfile() {
         try {
-          const [userRes, reviewsRes, ratingRes] = await Promise.all([
+          const [userRes, reviewsRes, ratingRes, trustRes] = await Promise.all([
             getUser(sellerId),
             listSellerReviews(sellerId),
             getSellerRatingSummary(sellerId),
+            getSellerTrustScore(sellerId).catch(() => null),
           ]);
 
           if (cancelled) return;
@@ -275,6 +316,7 @@ export default function UserProfilePage() {
             ratingCount: ratingRes.review_count ?? 0,
             profilePicture: "",
             reviews: reviewsRes.items ?? [],
+            trust: trustRes ?? undefined,
           };
 
           setProfile(profileData);

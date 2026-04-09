@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { listListings, toggleSaveListing, getSavedListings, searchListings } from "../../api/listings";
+import { listListings, toggleSaveListing, getSavedListings, searchListings, getForYouRecommendations } from "../../api/listings";
 import type { Listing as ApiListing } from "../../types/listings";
 import { Navbar } from "../../components/Navbar/Navbar.tsx";
 import { useAuth } from "../../context/AuthContext";
@@ -274,6 +274,26 @@ export default function HomePage() {
     console.debug("[image-debug] listings image URL sample", samples);
   }, [listings]);
 
+  // ── For You recommendations ─────────────────────────────────────────────────
+  const [forYou, setForYou] = useState<Listing[]>([]);
+
+  useEffect(() => {
+    getSavedListings()
+      .then((res) => {
+        const items = res.items ?? [];
+        // Build category priority from saved listings (most frequent first)
+        const freq: Record<string, number> = {};
+        for (const l of items) freq[l.category] = (freq[l.category] ?? 0) + 1;
+        const topCats = Object.entries(freq)
+          .sort((a, b) => b[1] - a[1])
+          .map(([cat]) => cat);
+        const excludeIds = items.map((l) => l.id);
+        return getForYouRecommendations(topCats, excludeIds);
+      })
+      .catch(() => getForYouRecommendations([], []))
+      .then((recs) => setForYou(recs.map(toUiListing)));
+  }, [user]);
+
   // ── Client-side fallback sort/filter (server handles primary query) ─────────
   const filtered = useMemo(() => {
     const result = [...listings];
@@ -347,7 +367,7 @@ export default function HomePage() {
 
       <Navbar exclude={["marketplace"]}/>
 
-      <main style={{ maxWidth:"1200px", margin:"0 auto", padding:"22px 20px 40px" }}>
+      <main style={{ maxWidth:"1600px", margin:"0 auto", padding:"22px 20px 40px" }}>
 
         {/* ── Search Bar ── */}
         <div style={{
@@ -492,76 +512,157 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ── Listing Grid ── */}
-        {loadingListings ? (
-          <div style={{ background: T.card, border:`1px solid ${T.border}`, borderRadius:"14px", padding:"40px 20px", textAlign:"center", color: T.muted }}>Loading listings...</div>
-        ) : paginated.length > 0 ? (
-          <div style={{
-            display:"grid",
-            gridTemplateColumns:"repeat(auto-fill, minmax(240px, 1fr))",
-            gap:"16px",
-            marginBottom:"28px",
-          }}>
-            {paginated.map(listing => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                onSave={toggleSave}
-                onClick={handleCardClick}
-              />
-            ))}
-          </div>
-        ) : (
-          <div style={{
-            background: T.card, border:`1px solid ${T.border}`,
-            borderRadius:"14px", padding:"60px 20px",
-            textAlign:"center", color: T.muted,
-            boxShadow:"0 2px 10px rgba(0,0,0,0.3)",
-          }}>
-            <div style={{ fontSize:"40px", marginBottom:"12px" }}>🔍</div>
-            <div style={{ fontSize:"16px", fontWeight:700, color: T.text, marginBottom:"6px" }}>No listings found</div>
-            <div style={{ fontSize:"14px" }}>Try adjusting your filters or search terms.</div>
-            <button onClick={resetFilters} style={{
-              marginTop:"16px", background: T.accent, color:"#fff",
-              border:"none", borderRadius:"10px", padding:"10px 22px",
-              fontWeight:700, fontSize:"14px", cursor:"pointer",
-            }}>Clear Filters</button>
-          </div>
-        )}
+        {/* ── Main content: sidebar + grid ── */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: forYou.length > 0 ? "290px 1fr" : "1fr",
+          gap: "16px",
+          alignItems: "start",
+        }}>
+          {/* ── For You Sidebar ── */}
+          {forYou.length > 0 && (
+            <div style={{
+              background: T.card,
+              border: `1px solid ${T.border}`,
+              borderRadius: "14px",
+              overflow: "hidden",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+              position: "sticky",
+              top: "80px",
+            }}>
+              {/* Header */}
+              <div style={{
+                padding: "16px 18px 13px",
+                borderBottom: `1px solid ${T.border}`,
+                background: "rgba(34,197,94,0.04)",
+              }}>
+                <div style={{ fontSize: "14px", fontWeight: 800, color: T.text, letterSpacing: "-0.01em" }}>For You</div>
+                <div style={{ fontSize: "12px", color: T.muted, marginTop: "3px" }}>Based on your saved listings</div>
+              </div>
 
-        {/* ── Pagination ── */}
-        {totalPages > 1 && (
-          <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:"6px" }}>
-            <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-              style={{
-                padding:"8px 16px", borderRadius:"8px", fontSize:"13px", fontWeight:600, cursor: page === 1 ? "not-allowed" : "pointer",
-                background: page === 1 ? "#3a3a3a" : T.surface, border:`1px solid ${T.border}`,
-                color: page === 1 ? "#cbd5e1" : T.text,
-              }}>← Prev</button>
+              {/* Rows */}
+              {forYou.slice(0, 8).map((listing, i) => (
+                <div
+                  key={listing.id}
+                  onClick={() => handleCardClick(listing.id)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "11px 16px",
+                    borderBottom: i < Math.min(forYou.length, 8) - 1 ? `1px solid ${T.border}` : "none",
+                    cursor: "pointer",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
+                >
+                  {/* Thumbnail */}
+                  <div style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: "9px",
+                    overflow: "hidden",
+                    background: "#222",
+                    flexShrink: 0,
+                    border: `1px solid ${T.border}`,
+                  }}>
+                    {listing.imageUrl ? (
+                      <img src={listing.imageUrl} alt={listing.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", background: "#2a2a2a" }} />
+                    )}
+                  </div>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-              <button key={p} onClick={() => setPage(p)} style={{
-                width:"36px", height:"36px", borderRadius:"8px",
-                fontSize:"13px", fontWeight: p === page ? 700 : 400,
-                cursor:"pointer",
-                border: p === page ? `1.5px solid ${T.accent}` : `1px solid ${T.border}`,
-                background: p === page ? "rgba(34,197,94,0.12)" : T.surface,
-                color: p === page ? T.accent : T.muted,
-              }}>{p}</button>
-            ))}
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: "13px", fontWeight: 700, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.35, marginBottom: "3px" }}>{listing.title}</div>
+                    <div style={{ fontSize: "14px", fontWeight: 900, color: T.accent }}>${listing.price.toLocaleString()}</div>
+                    <div style={{ fontSize: "11px", color: T.muted, marginTop: "2px" }}>{listing.category}</div>
+                  </div>
 
-            <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              style={{
-                padding:"8px 16px", borderRadius:"8px", fontSize:"13px", fontWeight:600, cursor: page === totalPages ? "not-allowed" : "pointer",
-                background: page === totalPages ? "#3a3a3a" : T.surface, border:`1px solid ${T.border}`,
-                color: page === totalPages ? "#cbd5e1" : T.text,
-              }}>Next →</button>
+                  {/* Arrow */}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── Listing Grid + Pagination ── */}
+          <div>
+            {loadingListings ? (
+              <div style={{ background: T.card, border:`1px solid ${T.border}`, borderRadius:"14px", padding:"40px 20px", textAlign:"center", color: T.muted }}>Loading listings...</div>
+            ) : paginated.length > 0 ? (
+              <div style={{
+                display:"grid",
+                gridTemplateColumns:"repeat(auto-fill, minmax(240px, 1fr))",
+                gap:"16px",
+                marginBottom:"28px",
+              }}>
+                {paginated.map(listing => (
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    onSave={toggleSave}
+                    onClick={handleCardClick}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div style={{
+                background: T.card, border:`1px solid ${T.border}`,
+                borderRadius:"14px", padding:"60px 20px",
+                textAlign:"center", color: T.muted,
+                boxShadow:"0 2px 10px rgba(0,0,0,0.3)",
+              }}>
+                <div style={{ fontSize:"40px", marginBottom:"12px" }}>🔍</div>
+                <div style={{ fontSize:"16px", fontWeight:700, color: T.text, marginBottom:"6px" }}>No listings found</div>
+                <div style={{ fontSize:"14px" }}>Try adjusting your filters or search terms.</div>
+                <button onClick={resetFilters} style={{
+                  marginTop:"16px", background: T.accent, color:"#fff",
+                  border:"none", borderRadius:"10px", padding:"10px 22px",
+                  fontWeight:700, fontSize:"14px", cursor:"pointer",
+                }}>Clear Filters</button>
+              </div>
+            )}
+
+            {/* ── Pagination ── */}
+            {totalPages > 1 && (
+              <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:"6px" }}>
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  style={{
+                    padding:"8px 16px", borderRadius:"8px", fontSize:"13px", fontWeight:600, cursor: page === 1 ? "not-allowed" : "pointer",
+                    background: page === 1 ? "#3a3a3a" : T.surface, border:`1px solid ${T.border}`,
+                    color: page === 1 ? "#cbd5e1" : T.text,
+                  }}>← Prev</button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button key={p} onClick={() => setPage(p)} style={{
+                    width:"36px", height:"36px", borderRadius:"8px",
+                    fontSize:"13px", fontWeight: p === page ? 700 : 400,
+                    cursor:"pointer",
+                    border: p === page ? `1.5px solid ${T.accent}` : `1px solid ${T.border}`,
+                    background: p === page ? "rgba(34,197,94,0.12)" : T.surface,
+                    color: p === page ? T.accent : T.muted,
+                  }}>{p}</button>
+                ))}
+
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  style={{
+                    padding:"8px 16px", borderRadius:"8px", fontSize:"13px", fontWeight:600, cursor: page === totalPages ? "not-allowed" : "pointer",
+                    background: page === totalPages ? "#3a3a3a" : T.surface, border:`1px solid ${T.border}`,
+                    color: page === totalPages ? "#cbd5e1" : T.text,
+                  }}>Next →</button>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </main>
     </div>
   );

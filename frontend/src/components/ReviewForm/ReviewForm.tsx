@@ -12,9 +12,13 @@ const T = {
 
 export default function ReviewForm({
   sellerId,
+  listingId,
+  listingTitle,
   onSubmitted,
 }: {
   sellerId: string;
+  listingId?: string;
+  listingTitle?: string;
   onSubmitted?: () => void;
 }) {
   const [rating, setRating] = useState(5);
@@ -33,6 +37,7 @@ export default function ReviewForm({
         seller_id: sellerId,
         rating,
         comment: comment.trim(),
+        ...(listingId ? { listing_id: listingId } : {}),
       });
 
       setMessage("Review submitted.");
@@ -63,6 +68,11 @@ export default function ReviewForm({
       }}
     >
       <div style={{ fontSize: 18, fontWeight: 800 }}>Leave a Review</div>
+      {listingTitle && (
+        <div style={{ fontSize: 13, color: T.muted, marginTop: 4 }}>
+          For: <strong style={{ color: T.text }}>{listingTitle}</strong>
+        </div>
+      )}
 
       <div style={{ marginTop: 12 }}>
         <label style={{ fontSize: 13, color: T.muted }}>Rating</label>

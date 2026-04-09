@@ -25,6 +25,7 @@ from app.routers.uploads import router as uploads_router
 from app.routers.reports import router as reports_router
 from app.routers.users import router as users_router
 from app.routers.saved import router as saved_router
+from app.routers.notifications import router as notifications_router
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
@@ -66,6 +67,7 @@ app.include_router(uploads_router)
 app.include_router(reports_router)
 app.include_router(users_router)
 app.include_router(saved_router)
+app.include_router(notifications_router)
 
 uploads_dir = Path(__file__).resolve().parents[1] / "uploads"
 uploads_dir.mkdir(parents=True, exist_ok=True)

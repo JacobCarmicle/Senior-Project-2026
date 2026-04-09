@@ -7,6 +7,9 @@ import { useAuth } from "../../context/AuthContext";
 import type { Conversation, Message } from "../../types/messaging";
 import type { Meetup } from "../../types/meetup";
 import ReportModal from "../../components/ReportModal/ReportModal";
+import ReviewForm from "../../components/ReviewForm/ReviewForm";
+import { getListing, updateListing } from "../../api/listings";
+import type { Listing } from "../../types/listings";
 
 const T = {
   bg: "#2d2d2d",
@@ -62,6 +65,8 @@ export default function MessagingPage() {
   const [showMeetupModal, setShowMeetupModal] = useState(false);
   const [meetupDate, setMeetupDate] = useState(""); // YYYY-MM-DDTHH:MM
   const [meetupLocation, setMeetupLocation] = useState("");
+  const [activeListing, setActiveListing] = useState<Listing | null>(null);
+  const [reviewSubmitted, setReviewSubmitted] = useState<Record<string, boolean>>({});
 
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -132,6 +137,18 @@ export default function MessagingPage() {
     return user.id === active.seller_id ? active.buyer_id : active.seller_id;
   }, [active, user]);
   const isSeller = user?.id === active?.seller_id;
+
+  useEffect(() => {
+    if (!active?.listing_id) { setActiveListing(null); return; }
+    getListing(active.listing_id).then(setActiveListing).catch(() => setActiveListing(null));
+  }, [active?.listing_id]);
+
+  async function handleMarkSold() {
+    if (!active?.listing_id) return;
+    if (!window.confirm("Mark this listing as sold?")) return;
+    const updated = await updateListing(active.listing_id, { status: "sold" });
+    setActiveListing(updated);
+  }
 
   async function handleSend() {
     if (!activeId || !draft.trim()) return;
@@ -317,6 +334,31 @@ export default function MessagingPage() {
                   Propose Meetup
                 </button>
               )}
+
+              {isSeller && activeListing?.status === "active" && (
+                <button
+                  onClick={handleMarkSold}
+                  style={{
+                    padding: "8px 14px",
+                    borderRadius: 8,
+                    background: "rgba(234,179,8,0.15)",
+                    color: "#eab308",
+                    border: "1px solid rgba(234,179,8,0.4)",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    fontSize: 13,
+                    marginLeft: "auto",
+                  }}
+                >
+                  Mark as Sold
+                </button>
+              )}
+
+              {isSeller && activeListing?.status === "sold" && (
+                <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, padding: "4px 10px", borderRadius: 999, background: "rgba(234,179,8,0.15)", border: "1px solid rgba(234,179,8,0.4)", color: "#eab308" }}>
+                  Sold
+                </span>
+              )}
             </div>
 
             {meetup && (
@@ -420,6 +462,23 @@ export default function MessagingPage() {
               ))}
               <div ref={bottomRef} />
             </div>
+
+            {!isSeller && activeListing?.status === "sold" && active && !reviewSubmitted[active.id] && (
+              <div style={{ padding: "12px 12px 0" }}>
+                <ReviewForm
+                  sellerId={active.seller_id}
+                  listingId={active.listing_id}
+                  listingTitle={activeListing.title}
+                  onSubmitted={() => setReviewSubmitted((prev) => ({ ...prev, [active.id]: true }))}
+                />
+              </div>
+            )}
+
+            {!isSeller && activeListing?.status === "sold" && active && reviewSubmitted[active.id] && (
+              <div style={{ padding: "12px", fontSize: 13, color: T.accent, fontWeight: 700, borderTop: `1px solid ${T.border}` }}>
+                Review submitted for {activeListing.title}
+              </div>
+            )}
 
             <div style={{ display: "flex", gap: 8, padding: 12, borderTop: `1px solid ${T.border}` }}>
               <input

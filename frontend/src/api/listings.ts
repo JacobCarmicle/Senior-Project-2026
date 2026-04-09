@@ -85,6 +85,42 @@ export async function toggleSaveListing(listingId: string): Promise<void> {
   await client.post(`/listings/${listingId}/save`);
 }
 
+export async function getSimilarListings(listingId: string, limit = 6): Promise<Listing[]> {
+  const res = await client.get<ListingListResponse>(`/listings/${listingId}/similar`, { params: { limit } });
+  return (res.data.items || []).map(normalizeListing);
+}
+
+export async function getForYouRecommendations(savedCategoryPriority: string[], excludeIds: string[] = []): Promise<Listing[]> {
+  if (savedCategoryPriority.length === 0) {
+    // Cold start: return recent listings
+    const res = await client.get<ListingListResponse>("/listings", { params: { page: 1, page_size: 8, sort: "newest" } });
+    return (res.data.items || []).map(normalizeListing);
+  }
+
+  // Fetch up to 3 category buckets in parallel, then merge + deduplicate
+  const topCategories = savedCategoryPriority.slice(0, 3);
+  const buckets = await Promise.all(
+    topCategories.map((cat) =>
+      client
+        .get<ListingListResponse>("/listings/search", { params: { category: cat, page_size: 6 } })
+        .then((r) => (r.data.items || []).map(normalizeListing))
+        .catch(() => [] as Listing[])
+    )
+  );
+
+  const seen = new Set(excludeIds);
+  const results: Listing[] = [];
+  for (const bucket of buckets) {
+    for (const item of bucket) {
+      if (!seen.has(item.id)) {
+        seen.add(item.id);
+        results.push(item);
+      }
+    }
+  }
+  return results.slice(0, 8);
+}
+
 export async function uploadListingImages(files: File[]): Promise<UploadedImage[]> {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));

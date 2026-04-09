@@ -1,7 +1,7 @@
 import client from "./client";
-import type { RatingSummary, Review, ReviewListResponse } from "../types/reviews";
+import type { RatingSummary, Review, ReviewListResponse, SellerTrustScore } from "../types/reviews";
 
-export async function createReview(payload: { seller_id: string; rating: number; comment: string }): Promise<Review> {
+export async function createReview(payload: { seller_id: string; rating: number; comment: string; listing_id?: string }): Promise<Review> {
   const res = await client.post<Review>("/reviews", payload);
   return res.data;
 }
@@ -19,4 +19,9 @@ export async function getSellerRatingSummary(sellerId: string): Promise<RatingSu
 export async function deleteReview(reviewId: string): Promise<boolean> {
   const res = await client.delete<{ success: boolean }>(`/reviews/delete/${reviewId}`);
   return res.data.success;
+}
+
+export async function getSellerTrustScore(sellerId: string): Promise<SellerTrustScore> {
+  const res = await client.get<SellerTrustScore>(`/reviews/seller/${sellerId}/trust`);
+  return res.data;
 }

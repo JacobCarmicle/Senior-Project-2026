@@ -10,6 +10,7 @@ from app.schemas.listings import (
     ListingUpdateRequest,
 )
 from app.services import listings
+from app.services import notifications_supabase as notif_svc
 
 router = APIRouter(prefix="/listings", tags=["listings"])
 
@@ -93,9 +94,35 @@ def update_listing(
     return ListingResponse(**item)
 
 
+@router.get("/{listing_id}/similar", response_model=ListingListResponse)
+def similar_listings(
+    listing_id: str,
+    limit: int = Query(default=6, ge=1, le=12),
+):
+    item = listings.get_listing(listing_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+
+    from app.services import listings_supabase
+    items, _ = listings_supabase.search_listings(
+        keyword=None,
+        category=item["category"],
+        min_price=None,
+        max_price=None,
+        page=1,
+        page_size=limit + 1,
+    )
+    similar = [x for x in items if x["id"] != listing_id][:limit]
+    return ListingListResponse(items=[ListingResponse(**x) for x in similar], total=len(similar), page=1, page_size=limit)
+
+
 @router.delete("/{listing_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_listing(listing_id: str, current_user: dict = Depends(get_current_user)):
     is_admin = current_user.get("role") == "admin"
+
+    # Fetch listing before deletion to notify seller
+    target = listings.get_listing(listing_id) if is_admin else None
+
     try:
         ok = listings.delete_listing(listing_id, current_user["id"], is_admin=is_admin)
     except PermissionError as exc:
@@ -103,3 +130,16 @@ def delete_listing(listing_id: str, current_user: dict = Depends(get_current_use
 
     if not ok:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+
+    # Notify seller when admin removes their listing
+    if is_admin and target:
+        try:
+            notif_svc.create_notification(
+                user_id=target["seller_id"],
+                type="listing_removed",
+                title="Your listing was removed",
+                body=f'Your listing "{target["title"]}" was removed by an admin for violating our policies.',
+                link="/my-listings",
+            )
+        except Exception:
+            pass
