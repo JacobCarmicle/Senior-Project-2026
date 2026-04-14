@@ -94,6 +94,12 @@ export default function MessagingPage() {
             prev.map((m) => (m.id === event.message.id ? event.message : m))
           );
         }
+
+        if (event.type === "conversation.updated") {
+          setConversations((prev) =>
+            prev.map((c) => (c.id === event.conversation.id ? event.conversation : c)),
+          );
+        }
       },
     });
     return () => {

@@ -7,9 +7,7 @@ from app.schemas.messaging import (
     ConversationResponse,
     ConversationStatusUpdateRequest,
 )
-
-from app.services import listings
-# from app.services import conversations
+from app.services import listings, realtime
 from app.services import conversations_supabase as conversations
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
@@ -72,7 +70,7 @@ def get_conversation(conversation_id: str, current_user: dict = Depends(get_curr
 
 
 @router.patch("/{conversation_id}", response_model=ConversationResponse)
-def update_conversation_status(
+async def update_conversation_status(
     conversation_id: str,
     payload: ConversationStatusUpdateRequest,
     current_user: dict = Depends(get_current_user),
@@ -84,4 +82,13 @@ def update_conversation_status(
 
     if not convo:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    return ConversationResponse(**_with_listing_title(convo))
+
+    hydrated = _with_listing_title(convo)
+    event = {
+        "type": "conversation.updated",
+        "conversation_id": conversation_id,
+        "conversation": ConversationResponse(**hydrated).model_dump(mode="json"),
+    }
+    await realtime.broadcast(conversation_id, event)
+
+    return ConversationResponse(**hydrated)

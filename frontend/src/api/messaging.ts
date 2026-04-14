@@ -43,7 +43,8 @@ export async function markRead(conversationId: string, messageId: string): Promi
 
 export type ConversationRealtimeEvent =
   | { type: "message.sent"; conversation_id: string; message: Message }
-  | { type: "message.read"; conversation_id: string; message: Message };
+  | { type: "message.read"; conversation_id: string; message: Message }
+  | { type: "conversation.updated"; conversation_id: string; conversation: Conversation };
 
 export function connectConversationRealtime(
   conversationId: string,
