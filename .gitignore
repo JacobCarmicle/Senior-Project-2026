@@ -38,6 +38,11 @@ pnpm-debug.log*
 coverage/
 *.lcov
 
+# Playwright
+.playwright-mcp/
+playwright-report/
+test-results/
+
 # Python (backend)
 __pycache__/
 *.py[cod]

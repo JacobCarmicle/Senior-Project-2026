@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { deleteListing, getListing, updateListing } from "../../api/listings";
+import { deleteListing, getListing, updateListing, getSimilarListings } from "../../api/listings";
 import { openConversationFromListing } from "../../api/messaging";
-import { getSellerRatingSummary } from "../../api/reviews";
+import { getSellerRatingSummary, getSellerTrustScore } from "../../api/reviews";
+import type { SellerTrustScore } from "../../types/reviews";
 import { Navbar } from "../../components/Navbar/Navbar";
 import ReportModal from "../../components/ReportModal/ReportModal";
 import type { Listing } from "../../types/listings";
 import { useAuth } from "../../context/AuthContext";
+
+const BADGE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
+  "Trusted Seller":   { bg: "rgba(34,197,94,0.15)",  border: "rgba(34,197,94,0.4)",  text: "#22c55e" },
+  "Reliable Seller":  { bg: "rgba(59,130,246,0.15)", border: "rgba(59,130,246,0.4)", text: "#60a5fa" },
+  "New Seller":       { bg: "rgba(234,179,8,0.15)",  border: "rgba(234,179,8,0.4)",  text: "#eab308" },
+  "Limited Activity": { bg: "rgba(156,163,175,0.1)", border: "rgba(156,163,175,0.3)", text: "#9ca3af" },
+};
 
 const T = {
   bg: "#2d2d2d",
@@ -24,12 +32,14 @@ export default function ListingDetailPage() {
   const { user } = useAuth();
   const [listing, setListing] = useState<Listing | null>(null);
   const [rating, setRating] = useState<{ average_rating: number; review_count: number } | null>(null);
+  const [trust, setTrust] = useState<SellerTrustScore | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [adminConfirm, setAdminConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null);
   const [adminWorking, setAdminWorking] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [similar, setSimilar] = useState<import("../../types/listings").Listing[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -39,14 +49,20 @@ export default function ListingDetailPage() {
         setListing(l);
         setSelectedImageIndex(0);
         try {
-          const summary = await getSellerRatingSummary(l.seller_id);
+          const [summary, trustScore] = await Promise.all([
+            getSellerRatingSummary(l.seller_id),
+            getSellerTrustScore(l.seller_id).catch(() => null),
+          ]);
           setRating(summary);
+          setTrust(trustScore);
         } catch {
           setRating({ average_rating: 0, review_count: 0 });
         }
       })
       .catch(() => setError("Unable to load listing."))
       .finally(() => setLoading(false));
+
+    getSimilarListings(id).then(setSimilar).catch(() => {});
   }, [id]);
 
   const imageCount = listing?.images?.length ?? 0;
@@ -313,7 +329,17 @@ if (error) {
                 fontSize: 14,
               }}
             >
-              <div>Posted by: <a href={`/user/${listing.seller_id}`} style={{ color: T.accent, fontWeight: 700, textDecoration: "none" }}>{listing.seller_name ?? "Unknown"}</a></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span>Posted by: <a href={`/user/${listing.seller_id}`} style={{ color: T.accent, fontWeight: 700, textDecoration: "none" }}>{listing.seller_name ?? "Unknown"}</a></span>
+                {trust?.trust_badge && (() => {
+                  const c = BADGE_COLORS[trust.trust_badge];
+                  return (
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: c.bg, border: `1px solid ${c.border}`, color: c.text }}>
+                      {trust.trust_badge}
+                    </span>
+                  );
+                })()}
+              </div>
               <div style={{ marginTop: 6 }}>
                 Seller rating: <strong style={{ color: T.text }}>{rating?.average_rating ?? 0}</strong> / 5 ({rating?.review_count ?? 0} reviews)
               </div>
@@ -453,6 +479,57 @@ if (error) {
             )}
           </div>
         </div>
+        {/* ── More Like This ── */}
+        {similar.length > 0 && (
+          <div style={{ marginTop: 32 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: T.text, marginBottom: 14 }}>
+              More like this
+            </div>
+            <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 6 }}>
+              {similar.map((item) => (
+                <a
+                  key={item.id}
+                  href={`/listing/${item.id}`}
+                  style={{
+                    flexShrink: 0,
+                    width: 190,
+                    background: T.card,
+                    border: `1px solid ${T.border}`,
+                    borderRadius: 12,
+                    overflow: "hidden",
+                    textDecoration: "none",
+                    display: "block",
+                    transition: "border-color 0.2s, box-shadow 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLAnchorElement).style.borderColor = T.accent;
+                    (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 4px 16px rgba(34,197,94,0.12)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLAnchorElement).style.borderColor = T.border;
+                    (e.currentTarget as HTMLAnchorElement).style.boxShadow = "none";
+                  }}
+                >
+                  <div style={{ height: 110, background: "#222", position: "relative", overflow: "hidden" }}>
+                    {item.images?.[0] ? (
+                      <img src={item.images[0]} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#555", fontSize: "12px" }}>No Image</div>
+                    )}
+                    {item.status === "sold" && (
+                      <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(239,68,68,0.85)", color: "#fff", fontSize: "10px", fontWeight: 700, padding: "2px 7px", borderRadius: 5 }}>SOLD</div>
+                    )}
+                  </div>
+                  <div style={{ padding: "10px 12px" }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
+                    <div style={{ fontSize: 15, fontWeight: 900, color: T.accent }}>${Number(item.price).toLocaleString()}</div>
+                    <div style={{ fontSize: 11, color: T.muted, marginTop: 3 }}>{item.location}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
