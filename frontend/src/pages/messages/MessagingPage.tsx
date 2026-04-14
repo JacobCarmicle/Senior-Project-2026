@@ -164,11 +164,13 @@ export default function MessagingPage() {
     if (meetup) {
       if (meetup.proposer_id === user.id && meetup.status === "pending") {
         await deleteMeetup(meetup.id);
+        setMeetup(null);
       } else if (meetup.receiver_id === user.id && meetup.status === "pending") {
         const action = window.prompt("Type 'accept' or 'decline'")?.toLowerCase();
         if (action === "accept" || action === "decline") {
           const status: "accepted" | "declined" = action === "accept" ? "accepted" : "declined";
-          await updateMeetupStatus(meetup.id, status);
+          const updated = await updateMeetupStatus(meetup.id, status);
+          setMeetup(updated);
         }
       } else {
         alert(`Meetup status: ${meetup.status}`);
@@ -372,7 +374,10 @@ export default function MessagingPage() {
                 {meetup.status === "pending" && user?.id === meetup.receiver_id && (
                   <>
                     <button
-                      onClick={async () => await updateMeetupStatus(meetup.id, "accepted")}
+                      onClick={async () => {
+                        const updated = await updateMeetupStatus(meetup.id, "accepted");
+                        setMeetup(updated);
+                      }}
                       style={{
                         padding: "6px 12px",
                         borderRadius: 8,
@@ -386,7 +391,10 @@ export default function MessagingPage() {
                       Accept
                     </button>
                     <button
-                      onClick={async () => await updateMeetupStatus(meetup.id, "declined")}
+                      onClick={async () => {
+                        const updated = await updateMeetupStatus(meetup.id, "declined");
+                        setMeetup(updated);
+                      }}
                       style={{
                         padding: "6px 12px",
                         borderRadius: 8,
@@ -535,7 +543,8 @@ export default function MessagingPage() {
                   if (!active || !user) return;
                   if (!meetupDate) return alert("Please select a date & time");
                   const receiverId = user.id === active.seller_id ? active.buyer_id : active.seller_id;
-                  await createMeetup(active.id, receiverId, new Date(meetupDate).toISOString(), meetupLocation);
+                  const created = await createMeetup(active.id, receiverId, new Date(meetupDate).toISOString(), meetupLocation);
+                  setMeetup(created);
                   setShowMeetupModal(false);
                   setMeetupDate("");
                   setMeetupLocation("");
