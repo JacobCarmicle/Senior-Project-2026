@@ -47,11 +47,13 @@ class UserResponse(BaseModel):
     full_name: str
     role: str
     created_at: str
+    profile_picture: str | None = None
 
 class PublicUser(BaseModel):
     id: str
     full_name: str
     created_at: str
+    profile_picture: str | None = None
 
 class AuthResponse(BaseModel):
     access_token: str

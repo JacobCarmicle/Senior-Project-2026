@@ -65,6 +65,7 @@ def _normalize_db_user(row: dict) -> dict:
         "created_at": row.get("created_at") or _now_iso(),
         "password_hash": row.get("password_hash"),
         "google_sub": row.get("google_sub"),
+        "profile_picture": row.get("profile_picture"),
     }
 
 
@@ -198,6 +199,15 @@ def get_user_by_id(user_id: str) -> dict | None:
     for user in USERS_BY_EMAIL.values():
         if user["id"] == user_id:
             return user
+    return None
+
+
+def update_profile_picture(user_id: str, url: str) -> dict | None:
+    if _users_backend() == "supabase":
+        rows = _supabase().table("users").update({"profile_picture": url}).eq("id", user_id).execute().data
+        if not rows:
+            return None
+        return _normalize_db_user(rows[0])
     return None
 
 

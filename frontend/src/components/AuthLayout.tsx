@@ -7,7 +7,7 @@ interface Props {
 
 export default function AuthLayout({ children }: Props) {
   return (
-    <div className="min-h-screen bg-[#2d2d2d] text-[#e5e5e5]">
+    <div className="min-h-screen text-[#e8e8e8]" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.05) 0%, #0f0f0f 55%)", fontFamily: "'Outfit', Arial, sans-serif" }}>
       {/* <header className="sticky top-0 z-10 flex items-center border-b border-[#404040] bg-[#1a1a1a] px-5 py-3">
         <Link
           to="/"

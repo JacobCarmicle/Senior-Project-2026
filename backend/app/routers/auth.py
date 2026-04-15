@@ -25,6 +25,7 @@ def _to_user_response(user: dict) -> UserResponse:
         full_name=user["full_name"],
         role=user["role"],
         created_at=user["created_at"],
+        profile_picture=user.get("profile_picture"),
     )
 
 

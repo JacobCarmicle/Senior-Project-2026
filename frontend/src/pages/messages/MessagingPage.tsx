@@ -12,12 +12,14 @@ import { getListing, updateListing } from "../../api/listings";
 import type { Listing } from "../../types/listings";
 
 const T = {
-  bg: "#2d2d2d",
-  card: "#1a1a1a",
-  text: "#e5e5e5",
-  muted: "#9ca3af",
-  border: "#404040",
-  accent: "#22c55e",
+  bg:      "#0f0f0f",
+  card:    "#161616",
+  text:    "#e8e8e8",
+  muted:   "#8a8a8a",
+  border:  "rgba(255,255,255,0.07)",
+  accent:  "#22c55e",
+  surface: "#1a1a1a",
+  input:   "#111",
 };
 
 function MessageRow({ message, isOwn, onReport }: {
@@ -67,6 +69,7 @@ export default function MessagingPage() {
   const [meetupLocation, setMeetupLocation] = useState("");
   const [activeListing, setActiveListing] = useState<Listing | null>(null);
   const [reviewSubmitted, setReviewSubmitted] = useState<Record<string, boolean>>({});
+  const [reviewFormOpen, setReviewFormOpen] = useState<Record<string, boolean>>({});
 
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -191,7 +194,7 @@ export default function MessagingPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.05) 0%, #0f0f0f 55%)", color: T.text, fontFamily: "'Outfit', Arial, sans-serif" }}>
       {reportTarget && (
         <ReportModal
           targetType="message"
@@ -464,19 +467,46 @@ export default function MessagingPage() {
             </div>
 
             {!isSeller && activeListing?.status === "sold" && active && !reviewSubmitted[active.id] && (
-              <div style={{ padding: "12px 12px 0" }}>
-                <ReviewForm
-                  sellerId={active.seller_id}
-                  listingId={active.listing_id}
-                  listingTitle={activeListing.title}
-                  onSubmitted={() => setReviewSubmitted((prev) => ({ ...prev, [active.id]: true }))}
-                />
+              <div style={{ borderTop: `1px solid ${T.border}` }}>
+                {!reviewFormOpen[active.id] ? (
+                  /* Compact nudge banner */
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "8px 12px", gap: 8,
+                  }}>
+                    <span style={{ fontSize: 12, color: T.muted }}>
+                      How was your experience with this seller?
+                    </span>
+                    <button
+                      onClick={() => setReviewFormOpen(prev => ({ ...prev, [active.id]: true }))}
+                      style={{
+                        background: "rgba(34,197,94,0.12)", color: T.accent,
+                        border: "1px solid rgba(34,197,94,0.3)", borderRadius: 8,
+                        padding: "4px 12px", fontSize: 12, fontWeight: 700,
+                        cursor: "pointer", whiteSpace: "nowrap", fontFamily: "inherit",
+                        flexShrink: 0,
+                      }}
+                    >
+                      Leave a review
+                    </button>
+                  </div>
+                ) : (
+                  /* Expanded inline form */
+                  <div style={{ padding: "10px 12px" }}>
+                    <ReviewForm
+                      sellerId={active.seller_id}
+                      listingId={active.listing_id}
+                      listingTitle={activeListing.title}
+                      onSubmitted={() => setReviewSubmitted((prev) => ({ ...prev, [active.id]: true }))}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
             {!isSeller && activeListing?.status === "sold" && active && reviewSubmitted[active.id] && (
-              <div style={{ padding: "12px", fontSize: 13, color: T.accent, fontWeight: 700, borderTop: `1px solid ${T.border}` }}>
-                Review submitted for {activeListing.title}
+              <div style={{ padding: "8px 12px", fontSize: 12, color: T.accent, fontWeight: 600, borderTop: `1px solid ${T.border}` }}>
+                Review submitted — thanks!
               </div>
             )}
 

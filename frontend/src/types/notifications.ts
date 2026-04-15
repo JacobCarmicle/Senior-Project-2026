@@ -1,7 +1,7 @@
 export interface Notification {
   id: string;
   user_id: string;
-  type: "new_review" | "listing_removed" | "suggestion";
+  type: "new_review" | "listing_removed" | "badge_earned" | "first_sale" | "listing_sold" | "suggestion";
   title: string;
   body: string;
   link?: string | null;

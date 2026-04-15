@@ -115,6 +115,7 @@ def _apply_distance(
 def list_public_listings(
     page: int = 1,
     page_size: int = 20,
+    category: str | None = None,
     user_lat: float | None = None,
     user_lng: float | None = None,
     radius_miles: float | None = None,
@@ -123,14 +124,15 @@ def list_public_listings(
     client = _get_client()
     start = (page - 1) * page_size
     end = start + page_size - 1
-    rows = (
+    q = (
         client.table("listings")
         .select("*", count="exact")
-        .neq("status", "deleted")
+        .eq("status", "active")
         .order("created_at", desc=True)
-        .range(start, end)
-        .execute()
     )
+    if category:
+        q = q.ilike("category", category)
+    rows = q.range(start, end).execute()
     items = _with_images(rows.data)
     items = _apply_distance(items, user_lat, user_lng, radius_miles, sort)
     return items, len(items) if radius_miles is not None else (rows.count or 0)

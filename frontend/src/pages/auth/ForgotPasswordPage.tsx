@@ -49,11 +49,11 @@ export default function ForgotPasswordPage() {
         features={HERO_FEATURES}
       />
 
-      <section className="overflow-hidden rounded-2xl border border-[#404040] bg-[#1a1a1a] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
+      <section className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.1)] bg-[#161616] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
         {submitted ? (
           <div>
             <h2 className="mb-2 text-xl font-bold">Check your email</h2>
-            <p className="mb-4 leading-relaxed text-[#9ca3af]">
+            <p className="mb-4 leading-relaxed text-[#8a8a8a]">
               If an account exists for <strong className="text-[#e5e5e5]">{email}</strong>, we've
               sent a password reset link. Check your inbox and spam folder.
             </p>
@@ -61,12 +61,12 @@ export default function ForgotPasswordPage() {
             <button
               type="button"
               onClick={() => setSubmitted(false)}
-              className="mb-2.5 w-full rounded-xl border border-[#404040] bg-[#2d2d2d] p-3 font-extrabold text-[#e5e5e5] transition-colors hover:bg-[#3d3d3d]"
+              className="mb-2.5 w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#111] p-3 font-extrabold text-[#e5e5e5] transition-colors hover:bg-[#222]"
             >
               Send again
             </button>
 
-            <p className="mt-3.5 text-center text-sm text-[#9ca3af]">
+            <p className="mt-3.5 text-center text-sm text-[#8a8a8a]">
               <Link
                 to="/login"
                 className="font-extrabold text-[#22c55e] no-underline hover:text-[#16a34a]"
@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
         ) : (
           <>
             <h2 className="mb-1.5 text-xl font-bold">Forgot Password</h2>
-            <p className="mb-4 text-sm leading-snug text-[#9ca3af]">
+            <p className="mb-4 text-sm leading-snug text-[#8a8a8a]">
               Enter your email and we'll send a reset link.
             </p>
 
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-[#404040] bg-[#2d2d2d] p-3 text-[#e5e5e5] outline-none placeholder:text-[#9ca3af] focus:border-[#22c55e] focus:shadow-[0_0_0_3px_rgba(34,197,94,0.1)]"
+                  className="w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#111] p-3 text-[#e5e5e5] outline-none placeholder:text-[#8a8a8a] focus:border-[#22c55e] focus:shadow-[0_0_0_3px_rgba(34,197,94,0.1)]"
                 />
               </div>
 
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
                 {submitting ? "Sending…" : "Send Reset Link"}
               </button>
 
-              <p className="mt-3.5 text-center text-sm text-[#9ca3af]">
+              <p className="mt-3.5 text-center text-sm text-[#8a8a8a]">
                 Remember your password?{" "}
                 <Link
                   to="/login"
