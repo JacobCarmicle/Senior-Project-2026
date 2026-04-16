@@ -5,17 +5,17 @@ import type { Listing } from "../../types/listings";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
-  bg:       "#2d2d2d",
-  card:     "#1a1a1a",
-  text:     "#e5e5e5",
-  muted:    "#9ca3af",
-  border:   "#404040",
+  bg:       "#0f0f0f",
+  card:     "#161616",
+  text:     "#e8e8e8",
+  muted:    "#8a8a8a",
+  border:   "rgba(255,255,255,0.07)",
   accent:   "#22c55e",
   accent2:  "#16a34a",
   danger:   "#ef4444",
-  surface:  "#2d2d2d",
-  hover:    "#505050",
-  input:    "#333333",
+  surface:  "#1a1a1a",
+  hover:    "#222",
+  input:    "#111",
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -422,7 +422,7 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div style={{ minHeight:"100vh", background: T.bg, color: T.text, fontFamily:"Arial, sans-serif" }}>
+    <div style={{ minHeight:"100vh", background: "radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.05) 0%, #0f0f0f 55%)", color: T.text, fontFamily:"'Outfit', Arial, sans-serif" }}>
 
       {/* ── Header ── */}
       <header style={{ background: T.card, borderBottom:`1px solid ${T.border}`, padding:"12px 20px", display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:10 }}>

@@ -10,7 +10,9 @@ from app.schemas.listings import (
     ListingUpdateRequest,
 )
 from app.services import listings
+from app.services import listings_supabase
 from app.services import notifications_supabase as notif_svc
+from app.services import reviews_supabase
 
 router = APIRouter(prefix="/listings", tags=["listings"])
 
@@ -25,6 +27,7 @@ def create_listing(payload: ListingCreateRequest, current_user: dict = Depends(g
 def list_listings(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
+    category: str | None = Query(default=None),
     user_lat: float | None = None,
     user_lng: float | None = None,
     radius_miles: float | None = Query(default=None, gt=0),
@@ -33,6 +36,7 @@ def list_listings(
     items, total = listings.list_public_listings(
         page=page,
         page_size=page_size,
+        category=category,
         user_lat=user_lat,
         user_lng=user_lng,
         radius_miles=radius_miles,
@@ -84,13 +88,55 @@ def update_listing(
     current_user: dict = Depends(get_current_user),
 ):
     is_admin = current_user.get("role") == "admin"
+    patch = payload.model_dump(exclude_unset=True)
+
+    # Capture pre-update state for badge-change detection
+    pre_badge: str | None = None
+    old_status: str | None = None
+    seller_id: str | None = None
+    if patch.get("status") == "sold":
+        try:
+            existing = listings_supabase._get_client() \
+                .table("listings").select("id,seller_id,status") \
+                .eq("id", listing_id).limit(1).execute().data
+            if existing:
+                old_status = existing[0].get("status")
+                seller_id = existing[0].get("seller_id")
+                pre_badge = reviews_supabase.get_seller_trust_score(seller_id)["trust_badge"]
+        except Exception:
+            pass
+
     try:
-        item = listings.update_listing(listing_id, current_user["id"], payload.model_dump(exclude_unset=True), is_admin=is_admin)
+        item = listings.update_listing(listing_id, current_user["id"], patch, is_admin=is_admin)
     except PermissionError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from exc
 
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+
+    # Notify seller when listing is marked sold
+    if patch.get("status") == "sold" and old_status != "sold" and seller_id:
+        try:
+            post_badge = reviews_supabase.get_seller_trust_score(seller_id)["trust_badge"]
+            if pre_badge != post_badge:
+                notif_svc.create_notification(
+                    user_id=seller_id,
+                    type="badge_earned",
+                    title=f"Badge unlocked: {post_badge}",
+                    body=f"You earned the \"{post_badge}\" badge. Keep up the great work!",
+                    link=f"/user/{seller_id}",
+                )
+            else:
+                notif_svc.create_notification(
+                    user_id=seller_id,
+                    type="first_sale" if old_status == "active" else "listing_sold",
+                    title="Your listing sold!",
+                    body=f'"{item["title"]}" has been marked as sold. Congrats!',
+                    link=f"/listing/{listing_id}",
+                )
+        except Exception:
+            pass
+
     return ListingResponse(**item)
 
 

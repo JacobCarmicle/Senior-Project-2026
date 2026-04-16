@@ -66,11 +66,11 @@ export default function ResetPasswordPage() {
         features={HERO_FEATURES}
       />
 
-      <section className="overflow-hidden rounded-2xl border border-[#404040] bg-[#1a1a1a] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
+      <section className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.1)] bg-[#161616] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
         {success ? (
           <div>
             <h2 className="mb-2 text-xl font-bold">Password updated!</h2>
-            <p className="mb-4 leading-relaxed text-[#9ca3af]">
+            <p className="mb-4 leading-relaxed text-[#8a8a8a]">
               Your password has been reset successfully. You can now log in with your new
               credentials.
             </p>
@@ -85,7 +85,7 @@ export default function ResetPasswordPage() {
         ) : (
           <>
             <h2 className="mb-1.5 text-xl font-bold">Reset Password</h2>
-            <p className="mb-4 text-sm leading-snug text-[#9ca3af]">
+            <p className="mb-4 text-sm leading-snug text-[#8a8a8a]">
               Enter your new password below.
             </p>
 
@@ -107,7 +107,7 @@ export default function ResetPasswordPage() {
                   placeholder="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-[#404040] bg-[#2d2d2d] p-3 text-[#e5e5e5] outline-none placeholder:text-[#9ca3af] focus:border-[#22c55e] focus:shadow-[0_0_0_3px_rgba(34,197,94,0.1)]"
+                  className="w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#111] p-3 text-[#e5e5e5] outline-none placeholder:text-[#8a8a8a] focus:border-[#22c55e] focus:shadow-[0_0_0_3px_rgba(34,197,94,0.1)]"
                 />
               </div>
 
@@ -122,7 +122,7 @@ export default function ResetPasswordPage() {
                   placeholder="••••••••"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  className="w-full rounded-xl border border-[#404040] bg-[#2d2d2d] p-3 text-[#e5e5e5] outline-none placeholder:text-[#9ca3af] focus:border-[#22c55e] focus:shadow-[0_0_0_3px_rgba(34,197,94,0.1)]"
+                  className="w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#111] p-3 text-[#e5e5e5] outline-none placeholder:text-[#8a8a8a] focus:border-[#22c55e] focus:shadow-[0_0_0_3px_rgba(34,197,94,0.1)]"
                 />
               </div>
 
@@ -134,7 +134,7 @@ export default function ResetPasswordPage() {
                 {submitting ? "Resetting…" : "Reset Password"}
               </button>
 
-              <p className="mt-3.5 text-center text-sm text-[#9ca3af]">
+              <p className="mt-3.5 text-center text-sm text-[#8a8a8a]">
                 <Link
                   to="/login"
                   className="font-extrabold text-[#22c55e] no-underline hover:text-[#16a34a]"

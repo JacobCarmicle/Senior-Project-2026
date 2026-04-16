@@ -3,13 +3,15 @@ import { createReview } from "../../api/reviews";
 import { Navbar } from "../../components/Navbar/Navbar.tsx";
 
 const T = {
-  bg: "#2d2d2d",
-  card: "#1a1a1a",
-  text: "#e5e5e5",
-  muted: "#9ca3af",
-  border: "#404040",
-  accent: "#22c55e",
-  danger: "#ef4444",
+  bg:      "#0f0f0f",
+  card:    "#161616",
+  text:    "#e8e8e8",
+  muted:   "#8a8a8a",
+  border:  "rgba(255,255,255,0.07)",
+  accent:  "#22c55e",
+  danger:  "#ef4444",
+  surface: "#1a1a1a",
+  input:   "#111",
 };
 
 export default function ReviewsPage() {
@@ -32,7 +34,7 @@ export default function ReviewsPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "Arial, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.05) 0%, #0f0f0f 55%)", color: T.text, fontFamily: "'Outfit', Arial, sans-serif" }}>
       <Navbar exclude={["reviews"]}/>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: 24 }}>
         <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: 14 }}>← Back to Marketplace</a>

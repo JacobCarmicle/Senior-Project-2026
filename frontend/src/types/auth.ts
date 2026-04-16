@@ -4,12 +4,14 @@ export interface User {
   full_name: string;
   role: "user" | "admin";
   created_at: string;
+  profile_picture?: string | null;
 }
 
 export interface PublicUser{
     id: string;
     full_name: string;
     created_at: string;
+    profile_picture?: string | null;
 }
 
 export interface LoginRequest {

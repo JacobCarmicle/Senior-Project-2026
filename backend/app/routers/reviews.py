@@ -24,6 +24,15 @@ def _use_supabase() -> bool:
 @router.post("", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
 def create_review(payload: ReviewCreateRequest, current_user: dict = Depends(get_current_user)):
     backend = reviews_supabase if _use_supabase() else memory
+
+    # Capture pre-review badge for change detection
+    pre_badge: str | None = None
+    if _use_supabase():
+        try:
+            pre_badge = reviews_supabase.get_seller_trust_score(payload.seller_id)["trust_badge"]
+        except Exception:
+            pass
+
     try:
         review = backend.create_review(
             buyer_id=current_user["id"],
@@ -37,11 +46,12 @@ def create_review(payload: ReviewCreateRequest, current_user: dict = Depends(get
     except RuntimeError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
-    # Notify seller of new review
     if _use_supabase():
         try:
             stars = "★" * review["rating"] + "☆" * (5 - review["rating"])
             listing_title = review.get("listing_title") or "a listing"
+
+            # Notify seller of the new review
             notif_svc.create_notification(
                 user_id=payload.seller_id,
                 type="new_review",
@@ -49,8 +59,19 @@ def create_review(payload: ReviewCreateRequest, current_user: dict = Depends(get
                 body=f"{stars} — Someone left a review for {listing_title}",
                 link=f"/user/{payload.seller_id}",
             )
+
+            # Notify if badge changed
+            post_badge = reviews_supabase.get_seller_trust_score(payload.seller_id)["trust_badge"]
+            if pre_badge and post_badge != pre_badge:
+                notif_svc.create_notification(
+                    user_id=payload.seller_id,
+                    type="badge_earned",
+                    title=f"Badge unlocked: {post_badge}",
+                    body=f"Your reputation grew! You earned the \"{post_badge}\" badge.",
+                    link=f"/user/{payload.seller_id}",
+                )
         except Exception:
-            pass  # Don't fail the review if notification fails
+            pass
 
     return ReviewResponse(**review)
 

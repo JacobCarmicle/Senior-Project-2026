@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { listNotifications, markNotificationRead, markAllNotificationsRead } from "../../api/notifications";
 import type { Notification } from "../../types/notifications";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import styles from "./Navbar.module.css";
 
 type NavItem = {
@@ -18,9 +19,12 @@ type NavbarProps = {
 };
 
 const NOTIF_ICONS: Record<string, string> = {
-  new_review: "⭐",
+  new_review:      "⭐",
   listing_removed: "🚫",
-  suggestion: "💡",
+  badge_earned:    "🏅",
+  first_sale:      "🎉",
+  listing_sold:    "✅",
+  suggestion:      "💡",
 };
 
 export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
@@ -140,7 +144,7 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
     <header className={styles.navbar}>
       {/* Brand */}
       <a href="/" className={styles.brand}>
-        TradeForge
+        <img src="/logo.png" alt="TradeForge" className={styles.brandLogo} />
       </a>
 
       <nav className={styles.navLinks}>
@@ -224,11 +228,14 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
         {user && (
           <div ref={dropdownRef} className={styles.dropdownWrapper}>
             <button
-              className={styles.avatar}
+              className={styles.avatarBtn}
               onClick={() => setDropdownOpen((o) => !o)}
               title={user.full_name}
             >
-              {initials}
+              <Avatar className="w-[38px] h-[38px] rounded-[10px] ring-2 ring-[#22c55e]/40 ring-offset-1 ring-offset-[#0a0a0a]">
+                <AvatarImage src={user.profile_picture ?? undefined} alt={user.full_name} />
+                <AvatarFallback className="rounded-[10px] text-xs font-black">{initials}</AvatarFallback>
+              </Avatar>
             </button>
 
             {dropdownOpen && (
