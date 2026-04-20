@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from app.routers.auth import get_current_user
@@ -7,12 +9,19 @@ from app.schemas.messaging import (
     ConversationResponse,
     ConversationStatusUpdateRequest,
 )
-
-from app.services import listings
-# from app.services import conversations
-from app.services import conversations_supabase as conversations
+from app.services import listings, realtime
+from app.services import conversations as conversations_memory
+from app.services import conversations_supabase
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
+
+
+def _use_supabase() -> bool:
+    return os.environ.get("CONVERSATIONS_BACKEND", "memory").lower() == "supabase"
+
+
+def _backend():
+    return conversations_supabase if _use_supabase() else conversations_memory
 
 
 def _with_listing_title(convo: dict) -> dict:
@@ -39,7 +48,7 @@ def create_conversation(
     if buyer_id == seller_id:
         raise HTTPException(status_code=400, detail="Cannot message yourself on your own listing")
 
-    convo, created = conversations.create_or_get_conversation(
+    convo, created = _backend().create_or_get_conversation(
         listing_id=payload.listing_id,
         buyer_id=buyer_id,
         seller_id=seller_id,
@@ -54,7 +63,7 @@ def create_conversation(
 
 @router.get("", response_model=ConversationListResponse)
 def list_conversations(current_user: dict = Depends(get_current_user)):
-    rows = conversations.list_for_user(current_user["id"])
+    rows = _backend().list_for_user(current_user["id"])
     hydrated = [_with_listing_title(x) for x in rows]
     return ConversationListResponse(items=[ConversationResponse(**x) for x in hydrated], total=len(hydrated))
 
@@ -62,7 +71,7 @@ def list_conversations(current_user: dict = Depends(get_current_user)):
 @router.get("/{conversation_id}", response_model=ConversationResponse)
 def get_conversation(conversation_id: str, current_user: dict = Depends(get_current_user)):
     try:
-        convo = conversations.get_for_user(conversation_id, current_user["id"])
+        convo = _backend().get_for_user(conversation_id, current_user["id"])
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail="Forbidden") from exc
 
@@ -72,16 +81,25 @@ def get_conversation(conversation_id: str, current_user: dict = Depends(get_curr
 
 
 @router.patch("/{conversation_id}", response_model=ConversationResponse)
-def update_conversation_status(
+async def update_conversation_status(
     conversation_id: str,
     payload: ConversationStatusUpdateRequest,
     current_user: dict = Depends(get_current_user),
 ):
     try:
-        convo = conversations.update_status(conversation_id, current_user["id"], payload.status)
+        convo = _backend().update_status(conversation_id, current_user["id"], payload.status)
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
 
     if not convo:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    return ConversationResponse(**_with_listing_title(convo))
+
+    hydrated = _with_listing_title(convo)
+    event = {
+        "type": "conversation.updated",
+        "conversation_id": conversation_id,
+        "conversation": ConversationResponse(**hydrated).model_dump(mode="json"),
+    }
+    await realtime.broadcast(conversation_id, event)
+
+    return ConversationResponse(**hydrated)

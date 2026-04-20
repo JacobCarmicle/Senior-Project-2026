@@ -124,3 +124,35 @@ def test_close_reopen_block_conversation_rules(client):
         json={"status": "open"},
     )
     assert other_reopen.status_code == 403
+
+
+def test_conversation_status_update_broadcasts_realtime_event(client, monkeypatch):
+    seller_token, _ = _signup(client, "seller-realtime@example.com", "Seller Realtime")
+    buyer_token, _ = _signup(client, "buyer-realtime@example.com", "Buyer Realtime")
+    listing = _create_listing(client, seller_token)
+
+    convo = client.post(
+        "/conversations",
+        headers={"Authorization": f"Bearer {buyer_token}"},
+        json={"listing_id": listing["id"]},
+    ).json()
+
+    sent = {}
+
+    async def _fake_broadcast(conversation_id: str, event: dict):
+        sent["conversation_id"] = conversation_id
+        sent["event"] = event
+
+    monkeypatch.setattr("app.routers.conversations.realtime.broadcast", _fake_broadcast)
+
+    res = client.patch(
+        f"/conversations/{convo['id']}",
+        headers={"Authorization": f"Bearer {buyer_token}"},
+        json={"status": "closed"},
+    )
+
+    assert res.status_code == 200
+    assert sent["conversation_id"] == convo["id"]
+    assert sent["event"]["type"] == "conversation.updated"
+    assert sent["event"]["conversation_id"] == convo["id"]
+    assert sent["event"]["conversation"]["status"] == "closed"

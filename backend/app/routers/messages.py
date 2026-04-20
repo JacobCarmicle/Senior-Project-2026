@@ -1,12 +1,22 @@
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.routers.auth import get_current_user
 from app.schemas.messaging import MessageCreateRequest, MessageListResponse, MessageResponse
 from app.services import realtime
-from app.services import messages as memory
-from app.services import messages_supabase as messages
+from app.services import messages as messages_memory
+from app.services import messages_supabase
 
 router = APIRouter(prefix="/conversations", tags=["messages"])
+
+
+def _use_supabase() -> bool:
+    return os.environ.get("MESSAGES_BACKEND", "memory").lower() == "supabase"
+
+
+def _backend():
+    return messages_supabase if _use_supabase() else messages_memory
 
 
 @router.post("/{conversation_id}/messages", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
@@ -16,7 +26,7 @@ async def send_message(
     current_user: dict = Depends(get_current_user),
 ):
     try:
-        msg = messages.send_message(
+        msg = _backend().send_message(
             conversation_id=conversation_id,
             sender_id=current_user["id"],
             text=payload.text,
@@ -36,7 +46,7 @@ async def send_message(
 
 @router.get("/{conversation_id}/messages", response_model=MessageListResponse)
 def list_messages(conversation_id: str, current_user: dict = Depends(get_current_user)):
-    rows = messages.list_messages_for_user(conversation_id, current_user["id"])
+    rows = _backend().list_messages_for_user(conversation_id, current_user["id"])
 
     if rows is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -54,7 +64,7 @@ async def mark_message_read(
     current_user: dict = Depends(get_current_user),
 ):
     try:
-        msg = messages.mark_read(
+        msg = _backend().mark_read(
             conversation_id=conversation_id,
             message_id=message_id,
             reader_id=current_user["id"],
