@@ -42,6 +42,10 @@ def create_report(
         "status": "pending",
         "created_at": _now_iso(),
     }
+
+    if target_id == reporter_id:
+        raise PermissionError("Cannot report yourself or your own content")
+
     result = _supabase().table("reports").insert(row).execute().data[0]
     return result
 
@@ -60,10 +64,12 @@ def list_reports() -> list[dict]:
     listing_ids = [r["target_id"] for r in rows if r.get("target_type") == "listing"]
     user_ids    = [r["target_id"] for r in rows if r.get("target_type") == "user"]
     message_ids = [r["target_id"] for r in rows if r.get("target_type") == "message"]
+    review_ids = [r["target_id"] for r in rows if r.get("target_type") == "review"]
 
     listing_map: dict[str, str] = {}
     user_map:    dict[str, str] = {}
     message_map: dict[str, str] = {}
+    review_map: dict[str, str] = {}
 
     if listing_ids:
         data = (
@@ -83,6 +89,12 @@ def list_reports() -> list[dict]:
         )
         message_map = {x["id"]: (x.get("text") or "")[:60] for x in data}
 
+    if review_ids:
+        data = (
+            _supabase().table("reviews").select("id, comment").in_("id", review_ids).execute().data
+        )
+        review_map = {x["id"]: (x.get("comment") or "")[:60] for x in data}
+
     out = []
     for r in rows:
         reporter = r.pop("reporter", None) or {}
@@ -97,6 +109,9 @@ def list_reports() -> list[dict]:
         elif t_type == "message":
             preview = message_map.get(t_id, "")
             r["target_name"] = f'"{preview}…"' if preview else "Unknown message"
+        elif t_type == "review":
+            preview = review_map.get(t_id, "")
+            r["target_name"] = f'"{preview}…"' if preview else "Uknown review"
         else:
             r["target_name"] = "Unknown"
 

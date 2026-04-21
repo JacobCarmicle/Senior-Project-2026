@@ -16,6 +16,17 @@ from app.services import reviews_supabase
 
 router = APIRouter(prefix="/listings", tags=["listings"])
 
+@router.get("/user/me/listings", response_model=ListingListResponse)
+def get_my_listings(current_user: dict = Depends(get_current_user)):
+    items = listings.get_listings_by_user(current_user["id"])
+    responses = [ListingResponse(**item) for item in items]
+    return ListingListResponse(
+        items=responses,
+        total=len(responses),
+        page=1,
+        page_size=len(responses),
+    )
+
 
 @router.post("", response_model=ListingResponse, status_code=status.HTTP_201_CREATED)
 def create_listing(payload: ListingCreateRequest, current_user: dict = Depends(get_current_user)):

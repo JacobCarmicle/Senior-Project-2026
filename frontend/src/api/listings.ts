@@ -81,6 +81,14 @@ export async function getSavedListings(): Promise<ListingListResponse> {
   };
 }
 
+export async function getMyListings(): Promise<ListingListResponse> {
+  const res = await client.get<ListingListResponse>("/listings/user/me/listings");
+  return {
+    ...res.data,
+    items: (res.data.items || []).map(normalizeListing),
+  };
+}
+
 export async function toggleSaveListing(listingId: string): Promise<void> {
   await client.post(`/listings/${listingId}/save`);
 }

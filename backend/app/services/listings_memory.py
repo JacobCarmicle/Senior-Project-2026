@@ -119,6 +119,14 @@ def list_all_listings() -> list[dict]:
     items.sort(key=lambda x: x["created_at"], reverse=True)
     return items
 
+def get_listings_by_user(user_id: str) -> list[dict]:
+    items = [
+        l for l in LISTINGS_BY_ID.values()
+            if l["sellder_id"] == user_id and l["status"] != "deleted"
+    ]
+
+    items.sort(key=lambda x: x["created_at"], reverse=True)
+    return items
 
 def search_listings(
     keyword: str | None,

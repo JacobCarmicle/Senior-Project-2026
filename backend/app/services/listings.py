@@ -3,7 +3,6 @@ import os
 from app.services import listings_supabase
 from app.services import listings_memory as memory
 
-
 def _use_supabase() -> bool:
     return os.environ.get("LISTINGS_BACKEND", "memory").lower() == "supabase"
 
@@ -55,6 +54,10 @@ def list_all_listings() -> list[dict]:
         return listings_supabase.list_all_listings()
     return memory.list_all_listings()
 
+def get_listings_by_user(seller_id: str) -> list[dict]:
+    if _use_supabase():
+        return listings_supabase.get_listings_by_user(seller_id)
+    return memory.get_listings_by_user(seller_id)
 
 def search_listings(
     keyword,
