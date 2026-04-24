@@ -65,11 +65,13 @@ function ReviewCard({
   username,
   canDelete,
   onDelete,
+  onReport,
 }: {
   review: Review;
   username: string;
   canDelete?: boolean;
   onDelete?: () => void;
+  onReport?: () => void;
 }) {
   return (
     <div
@@ -112,6 +114,24 @@ function ReviewCard({
             }}
           >
             Delete
+          </button>
+        )}
+
+        {onReport && (
+          <button
+            onClick={onReport}
+            style={{
+              padding: "4px 10px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.3)",
+              color: "#ef4444",
+            }}
+          >
+            Report
           </button>
         )}
       </div>
@@ -293,6 +313,7 @@ export default function UserProfilePage() {
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const avatarInputRef = useRef<HTMLInputElement>(null);
     const { user, setUser } = useAuth();
+    const [reportReviewId, setReportReviewId] = useState<string | null>(null);
 
     const { userId } = useParams();
     const profileUserId = userId ?? user?.id;
@@ -537,6 +558,15 @@ export default function UserProfilePage() {
           </>
         )}
 
+        {reportReviewId && (
+          <ReportModal
+            targetType="review"
+            targetId={reportReviewId}
+            targetName="Review"
+            onClose={() => setReportReviewId(null)}
+          />
+        )}
+
         {/* Reviews Section */}
         <div
           style={{
@@ -554,15 +584,20 @@ export default function UserProfilePage() {
 
         {/* Reviews List */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {profile.reviews.map((review) => (
-            <ReviewCard
-              key={review.id}
-              review={review}
-              username={userMap[review.buyer_id] || "Loading..."}
-              canDelete={user?.role === "admin" || user?.id === review.buyer_id}
-              onDelete={() => handleDeleteReview(review.id)}
-            />
-          ))}
+          {profile.reviews.map((review) => {
+            const canReport = user && user.id !== review.buyer_id;
+
+            return (
+              <ReviewCard
+                key={review.id}
+                review={review}
+                username={userMap[review.buyer_id] || "Loading..."}
+                canDelete={user?.role === "admin" || user?.id === review.buyer_id}
+                onDelete={() => handleDeleteReview(review.id)}
+                onReport={canReport ? () => setReportReviewId(review.id) : undefined}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

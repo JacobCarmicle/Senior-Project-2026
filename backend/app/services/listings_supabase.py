@@ -214,6 +214,18 @@ def list_all_listings() -> list[dict]:
             item["seller_name"] = name_map.get(item["seller_id"])
     return items
 
+def get_listings_by_user(user_id: str) -> list[dict]:
+    client = _get_client()
+    rows = (
+        client.table("listings")
+        .select("*")
+        .eq("seller_id", user_id)
+        .neq("status", "deleted")
+        .order("created_at", desc=True)
+        .execute()
+    )
+    return _with_images(rows.data)
+
 
 def search_listings(
     keyword,

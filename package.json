@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.11",
+    "@react-three/fiber": "^9.6.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.8.0",
+    "simplex-noise": "^4.0.3",
+    "tailwind-merge": "^3.5.0",
+    "three": "^0.184.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.184.0"
+  }
+}

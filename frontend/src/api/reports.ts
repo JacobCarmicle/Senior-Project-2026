@@ -10,7 +10,7 @@ export const REPORT_REASONS = [
 ] as const;
 
 export type ReportReason = (typeof REPORT_REASONS)[number];
-export type ReportTargetType = "listing" | "user" | "message";
+export type ReportTargetType = "listing" | "user" | "message" | "review";
 
 export interface Report {
   id: string;

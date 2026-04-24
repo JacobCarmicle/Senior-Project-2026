@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { listUsers, patchUser, listAllListings, adminDeleteListing, adminRestoreListing, type AdminUser } from "../../api/admin";
 import { listAdminReports, patchReport, type Report } from "../../api/reports";
+import { deleteReview } from "../../api/reviews";
 import type { Listing } from "../../types/listings";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
@@ -37,6 +38,7 @@ function Badge({ value }: { value: string }) {
     user:      { bg:"rgba(156,163,175,0.1)",color:"#9ca3af", border:"rgba(156,163,175,0.3)"},
     listing:   { bg:"rgba(249,115,22,0.1)", color:"#fb923c", border:"rgba(249,115,22,0.3)" },
     message:   { bg:"rgba(34,197,94,0.1)",  color:"#22c55e", border:"rgba(34,197,94,0.3)"  },
+    review:    { bg:"rgba(239,68,68,0.1)",  color:"#ef4444", border:"rgba(239,68,68,0.3)"   },
   };
   const s = map[value] ?? map["user"];
   return (
@@ -164,7 +166,7 @@ function ReportsTab() {
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState("");
   const [statusFilter, setStatusFilter] = useState<ReportStatus | "all">("all");
-  const [typeFilter,   setTypeFilter]   = useState<"all" | "listing" | "user" | "message">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "listing" | "user" | "message" | "review">("all");
   const [expanded,   setExpanded]   = useState<string | null>(null);
 
   useEffect(() => {
@@ -191,8 +193,8 @@ function ReportsTab() {
     <div>
       {/* Type filter pills */}
       <div style={{ display:"flex", gap:"8px", marginBottom:"12px", flexWrap:"wrap" }}>
-        {(["all","listing","user","message"] as const).map(f => {
-          const typeColors: Record<string, string> = { listing:"#60a5fa", user:"#c084fc", message:"#eab308", all:"#22c55e" };
+        {(["all","listing","user","message","review"] as const).map(f => {
+          const typeColors: Record<string, string> = { listing:"#60a5fa", user:"#c084fc", message:"#eab308", review:"#ef4444", all:"#22c55e" };
           const active = typeFilter === f;
           const col = typeColors[f];
           return (
@@ -241,11 +243,49 @@ function ReportsTab() {
               <TD><TargetTypeBadge type={r.target_type} /></TD>
               <TD>
                 {r.target_type === "listing" ? (
-                  <a href={`/listing/${r.target_id}`} target="_blank" rel="noreferrer" style={{ color: T.text, fontWeight:600, textDecoration:"none", borderBottom:"1px solid #555" }}>
+                  <a
+                    href={`/listing/${r.target_id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      color: T.text,
+                      fontWeight: 600,
+                      textDecoration: "none",
+                      borderBottom: "1px solid #555",
+                    }}
+                  >
                     {r.target_name}
                   </a>
+                ) : r.target_type === "user" ? (
+                  <a
+                    href={`/user/${r.target_id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      color: T.text,
+                      fontWeight: 600,
+                      textDecoration: "none",
+                      borderBottom: "1px solid #555",
+                    }}
+                  >
+                    {r.target_name}
+                  </a>
+                ) : r.target_type === "review" ? (
+                  <a
+                    href={`/user/${r.target_id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      color: T.text,
+                      fontWeight: 600,
+                      textDecoration: "none",
+                      borderBottom: "1px solid #555",
+                    }}
+                  >
+                    View Review
+                  </a>
                 ) : (
-                  <span style={{ fontWeight:600 }}>{r.target_name}</span>
+                  <span style={{ fontWeight: 600 }}>{r.target_name}</span>
                 )}
               </TD>
               <TD muted>{r.reporter_name}</TD>
