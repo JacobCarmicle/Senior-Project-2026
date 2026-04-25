@@ -90,10 +90,10 @@ export default function RegisterPage() {
       </div>
 
       {/* ── Top bar ── */}
-      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-6 py-4">
+      <header className="absolute top-0 left-0 right-0 z-20 flex flex-wrap items-center justify-between gap-2 px-3 py-3 sm:px-6 sm:py-4">
         <a href="/" className="flex items-center gap-2 text-[#22c55e] font-black text-lg no-underline">
           <img src="/logo.png" alt="TradeForge"
-               style={{ height: 96, filter: "invert(1) hue-rotate(180deg)" }} />
+               style={{ height: "clamp(60px, 19vw, 96px)", filter: "invert(1) hue-rotate(180deg)" }} />
         </a>
         <Link to="/login"
               className="text-sm text-[#8a8a8a] hover:text-[#e8e8e8] transition-colors no-underline">
@@ -102,7 +102,7 @@ export default function RegisterPage() {
       </header>
 
       {/* ── Form card ── */}
-      <div className="relative z-10 w-full max-w-sm px-4">
+      <div className="relative z-10 w-full max-w-sm px-3 pt-16 sm:px-4 sm:pt-10">
         <AnimatePresence mode="wait">
 
           {/* ── Step 1: Identity ── */}
@@ -116,7 +116,7 @@ export default function RegisterPage() {
               className="space-y-6 text-center"
             >
               <div className="space-y-1">
-                <h1 className="text-[2.2rem] font-black leading-tight tracking-tight text-white">
+                <h1 className="text-[2rem] sm:text-[2.2rem] font-black leading-tight tracking-tight text-white">
                   Create an account
                 </h1>
                 <p className="text-base text-white/50 font-light">
@@ -200,7 +200,7 @@ export default function RegisterPage() {
               className="space-y-6 text-center"
             >
               <div className="space-y-1">
-                <h1 className="text-[2.2rem] font-black leading-tight tracking-tight text-white">
+                <h1 className="text-[2rem] sm:text-[2.2rem] font-black leading-tight tracking-tight text-white">
                   Set your password
                 </h1>
                 <p className="text-base text-white/50 font-light">
@@ -230,11 +230,11 @@ export default function RegisterPage() {
                   className="w-full rounded-full py-3 px-5 bg-white/5 border border-white/10 text-white placeholder-white/30 text-sm focus:outline-none focus:border-[#22c55e]/60 transition-colors"
                 />
 
-                <div className="flex gap-3 pt-1">
+                <div className="flex flex-col gap-3 pt-1 sm:flex-row">
                   <motion.button
                     type="button"
                     onClick={() => { setStep("identity"); setError(""); }}
-                    className="w-[38%] rounded-full py-3 border border-white/10 bg-white/5 text-white/60 text-sm font-semibold hover:bg-white/10 hover:text-white transition-colors"
+                    className="w-full rounded-full py-3 border border-white/10 bg-white/5 text-white/60 text-sm font-semibold hover:bg-white/10 hover:text-white transition-colors sm:w-[38%]"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
                   >
@@ -264,7 +264,7 @@ export default function RegisterPage() {
               className="space-y-6 text-center"
             >
               <div className="space-y-1">
-                <h1 className="text-[2.5rem] font-black leading-tight tracking-tight text-white">
+                <h1 className="text-[2.15rem] sm:text-[2.5rem] font-black leading-tight tracking-tight text-white">
                   You're in!
                 </h1>
                 <p className="text-base text-white/50 font-light">

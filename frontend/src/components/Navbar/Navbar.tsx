@@ -31,10 +31,12 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
 
   const NAV_CONFIG: Record<Role, NavItem[]> = {
     guest: [
@@ -106,10 +108,13 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotifOpen(false);
       }
+      if (mobileMenuOpen && navRef.current && !navRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [mobileMenuOpen]);
 
   async function handleNotifClick(notif: Notification) {
     if (!notif.read_at) {
@@ -147,11 +152,24 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
         <img src="/logo.png" alt="TradeForge" className={styles.brandLogo} />
       </a>
 
-      <nav className={styles.navLinks}>
+      <button
+        className={styles.mobileMenuBtn}
+        aria-label="Toggle navigation menu"
+        aria-expanded={mobileMenuOpen}
+        onClick={() => setMobileMenuOpen((open) => !open)}
+      >
+        <span className={styles.mobileMenuIcon} />
+      </button>
+
+      <nav
+        ref={navRef}
+        className={`${styles.navLinks} ${mobileMenuOpen ? styles.navOpen : ""}`}
+      >
         {links.map((link) => (
           <a
               key={link.href}
               href={link.href}
+              onClick={() => setMobileMenuOpen(false)}
               className={
                 link.id === "create"
                   ? styles.createListing
@@ -163,7 +181,7 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
         ))}
 
         {!excludeAll && !user && (
-          <a href="/login" className={styles.link}>
+          <a href="/login" className={styles.link} onClick={() => setMobileMenuOpen(false)}>
             Login
           </a>
         )}
@@ -250,7 +268,12 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
                 </div>
 
                 {dropdownLinks.map((item) => (
-                  <a key={item.href} href={item.href} className={styles.dropdownItem}>
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className={styles.dropdownItem}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     {item.label}
                   </a>
                 ))}
@@ -260,6 +283,7 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
                   onClick={() => {
                     logout();
                     setDropdownOpen(false);
+                    setMobileMenuOpen(false);
                   }}
                 >
                   Logout

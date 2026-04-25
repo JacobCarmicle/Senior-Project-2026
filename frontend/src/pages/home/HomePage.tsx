@@ -297,6 +297,8 @@ function ListingCard({ listing, onSave, onClick }: {
           display: "flex", justifyContent: "space-between", alignItems: "center",
           marginTop: "auto", paddingTop: "10px",
           borderTop: `1px solid ${T.border}`,
+          gap: "8px",
+          flexWrap: "wrap",
         }}>
           <span style={{ fontSize: "12px", color: T.muted, display: "flex", alignItems: "center", gap: "4px" }}>
             <IconPin />
@@ -312,6 +314,7 @@ function ListingCard({ listing, onSave, onClick }: {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const { user } = useAuth();
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loadingListings, setLoadingListings] = useState(true);
   const [listingsError, setListingsError] = useState("");
@@ -343,6 +346,12 @@ export default function HomePage() {
       .catch(() => setListingsError("Unable to load marketplace listings."))
       .finally(() => setLoadingListings(false));
   }
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     fetchListings(false);
@@ -442,7 +451,7 @@ export default function HomePage() {
     <div style={{ minHeight: "100vh", background: "radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.05) 0%, #0f0f0f 55%)", color: T.text, fontFamily: "'Outfit', Arial, sans-serif" }}>
       <Navbar exclude={["marketplace"]} />
 
-      <main style={{ maxWidth: "1600px", margin: "0 auto", padding: "24px 20px 48px" }}>
+      <main style={{ maxWidth: "1600px", margin: "0 auto", padding: isMobile ? "14px 10px 28px" : "24px 20px 48px" }}>
 
         {/* ── Search Bar ── */}
         <div style={{
@@ -451,7 +460,7 @@ export default function HomePage() {
           marginBottom: "16px",
           boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
         }}>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "stretch" }}>
 
             {/* Search input */}
             <label htmlFor="search-listings" style={srOnly}>Search listings</label>
@@ -469,7 +478,7 @@ export default function HomePage() {
               id="category-filter"
               value={category}
               onChange={e => { setCategory(e.target.value); setPage(1); }}
-              style={{ ...selectStyle, minWidth: "150px" }}
+              style={{ ...selectStyle, minWidth: isMobile ? "100%" : "150px", flex: isMobile ? "1 1 100%" : undefined }}
             >
               {CATEGORIES.map(c => <option key={c} value={c}>{c === "All" ? "All categories" : c}</option>)}
             </select>
@@ -481,7 +490,7 @@ export default function HomePage() {
               placeholder="Min $"
               value={minPrice}
               onChange={e => setMinPrice(e.target.value.replace(/\D/g, ""))}
-              style={{ ...inputStyle, width: "88px" }}
+              style={{ ...inputStyle, width: isMobile ? "calc(50% - 5px)" : "88px", minWidth: isMobile ? 0 : undefined }}
             />
 
             {/* Max price */}
@@ -491,7 +500,7 @@ export default function HomePage() {
               placeholder="Max $"
               value={maxPrice}
               onChange={e => setMaxPrice(e.target.value.replace(/\D/g, ""))}
-              style={{ ...inputStyle, width: "88px" }}
+              style={{ ...inputStyle, width: isMobile ? "calc(50% - 5px)" : "88px", minWidth: isMobile ? 0 : undefined }}
             />
 
             {/* Near me */}
@@ -515,6 +524,8 @@ export default function HomePage() {
                 fontSize: "13px", cursor: "pointer",
                 display: "flex", alignItems: "center", gap: "5px",
                 fontFamily: "inherit", transition: "all 0.15s",
+                width: isMobile ? "calc(50% - 5px)" : undefined,
+                justifyContent: "center",
               }}
             >
               <IconPin size={13} />
@@ -525,7 +536,7 @@ export default function HomePage() {
               <select
                 value={radiusMiles}
                 onChange={e => setRadiusMiles(e.target.value)}
-                style={{ ...selectStyle, width: "108px" }}
+                style={{ ...selectStyle, width: isMobile ? "calc(50% - 5px)" : "108px", minWidth: isMobile ? 0 : undefined }}
               >
                 <option value="5">5 mi</option>
                 <option value="10">10 mi</option>
@@ -544,6 +555,7 @@ export default function HomePage() {
                 fontSize: "14px", cursor: "pointer",
                 fontFamily: "inherit",
                 transition: "background 0.15s, transform 0.1s",
+                width: isMobile ? "calc(50% - 5px)" : undefined,
               }}
               onMouseDown={e => (e.currentTarget.style.transform = "scale(0.97)")}
               onMouseUp={e => (e.currentTarget.style.transform = "scale(1)")}
@@ -561,6 +573,7 @@ export default function HomePage() {
                 padding: "9px 16px", fontSize: "14px",
                 cursor: "pointer", fontFamily: "inherit",
                 transition: "color 0.15s, border-color 0.15s",
+                width: isMobile ? "calc(50% - 5px)" : undefined,
               }}
               onMouseEnter={e => { e.currentTarget.style.color = T.text; e.currentTarget.style.borderColor = "#666"; }}
               onMouseLeave={e => { e.currentTarget.style.color = T.muted; e.currentTarget.style.borderColor = T.border; }}
@@ -638,7 +651,7 @@ export default function HomePage() {
         {/* ── Main grid + sidebar ── */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: forYou.length > 0 ? "280px 1fr" : "1fr",
+          gridTemplateColumns: isMobile ? "1fr" : forYou.length > 0 ? "280px 1fr" : "1fr",
           gap: "16px",
           alignItems: "start",
         }}>
@@ -649,7 +662,7 @@ export default function HomePage() {
               background: T.card, border: `1px solid ${T.border}`,
               borderRadius: "14px", overflow: "hidden",
               boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
-              position: "sticky", top: "80px",
+              position: isMobile ? "static" : "sticky", top: "80px",
             }}>
               <div style={{
                 padding: "14px 16px 12px",
@@ -700,7 +713,7 @@ export default function HomePage() {
             {loadingListings ? (
               <div style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
                 gap: "16px", marginBottom: "28px",
               }}>
                 {Array.from({ length: PAGE_SIZE }).map((_, i) => <SkeletonCard key={i} />)}
@@ -708,7 +721,7 @@ export default function HomePage() {
             ) : paginated.length > 0 ? (
               <div style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
                 gap: "16px", marginBottom: "28px",
               }}>
                 {paginated.map((listing, i) => (

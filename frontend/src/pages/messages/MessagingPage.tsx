@@ -57,6 +57,7 @@ function MessageRow({ message, isOwn, onReport }: {
 
 export default function MessagingPage() {
   const { user } = useAuth();
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
   const [params] = useSearchParams();
   const preferred = params.get("conversation") || "";
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -74,6 +75,12 @@ export default function MessagingPage() {
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [reportTarget, setReportTarget] = useState<{ id: string; preview: string } | null>(null);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     listMyConversations().then((r) => {
@@ -212,19 +219,20 @@ export default function MessagingPage() {
         />
       )}
       <Navbar exclude={["inbox"]}/>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: 20 }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? 10 : 20 }}>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "300px 1fr",
+            gridTemplateColumns: isMobile ? "1fr" : "300px 1fr",
             border: `1px solid ${T.border}`,
             background: T.card,
             borderRadius: 14,
             overflow: "hidden",
-            height: "78vh",
+            height: isMobile ? "calc(100vh - 120px)" : "78vh",
           }}
         >
-          <aside style={{ borderRight: `1px solid ${T.border}`, padding: 12 }}>
+          {(!isMobile || !activeId) && (
+          <aside style={{ borderRight: isMobile ? "none" : `1px solid ${T.border}`, padding: 12 }}>
             <h3 style={{ marginTop: 4 }}>Inbox</h3>
             {conversations.length === 0 && (
               <p style={{ color: T.muted, fontSize: 13 }}>No conversations yet.</p>
@@ -252,7 +260,9 @@ export default function MessagingPage() {
               </button>
             ))}
           </aside>
+          )}
 
+          {(!isMobile || activeId) && (
           <section style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
             <div
               style={{
@@ -265,6 +275,22 @@ export default function MessagingPage() {
                 fontSize: 13,
               }}
             >
+              {isMobile && (
+                <button
+                  onClick={() => setActiveId("")}
+                  style={{
+                    marginRight: 10,
+                    background: "#2b2b2b",
+                    color: T.text,
+                    border: `1px solid ${T.border}`,
+                    borderRadius: 8,
+                    padding: "4px 8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Back
+                </button>
+              )}
               <div>Conversation: {active?.listing_title?.trim() || "none"}</div>
             </div>
 
@@ -277,6 +303,7 @@ export default function MessagingPage() {
                 borderTop: `1px solid ${T.border}`,
                 background: "#202020",
                 alignItems: "center",
+                justifyContent: isMobile ? "flex-start" : undefined,
               }}
             >
               {otherUserId && (
@@ -358,7 +385,7 @@ export default function MessagingPage() {
                     fontWeight: 700,
                     cursor: "pointer",
                     fontSize: 13,
-                    marginLeft: "auto",
+                    marginLeft: isMobile ? 0 : "auto",
                   }}
                 >
                   Mark as Sold
@@ -366,7 +393,7 @@ export default function MessagingPage() {
               )}
 
               {isSeller && activeListing?.status === "sold" && (
-                <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, padding: "4px 10px", borderRadius: 999, background: "rgba(234,179,8,0.15)", border: "1px solid rgba(234,179,8,0.4)", color: "#eab308" }}>
+                <span style={{ marginLeft: isMobile ? 0 : "auto", fontSize: 12, fontWeight: 700, padding: "4px 10px", borderRadius: 999, background: "rgba(234,179,8,0.15)", border: "1px solid rgba(234,179,8,0.4)", color: "#eab308" }}>
                   Sold
                 </span>
               )}
@@ -554,6 +581,7 @@ export default function MessagingPage() {
               </button>
             </div>
           </section>
+          )}
         </div>
       </div>
 
@@ -578,8 +606,7 @@ export default function MessagingPage() {
               background: T.card,
               padding: 20,
               borderRadius: 12,
-              minWidth: 320,
-              maxWidth: 400,
+              width: "min(92vw, 400px)",
             }}
             onClick={(e) => e.stopPropagation()}
           >

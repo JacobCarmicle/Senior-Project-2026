@@ -43,6 +43,13 @@ export default function ListingDetailPage() {
   const [adminWorking, setAdminWorking] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [similar, setSimilar] = useState<import("../../types/listings").Listing[]>([]);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -184,7 +191,7 @@ if (error) {
         />
       )}
 
-      <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
+      <main style={{ maxWidth: 1000, margin: "0 auto", padding: isMobile ? 10 : 24 }}>
         <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: 14 }}>← Back to Marketplace</a>
 
         <div
@@ -203,7 +210,7 @@ if (error) {
                 <img
                   src={listing.images[selectedImageIndex] ?? listing.images[0]}
                   alt={`${listing.title} image ${selectedImageIndex + 1}`}
-                  style={{ width: "100%", maxHeight: 460, objectFit: "cover", borderRadius: 10 }}
+                  style={{ width: "100%", maxHeight: isMobile ? 300 : 460, objectFit: "cover", borderRadius: 10 }}
                 />
 
                 {imageCount > 1 && (
@@ -307,14 +314,14 @@ if (error) {
             </div>
           ) : null}
 
-          <div style={{ padding: 20 }}>
+          <div style={{ padding: isMobile ? 14 : 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
               <div>
-                <h1 style={{ margin: 0, fontSize: 30, fontWeight: 900 }}>{listing.title}</h1>
+                <h1 style={{ margin: 0, fontSize: "clamp(1.4rem, 6vw, 1.9rem)", fontWeight: 900 }}>{listing.title}</h1>
                 <p style={{ margin: "8px 0 0", color: T.muted }}>📍 {listing.location}</p>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 32, fontWeight: 900, color: T.accent }}>${Number(listing.price).toLocaleString()}</div>
+              <div style={{ textAlign: isMobile ? "left" : "right" }}>
+                <div style={{ fontSize: "clamp(1.5rem, 6.5vw, 2rem)", fontWeight: 900, color: T.accent }}>${Number(listing.price).toLocaleString()}</div>
                 <div style={{ color: T.muted, fontSize: 13, marginTop: 4 }}>{listing.category}</div>
               </div>
             </div>
@@ -360,6 +367,7 @@ if (error) {
                     border: 0,
                     fontWeight: 700,
                     cursor: "pointer",
+                    width: isMobile ? "100%" : undefined,
                   }}
                 >
                   Message Seller
@@ -375,6 +383,7 @@ if (error) {
                   border: `1px solid ${T.border}`,
                   fontWeight: 700,
                   cursor: "pointer",
+                  width: isMobile ? "100%" : undefined,
                 }}
               >
                 View Seller Profile
@@ -390,6 +399,8 @@ if (error) {
                     border: `1px solid ${T.border}`,
                     textDecoration: "none",
                     fontWeight: 700,
+                    width: isMobile ? "100%" : undefined,
+                    textAlign: "center",
                   }}
                 >
                   Edit Listing
@@ -407,7 +418,8 @@ if (error) {
                     fontWeight: 700,
                     cursor: "pointer",
                     fontSize: 14,
-                    marginLeft: "auto",
+                    marginLeft: isMobile ? 0 : "auto",
+                    width: isMobile ? "100%" : undefined,
                   }}
                 >
                   Report Listing
@@ -495,7 +507,7 @@ if (error) {
                   href={`/listing/${item.id}`}
                   style={{
                     flexShrink: 0,
-                    width: 190,
+                    width: isMobile ? 160 : 190,
                     background: T.card,
                     border: `1px solid ${T.border}`,
                     borderRadius: 12,

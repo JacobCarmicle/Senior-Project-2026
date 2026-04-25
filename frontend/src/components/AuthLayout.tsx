@@ -19,7 +19,7 @@ export default function AuthLayout({ children }: Props) {
       </header> */}
       <Navbar excludeAll={true}/>
 
-      <main className="mx-auto mt-6 mb-10 grid max-w-[980px] items-start gap-5 px-4 md:grid-cols-[1.1fr_0.9fr]">
+      <main className="mx-auto mt-3 mb-8 grid max-w-[980px] items-start gap-4 px-3 sm:mt-6 sm:mb-10 sm:gap-5 sm:px-4 md:grid-cols-[1.1fr_0.9fr]">
         {children}
       </main>
     </div>

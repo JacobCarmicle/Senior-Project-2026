@@ -112,12 +112,13 @@ function ErrorMsg({ msg }: { msg?: string }) {
 }
 
 // ── Image Upload Zone ─────────────────────────────────────────────────────────
-function ImageUploadZone({ images, onAdd, onRemove, onSetPrimary, error }: {
+function ImageUploadZone({ images, onAdd, onRemove, onSetPrimary, error, isMobile = false }: {
   images: ImageFile[];
   onAdd: (files: FileList) => void;
   onRemove: (id: string) => void;
   onSetPrimary: (id: string) => void;
   error?: string;
+  isMobile?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -168,7 +169,7 @@ function ImageUploadZone({ images, onAdd, onRemove, onSetPrimary, error }: {
 
       {/* Image Previews */}
       {images.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: "10px" }}>
           {images.map(img => (
             <div key={img.id} style={{ position: "relative", borderRadius: "10px", overflow: "hidden", border: `2px solid ${img.isPrimary ? T.accent : T.border}`, background: "#222", aspectRatio: "1" }}>
               <img src={img.preview} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -235,6 +236,13 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
   const [submitError, setSubmitError] = useState("");
   const [locationError, setLocationError] = useState("");
   const [locationLoading, setLocationLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // ── Load existing data in edit mode ────────────────────────────────────────
   useEffect(() => {
@@ -406,7 +414,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
           <p style={{ color: T.muted, fontSize: "14px", marginBottom: "28px" }}>
             {isEditMode ? "Your changes have been saved." : "Your listing is now live on the marketplace."}
           </p>
-          <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
             <a href="/" style={{ padding: "11px 24px", borderRadius: "10px", background: T.accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: "14px" }}>View Marketplace</a>
             <a href="/create-listing" onClick={() => setSuccess(false)} style={{ padding: "11px 24px", borderRadius: "10px", background: T.surface, color: T.text, textDecoration: "none", fontWeight: 600, fontSize: "14px", border: `1px solid ${T.border}` }}>Create Another</a>
           </div>
@@ -419,7 +427,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
     <div style={{ minHeight: "100vh", background: "radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.05) 0%, #0f0f0f 55%)", color: T.text, fontFamily: "'Outfit', Arial, sans-serif" }}>
       <Navbar exclude={["create"]}/>
 
-      <div style={{ maxWidth: "780px", margin: "0 auto", padding: "28px 20px 60px" }}>
+      <div style={{ maxWidth: "780px", margin: "0 auto", padding: isMobile ? "16px 10px 36px" : "28px 20px 60px" }}>
 
         {/* ── Page Header ── */}
         <div style={{ marginBottom: "24px" }}>
@@ -436,7 +444,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: "14px", overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
 
           {/* ── Section: Basic Info ── */}
-          <div style={{ padding: "24px", borderBottom: `1px solid ${T.border}` }}>
+          <div style={{ padding: isMobile ? "16px" : "24px", borderBottom: `1px solid ${T.border}` }}>
             <div style={{ fontSize: "15px", fontWeight: 800, color: T.text, marginBottom: "20px" }}>
               Basic Information
             </div>
@@ -491,10 +499,10 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
           </div>
 
           {/* ── Section: Details ── */}
-          <div style={{ padding: "24px", borderBottom: `1px solid ${T.border}` }}>
+          <div style={{ padding: isMobile ? "16px" : "24px", borderBottom: `1px solid ${T.border}` }}>
             <div style={{ fontSize: "15px", fontWeight: 800, color: T.text, marginBottom: "20px" }}>Details</div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "16px" }}>
               {/* Category */}
               <div>
                 <Label text="Category" required />
@@ -519,7 +527,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
 
               {/* Location */}
               <div style={{ gridColumn: "1 / -1" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "7px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "center", marginBottom: "7px", gap: 8, flexWrap: "wrap" }}>
                   <Label text="Meetup Location" required />
                   <button
                     type="button"
@@ -552,7 +560,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
           </div>
 
           {/* ── Section: Images ── */}
-          <div style={{ padding: "24px", borderBottom: `1px solid ${T.border}` }}>
+          <div style={{ padding: isMobile ? "16px" : "24px", borderBottom: `1px solid ${T.border}` }}>
             <div style={{ fontSize: "15px", fontWeight: 800, color: T.text, marginBottom: "6px" }}>
               Images <span style={{ color: T.accent }}>*</span>
             </div>
@@ -565,12 +573,13 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
               onRemove={handleRemoveImage}
               onSetPrimary={handleSetPrimary}
               error={errors.images || imageError}
+              isMobile={isMobile}
             />
           </div>
 
           {/* ── Section: Edit-only — Mark as Sold / Delete ── */}
           {isEditMode && (
-            <div style={{ padding: "24px", borderBottom: `1px solid ${T.border}`, background: "rgba(239,68,68,0.03)" }}>
+            <div style={{ padding: isMobile ? "16px" : "24px", borderBottom: `1px solid ${T.border}`, background: "rgba(239,68,68,0.03)" }}>
               <div style={{ fontSize: "15px", fontWeight: 800, color: T.text, marginBottom: "6px" }}>Listing Actions</div>
               <div style={{ fontSize: "13px", color: T.muted, marginBottom: "16px" }}>These actions are permanent and cannot be undone.</div>
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -587,7 +596,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
           )}
 
           {/* ── Submit ── */}
-          <div style={{ padding: "24px", display: "flex", justifyContent: "flex-end", gap: "12px", alignItems: "center" }}>
+          <div style={{ padding: isMobile ? "16px" : "24px", display: "flex", justifyContent: "flex-end", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             {Object.keys(errors).length > 0 && (
               <span style={{ fontSize: "13px", color: T.error, fontWeight: 600 }}>
                 Please fix the errors above.
