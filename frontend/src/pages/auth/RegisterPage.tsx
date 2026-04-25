@@ -93,7 +93,11 @@ export default function RegisterPage() {
       <header className="absolute top-0 left-0 right-0 z-20 flex flex-wrap items-center justify-between gap-2 px-3 py-3 sm:px-6 sm:py-4">
         <a href="/" className="flex items-center gap-2 text-[#22c55e] font-black text-lg no-underline">
           <img src="/logo.png" alt="TradeForge"
-               style={{ height: "clamp(60px, 19vw, 96px)", filter: "invert(1) hue-rotate(180deg)" }} />
+               style={{ height: "clamp(60px, 19vw, 96px)", filter: "invert(1) hue-rotate(180deg)" }}
+               onError={(e) => {
+                 e.currentTarget.onerror = null;
+                 e.currentTarget.src = "/vite.svg";
+               }} />
         </a>
         <Link to="/login"
               className="text-sm text-[#8a8a8a] hover:text-[#e8e8e8] transition-colors no-underline">

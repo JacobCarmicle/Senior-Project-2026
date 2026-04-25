@@ -149,7 +149,15 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
     <header className={styles.navbar}>
       {/* Brand */}
       <a href="/" className={styles.brand}>
-        <img src="/logo.png" alt="TradeForge" className={styles.brandLogo} />
+        <img
+          src="/logo.png"
+          alt="TradeForge"
+          className={styles.brandLogo}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/vite.svg";
+          }}
+        />
       </a>
 
       <button

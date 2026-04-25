@@ -90,6 +90,10 @@ export default function LoginPage() {
           <img
             src="/logo.png" alt="TradeForge"
             style={{ height: "clamp(56px, 18vw, 88px)", filter: "invert(1) hue-rotate(180deg)", opacity: 0.9 }}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/vite.svg";
+            }}
           />
         </a>
         <Link
