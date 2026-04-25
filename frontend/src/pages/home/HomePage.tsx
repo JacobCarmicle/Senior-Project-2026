@@ -302,7 +302,7 @@ function ListingCard({ listing, onSave, onClick }: {
             <IconPin />
             {listing.location}{listing.distanceMiles != null ? ` · ${listing.distanceMiles.toFixed(1)} mi` : ""}
           </span>
-          <span style={{ fontSize: "11px", color: "#7a7a7a" }}>{listing.postedAt}</span>
+          <span style={{ fontSize: "11px", color: "#a3a3a3" }}>{listing.postedAt}</span>
         </div>
       </div>
     </div>

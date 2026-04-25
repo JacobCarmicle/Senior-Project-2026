@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { listUsers, patchUser, listAllListings, adminDeleteListing, adminRestoreListing, type AdminUser } from "../../api/admin";
 import { listAdminReports, patchReport, type Report } from "../../api/reports";
-import { deleteReview } from "../../api/reviews";
 import type { Listing } from "../../types/listings";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
