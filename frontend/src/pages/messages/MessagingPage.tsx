@@ -10,6 +10,7 @@ import ReportModal from "../../components/ReportModal/ReportModal";
 import ReviewForm from "../../components/ReviewForm/ReviewForm";
 import { getListing, updateListing } from "../../api/listings";
 import type { Listing } from "../../types/listings";
+import { getUser } from "../../api/users";
 
 const T = {
   bg:      "#0f0f0f",
@@ -70,10 +71,12 @@ export default function MessagingPage() {
   const [activeListing, setActiveListing] = useState<Listing | null>(null);
   const [reviewSubmitted, setReviewSubmitted] = useState<Record<string, boolean>>({});
   const [reviewFormOpen, setReviewFormOpen] = useState<Record<string, boolean>>({});
+  const [reportUserOpen, setReportUserOpen] = useState(false);
 
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [reportTarget, setReportTarget] = useState<{ id: string; preview: string } | null>(null);
+  const [otherUserName, setOtherUserName] = useState<string>("");
 
   useEffect(() => {
     listMyConversations().then((r) => {
@@ -152,6 +155,31 @@ export default function MessagingPage() {
     getListing(active.listing_id).then(setActiveListing).catch(() => setActiveListing(null));
   }, [active?.listing_id]);
 
+  useEffect(() => {
+    if (!otherUserId) {
+      setOtherUserName("");
+      return;
+    }
+
+    let cancelled = false;
+
+    getUser(otherUserId)
+      .then((u) => {
+        if (!cancelled) {
+          setOtherUserName(u.full_name);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setOtherUserName("User");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [otherUserId]);
+
   async function handleMarkSold() {
     if (!active?.listing_id) return;
     if (!window.confirm("Mark this listing as sold?")) return;
@@ -175,7 +203,8 @@ export default function MessagingPage() {
   }
 
   function handleReport() {
-    alert("Report flow coming soon");
+    if (!otherUserId) return;
+    setReportUserOpen(true);
   }
 
   async function handleScheduleMeetup() {
@@ -209,6 +238,14 @@ export default function MessagingPage() {
           targetId={reportTarget.id}
           targetName={reportTarget.preview || "Message"}
           onClose={() => setReportTarget(null)}
+        />
+      )}
+      {reportUserOpen && otherUserId && (
+        <ReportModal
+          targetType="user"
+          targetId={otherUserId}
+          targetName={otherUserName || (isSeller ? "Buyer" : "Seller")}
+          onClose={() => setReportUserOpen(false)}
         />
       )}
       <Navbar exclude={["inbox"]}/>
