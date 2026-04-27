@@ -53,10 +53,12 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
   const [fontOpen, setFontOpen] = useState(false);
   const fontRef = useRef<HTMLDivElement>(null);
 
@@ -133,10 +135,13 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
       if (fontRef.current && !fontRef.current.contains(e.target as Node)) {
         setFontOpen(false);
       }
+      if (mobileMenuOpen && navRef.current && !navRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [mobileMenuOpen]);
 
   async function handleNotifClick(notif: Notification) {
     if (!notif.read_at) {
@@ -171,14 +176,35 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
     <header className={styles.navbar}>
       {/* Brand */}
       <a href="/" className={styles.brand}>
-        <img src="/logo.png" alt="TradeForge" className={styles.brandLogo} />
+        <img
+          src="/logo.png"
+          alt="TradeForge"
+          className={styles.brandLogo}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/vite.svg";
+          }}
+        />
       </a>
 
-      <nav className={styles.navLinks}>
+      <button
+        className={styles.mobileMenuBtn}
+        aria-label="Toggle navigation menu"
+        aria-expanded={mobileMenuOpen}
+        onClick={() => setMobileMenuOpen((open) => !open)}
+      >
+        <span className={styles.mobileMenuIcon} />
+      </button>
+
+      <nav
+        ref={navRef}
+        className={`${styles.navLinks} ${mobileMenuOpen ? styles.navOpen : ""}`}
+      >
         {links.map((link) => (
           <a
               key={link.href}
               href={link.href}
+              onClick={() => setMobileMenuOpen(false)}
               className={
                 link.id === "create"
                   ? styles.createListing
@@ -190,7 +216,7 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
         ))}
 
         {!excludeAll && !user && (
-          <a href="/login" className={styles.link}>
+          <a href="/login" className={styles.link} onClick={() => setMobileMenuOpen(false)}>
             Login
           </a>
         )}
@@ -299,7 +325,12 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
                 </div> */}
 
                 {dropdownLinks.map((item) => (
-                  <a key={item.href} href={item.href} className={styles.dropdownItem}>
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className={styles.dropdownItem}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     {item.label}
                   </a>
                 ))}
@@ -309,6 +340,7 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
                   onClick={() => {
                     logout();
                     setDropdownOpen(false);
+                    setMobileMenuOpen(false);
                   }}
                 >
                   Logout

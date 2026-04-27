@@ -85,11 +85,15 @@ export default function LoginPage() {
       </div>
 
       {/* ── Top bar ── */}
-      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-6 py-4">
+      <header className="absolute top-0 left-0 right-0 z-20 flex flex-wrap items-center justify-between gap-2 px-3 py-3 sm:px-6 sm:py-4">
         <a href="/" className="no-underline">
           <img
             src="/logo.png" alt="TradeForge"
-            style={{ height: 88, filter: "invert(1) hue-rotate(180deg)", opacity: 0.9 }}
+            style={{ height: "clamp(56px, 18vw, 88px)", filter: "invert(1) hue-rotate(180deg)", opacity: 0.9 }}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/vite.svg";
+            }}
           />
         </a>
         <Link
@@ -103,7 +107,7 @@ export default function LoginPage() {
       </header>
 
       {/* ── Card ── */}
-      <div className="relative z-10 w-full max-w-[400px] px-4">
+      <div className="relative z-10 w-full max-w-[400px] px-3 pt-16 sm:px-4 sm:pt-10">
         <AnimatePresence mode="wait">
 
           {/* ── Login form ── */}
@@ -133,7 +137,7 @@ export default function LoginPage() {
                 background: T.card,
                 border: `1px solid ${T.border}`,
                 borderRadius: 18,
-                padding: "28px 24px",
+                padding: "clamp(16px, 4vw, 28px) clamp(16px, 4vw, 24px)",
                 boxShadow: "0 4px 32px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.04) inset",
               }}>
 

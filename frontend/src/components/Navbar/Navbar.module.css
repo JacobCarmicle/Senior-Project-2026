@@ -18,6 +18,46 @@
   z-index: 10;
 }
 
+.mobileMenuBtn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e7e5e4;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mobileMenuIcon {
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  position: relative;
+}
+
+.mobileMenuIcon::before,
+.mobileMenuIcon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.mobileMenuIcon::before {
+  top: -5px;
+}
+
+.mobileMenuIcon::after {
+  top: 5px;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -48,7 +88,7 @@
 
 .link {
   text-decoration: none;
-  color: #aaa;
+  color: #d1d5db;
 
   background: rgba(255,255,255,0.05);
   padding: 8px 12px;
@@ -67,13 +107,13 @@
 
 .createListing {
   text-decoration: none;
-  color: white;
+  color: #f5fff8;
 
-  background: #22c55e;
+  background: #15803d;
   padding: 8px 12px;
 
   border-radius: 10px;
-  border: 1px solid #22c55e;
+  border: 1px solid #15803d;
 
   font-size: 0.95rem;
   font-weight: 700;
@@ -377,4 +417,70 @@
 
 .logout:hover {
   background: rgba(239,68,68,0.08);
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    height: auto;
+    min-height: 64px;
+    padding: 10px 12px;
+    flex-wrap: wrap;
+  }
+
+  .brandLogo {
+    height: 66px;
+    min-width: 0;
+  }
+
+  .mobileMenuBtn {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  .navLinks {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(12, 12, 12, 0.98);
+  }
+
+  .navOpen {
+    display: flex;
+  }
+
+  .link,
+  .createListing {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  .dropdownWrapper {
+    width: 100%;
+  }
+
+  .bellBtn,
+  .avatarBtn {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .dropdown,
+  .notifDropdown {
+    position: relative;
+    top: 8px;
+    right: auto;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
 }

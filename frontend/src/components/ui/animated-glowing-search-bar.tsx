@@ -16,8 +16,8 @@ const AnimatedSearchBar: React.FC<AnimatedSearchBarProps> = ({
   id,
 }) => {
   return (
-    <div className="relative flex items-center justify-center">
-      <div id="poda" className="relative flex items-center justify-center group">
+    <div className="relative flex w-full items-center justify-center sm:w-auto">
+      <div id="poda" className="relative flex w-full items-center justify-center group sm:w-auto">
 
         {/* Outer glow layer 1 */}
         <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[70px] max-w-[314px] rounded-xl blur-[3px]
@@ -56,7 +56,7 @@ const AnimatedSearchBar: React.FC<AnimatedSearchBarProps> = ({
             value={value}
             onChange={onChange}
             onKeyDown={onKeyDown}
-            className="bg-[#010f05] border-none w-[301px] h-[56px] rounded-lg text-white pl-[52px] pr-[18px] text-base focus:outline-none placeholder-[#6b7280]"
+            className="bg-[#010f05] border-none h-[56px] w-full rounded-lg text-white pl-[52px] pr-[18px] text-base focus:outline-none placeholder-[#6b7280] sm:w-[301px]"
           />
 
           {/* Gradient fade mask (hides when focused) */}
