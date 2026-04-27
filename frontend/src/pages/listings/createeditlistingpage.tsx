@@ -89,7 +89,7 @@ function inputStyle(hasError: boolean): React.CSSProperties {
     border: `1px solid ${hasError ? T.error : T.border}`,
     borderRadius: "10px",
     padding: "11px 14px",
-    fontSize: "14px",
+    fontSize: "0.875rem",
     outline: "none",
     fontFamily: "'Outfit', Arial, sans-serif",
     transition: "border-color 0.2s",
@@ -99,7 +99,7 @@ function inputStyle(hasError: boolean): React.CSSProperties {
 // ── Field Label ───────────────────────────────────────────────────────────────
 function Label({ text, required }: { text: string; required?: boolean }) {
   return (
-    <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: T.muted, marginBottom: "7px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+    <label style={{ display: "block", fontSize: "0.813rem", fontWeight: 700, color: T.muted, marginBottom: "7px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
       {text}{required && <span style={{ color: T.accent, marginLeft: "3px" }}>*</span>}
     </label>
   );
@@ -108,7 +108,7 @@ function Label({ text, required }: { text: string; required?: boolean }) {
 // ── Error Message ─────────────────────────────────────────────────────────────
 function ErrorMsg({ msg }: { msg?: string }) {
   if (!msg) return null;
-  return <div style={{ fontSize: "12px", color: T.error, marginTop: "5px", fontWeight: 600 }}>⚠ {msg}</div>;
+  return <div style={{ fontSize: "0.750rem", color: T.error, marginTop: "5px", fontWeight: 600 }}>⚠ {msg}</div>;
 }
 
 // ── Image Upload Zone ─────────────────────────────────────────────────────────
@@ -149,11 +149,11 @@ function ImageUploadZone({ images, onAdd, onRemove, onSetPrimary, error, isMobil
             marginBottom: images.length > 0 ? "14px" : "0",
           }}
         >
-          <div style={{ fontSize: "32px", marginBottom: "8px" }}>📷</div>
-          <div style={{ fontWeight: 700, color: T.text, fontSize: "14px", marginBottom: "4px" }}>
+          <div style={{ fontSize: "2.000rem", marginBottom: "8px" }}>📷</div>
+          <div style={{ fontWeight: 700, color: T.text, fontSize: "0.875rem", marginBottom: "4px" }}>
             Click or drag to upload images
           </div>
-          <div style={{ fontSize: "12px", color: T.muted }}>
+          <div style={{ fontSize: "0.750rem", color: T.muted }}>
             PNG, JPG, WEBP · Max 5MB per image · Up to {MAX_IMAGES} images
           </div>
           <input
@@ -176,7 +176,7 @@ function ImageUploadZone({ images, onAdd, onRemove, onSetPrimary, error, isMobil
 
               {/* Primary badge */}
               {img.isPrimary && (
-                <div style={{ position: "absolute", top: "6px", left: "6px", background: T.accent, color: "#fff", fontSize: "10px", fontWeight: 700, padding: "2px 6px", borderRadius: "4px" }}>
+                <div style={{ position: "absolute", top: "6px", left: "6px", background: T.accent, color: "#fff", fontSize: "0.625rem", fontWeight: 700, padding: "2px 6px", borderRadius: "4px" }}>
                   PRIMARY
                 </div>
               )}
@@ -184,11 +184,11 @@ function ImageUploadZone({ images, onAdd, onRemove, onSetPrimary, error, isMobil
               {/* Actions overlay */}
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.7)", display: "flex", gap: "4px", padding: "6px" }}>
                 {!img.isPrimary && (
-                  <button onClick={() => onSetPrimary(img.id)} style={{ flex: 1, fontSize: "10px", fontWeight: 700, padding: "4px", borderRadius: "5px", border: `1px solid rgba(34,197,94,0.4)`, background: "rgba(34,197,94,0.15)", color: T.accent, cursor: "pointer" }}>
+                  <button onClick={() => onSetPrimary(img.id)} style={{ flex: 1, fontSize: "0.625rem", fontWeight: 700, padding: "4px", borderRadius: "5px", border: `1px solid rgba(34,197,94,0.4)`, background: "rgba(34,197,94,0.15)", color: T.accent, cursor: "pointer" }}>
                     Set Primary
                   </button>
                 )}
-                <button onClick={() => onRemove(img.id)} style={{ flex: 1, fontSize: "10px", fontWeight: 700, padding: "4px", borderRadius: "5px", border: `1px solid rgba(239,68,68,0.4)`, background: "rgba(239,68,68,0.15)", color: T.danger, cursor: "pointer" }}>
+                <button onClick={() => onRemove(img.id)} style={{ flex: 1, fontSize: "0.625rem", fontWeight: 700, padding: "4px", borderRadius: "5px", border: `1px solid rgba(239,68,68,0.4)`, background: "rgba(239,68,68,0.15)", color: T.danger, cursor: "pointer" }}>
                   Remove
                 </button>
               </div>
@@ -197,7 +197,7 @@ function ImageUploadZone({ images, onAdd, onRemove, onSetPrimary, error, isMobil
 
           {/* Add more slot */}
           {images.length < MAX_IMAGES && (
-            <div onClick={() => inputRef.current?.click()} style={{ border: `2px dashed ${T.border}`, borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", aspectRatio: "1", background: T.input, color: T.muted, fontSize: "24px" }}>
+            <div onClick={() => inputRef.current?.click()} style={{ border: `2px dashed ${T.border}`, borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", aspectRatio: "1", background: T.input, color: T.muted, fontSize: "1.500rem" }}>
               +
             </div>
           )}
@@ -205,7 +205,7 @@ function ImageUploadZone({ images, onAdd, onRemove, onSetPrimary, error, isMobil
       )}
 
       <ErrorMsg msg={error} />
-      <div style={{ fontSize: "12px", color: T.muted, marginTop: "8px" }}>
+      <div style={{ fontSize: "0.750rem", color: T.muted, marginTop: "8px" }}>
         {images.length}/{MAX_IMAGES} images · Click an image to set it as primary
       </div>
     </div>
@@ -407,16 +407,16 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
       <div style={{ minHeight: "100vh", background: "radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.05) 0%, #0f0f0f 55%)", fontFamily: "'Outfit', Arial, sans-serif" }}>
         <Navbar exclude={["create"]}/>
         <div style={{ maxWidth: "540px", margin: "80px auto", textAlign: "center", padding: "0 20px" }}>
-          <div style={{ fontSize: "56px", marginBottom: "16px" }}>✅</div>
-          <h2 style={{ fontSize: "22px", fontWeight: 800, color: T.text, marginBottom: "10px" }}>
+          <div style={{ fontSize: "3.500rem", marginBottom: "16px" }}>✅</div>
+          <h2 style={{ fontSize: "1.375rem", fontWeight: 800, color: T.text, marginBottom: "10px" }}>
             {isEditMode ? "Listing Updated!" : "Listing Created!"}
           </h2>
-          <p style={{ color: T.muted, fontSize: "14px", marginBottom: "28px" }}>
+          <p style={{ color: T.muted, fontSize: "0.875rem", marginBottom: "28px" }}>
             {isEditMode ? "Your changes have been saved." : "Your listing is now live on the marketplace."}
           </p>
-          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="/" style={{ padding: "11px 24px", borderRadius: "10px", background: T.accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: "14px" }}>View Marketplace</a>
-            <a href="/create-listing" onClick={() => setSuccess(false)} style={{ padding: "11px 24px", borderRadius: "10px", background: T.surface, color: T.text, textDecoration: "none", fontWeight: 600, fontSize: "14px", border: `1px solid ${T.border}` }}>Create Another</a>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+            <a href="/" style={{ padding: "11px 24px", borderRadius: "10px", background: T.accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: "0.875rem" }}>View Marketplace</a>
+            <a href="/create-listing" onClick={() => setSuccess(false)} style={{ padding: "11px 24px", borderRadius: "10px", background: T.surface, color: T.text, textDecoration: "none", fontWeight: 600, fontSize: "0.875rem", border: `1px solid ${T.border}` }}>Create Another</a>
           </div>
         </div>
       </div>
@@ -429,23 +429,23 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
 
       <div style={{ maxWidth: "780px", margin: "0 auto", padding: isMobile ? "16px 10px 36px" : "28px 20px 60px" }}>
 
-        {/* ── Page Header ── */}
-        <div style={{ marginBottom: "24px" }}>
-          <a href="/" style={{ fontSize: "13px", color: T.muted, textDecoration: "none" }}>← Back to Marketplace</a>
-          <h1 style={{ fontSize: "24px", fontWeight: 800, color: T.text, margin: "10px 0 4px" }}>
-            {isEditMode ? "Edit Listing" : "Create New Listing"}
-          </h1>
-          <p style={{ fontSize: "14px", color: T.muted }}>
-            {isEditMode ? "Update your listing details below." : "Fill out the details below to list your item."}
-          </p>
-        </div>
-
         {/* ── Form Card ── */}
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: "14px", overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
 
+          {/* ── Page Header ── */}
+          <div style={{ margin: "20px 20px", marginBottom: "0px"}}>
+            <a href="/" style={{ fontSize: "0.813rem", color: T.muted, textDecoration: "none" }}>← Back to Marketplace</a>
+            <h1 style={{ fontSize: "1.500rem", fontWeight: 800, color: T.text, margin: "10px 0 4px" }}>
+              {isEditMode ? "Edit Listing" : "Create New Listing"}
+            </h1>
+            <p style={{ fontSize: "0.875rem", color: T.muted }}>
+              {isEditMode ? "Update your listing details below." : "Fill out the details below to list your item."}
+            </p>
+          </div>
+
           {/* ── Section: Basic Info ── */}
           <div style={{ padding: isMobile ? "16px" : "24px", borderBottom: `1px solid ${T.border}` }}>
-            <div style={{ fontSize: "15px", fontWeight: 800, color: T.text, marginBottom: "20px" }}>
+            <div style={{ fontSize: "", fontWeight: 800, color: T.text, marginBottom: "20px" }}>
               Basic Information
             </div>
 
@@ -461,7 +461,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
               />
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <ErrorMsg msg={errors.title} />
-                <span style={{ fontSize: "11px", color: T.muted, marginTop: "5px" }}>{form.title.length}/255</span>
+                <span style={{ fontSize: "0.688rem", color: T.muted, marginTop: "5px" }}>{form.title.length}/255</span>
               </div>
             </div>
 
@@ -478,7 +478,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
               />
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <ErrorMsg msg={errors.description} />
-                <span style={{ fontSize: "11px", color: T.muted, marginTop: "5px" }}>{form.description.length}/2000</span>
+                <span style={{ fontSize: "0.688rem", color: T.muted, marginTop: "5px" }}>{form.description.length}/2000</span>
               </div>
             </div>
 
@@ -486,7 +486,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
             <div style={{ marginBottom: "18px" }}>
               <Label text="Price" required />
               <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: T.muted, fontWeight: 700, fontSize: "14px" }}>$</span>
+                <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: T.muted, fontWeight: 700, fontSize: "0.875rem" }}>$</span>
                 <input
                   value={form.price}
                   onChange={e => setField("price", e.target.value.replace(/[^0-9.]/g, ""))}
@@ -500,7 +500,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
 
           {/* ── Section: Details ── */}
           <div style={{ padding: isMobile ? "16px" : "24px", borderBottom: `1px solid ${T.border}` }}>
-            <div style={{ fontSize: "15px", fontWeight: 800, color: T.text, marginBottom: "20px" }}>Details</div>
+            <div style={{ fontSize: "0.938rem", fontWeight: 800, color: T.text, marginBottom: "20px" }}>Details</div>
 
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "16px" }}>
               {/* Category */}
@@ -539,7 +539,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
                       color: T.muted,
                       borderRadius: "8px",
                       padding: "6px 10px",
-                      fontSize: "12px",
+                      fontSize: "0.750rem",
                       fontWeight: 700,
                       cursor: locationLoading ? "not-allowed" : "pointer",
                     }}
@@ -560,11 +560,11 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
           </div>
 
           {/* ── Section: Images ── */}
-          <div style={{ padding: isMobile ? "16px" : "24px", borderBottom: `1px solid ${T.border}` }}>
-            <div style={{ fontSize: "15px", fontWeight: 800, color: T.text, marginBottom: "6px" }}>
+          <div style={{ padding: isMobile? "16px" : "24px", borderBottom: `1px solid ${T.border}` }}>
+            <div style={{ fontSize: "0.938rem", fontWeight: 800, color: T.text, marginBottom: "6px" }}>
               Images <span style={{ color: T.accent }}>*</span>
             </div>
-            <div style={{ fontSize: "13px", color: T.muted, marginBottom: "16px" }}>
+            <div style={{ fontSize: "0.813rem", color: T.muted, marginBottom: "16px" }}>
               Upload up to {MAX_IMAGES} images. The primary image will be shown as the thumbnail.
             </div>
             <ImageUploadZone
@@ -580,15 +580,15 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
           {/* ── Section: Edit-only — Mark as Sold / Delete ── */}
           {isEditMode && (
             <div style={{ padding: isMobile ? "16px" : "24px", borderBottom: `1px solid ${T.border}`, background: "rgba(239,68,68,0.03)" }}>
-              <div style={{ fontSize: "15px", fontWeight: 800, color: T.text, marginBottom: "6px" }}>Listing Actions</div>
-              <div style={{ fontSize: "13px", color: T.muted, marginBottom: "16px" }}>These actions are permanent and cannot be undone.</div>
+              <div style={{ fontSize: "0.938rem", fontWeight: 800, color: T.text, marginBottom: "6px" }}>Listing Actions</div>
+              <div style={{ fontSize: "0.813rem", color: T.muted, marginBottom: "16px" }}>These actions are permanent and cannot be undone.</div>
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                 <button style={{
-                  padding: "10px 20px", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: "pointer",
+                  padding: "10px 20px", borderRadius: "10px", fontSize: "0.875rem", fontWeight: 700, cursor: "pointer",
                   background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.35)", color: "#60a5fa",
                 }}>Mark as Sold</button>
                 <button style={{
-                  padding: "10px 20px", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: "pointer",
+                  padding: "10px 20px", borderRadius: "10px", fontSize: "0.875rem", fontWeight: 700, cursor: "pointer",
                   background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", color: T.danger,
                 }}>Delete Listing</button>
               </div>
@@ -598,16 +598,16 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
           {/* ── Submit ── */}
           <div style={{ padding: isMobile ? "16px" : "24px", display: "flex", justifyContent: "flex-end", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             {Object.keys(errors).length > 0 && (
-              <span style={{ fontSize: "13px", color: T.error, fontWeight: 600 }}>
+              <span style={{ fontSize: "0.813rem", color: T.error, fontWeight: 600 }}>
                 Please fix the errors above.
               </span>
             )}
             {submitError && (
-              <span style={{ fontSize: "13px", color: T.error, fontWeight: 600 }}>
+              <span style={{ fontSize: "0.813rem", color: T.error, fontWeight: 600 }}>
                 {submitError}
               </span>
             )}
-            <a href="/" style={{ padding: "11px 22px", borderRadius: "10px", border: `1px solid ${T.border}`, background: "transparent", color: T.muted, textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
+            <a href="/" style={{ padding: "11px 22px", borderRadius: "10px", border: `1px solid ${T.border}`, background: "transparent", color: T.muted, textDecoration: "none", fontSize: "0.875rem", fontWeight: 600 }}>
               Cancel
             </a>
             <button
@@ -616,7 +616,7 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
               style={{
                 padding: "11px 28px", borderRadius: "10px", border: "none",
                 background: submitting ? T.accent2 : T.accent,
-                color: "#fff", fontSize: "14px", fontWeight: 700,
+                color: "#fff", fontSize: "0.875rem", fontWeight: 700,
                 cursor: submitting ? "not-allowed" : "pointer",
                 opacity: submitting ? 0.8 : 1,
                 minWidth: "140px",

@@ -60,7 +60,7 @@ const AnimatedSearchBar: React.FC<AnimatedSearchBarProps> = ({
           />
 
           {/* Gradient fade mask (hides when focused) */}
-          <div className="pointer-events-none w-[100px] h-[20px] absolute bg-gradient-to-r from-transparent to-black top-[18px] left-[70px] group-focus-within:hidden" />
+          {/* <div className="pointer-events-none w-[100px] h-[20px] absolute bg-gradient-to-r from-transparent to-black top-[18px] left-[70px] group-focus-within:hidden" /> */}
 
           {/* Green accent glow blob */}
           <div className="pointer-events-none w-[30px] h-[20px] absolute bg-[#22c55e] top-[10px] left-[5px] blur-2xl opacity-60 transition-all duration-[2000ms] group-hover:opacity-0" />

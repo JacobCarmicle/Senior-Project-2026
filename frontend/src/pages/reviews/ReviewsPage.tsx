@@ -37,14 +37,14 @@ export default function ReviewsPage() {
     <div style={{ minHeight: "100vh", background: "radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.05) 0%, #0f0f0f 55%)", color: T.text, fontFamily: "'Outfit', Arial, sans-serif" }}>
       <Navbar exclude={["reviews"]}/>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: 24 }}>
-        <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: 14 }}>← Back to Marketplace</a>
+        <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: "0.875rem" }}>← Back to Marketplace</a>
 
         <div style={{ marginTop: 14, background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: 20 }}>
-          <h1 style={{ margin: 0, fontSize: 28 }}>Leave a Review</h1>
+          <h1 style={{ margin: 0, fontSize: "1.750rem" }}>Leave a Review</h1>
           <p style={{ color: T.muted, marginTop: 8 }}>Help other buyers by sharing your experience with this seller.</p>
 
           <div style={{ marginTop: 16 }}>
-            <label style={{ display: "block", fontSize: 13, color: T.muted, marginBottom: 6 }}>Seller ID</label>
+            <label style={{ display: "block", fontSize: "0.813rem", color: T.muted, marginBottom: 6 }}>Seller ID</label>
             <input
               placeholder="Seller user id"
               value={sellerId}
@@ -52,7 +52,7 @@ export default function ReviewsPage() {
               style={{ width: "100%", marginBottom: 10, padding: 10, borderRadius: 10, background: "#333", border: `1px solid ${T.border}`, color: T.text }}
             />
 
-            <label style={{ display: "block", fontSize: 13, color: T.muted, marginBottom: 6 }}>Rating</label>
+            <label style={{ display: "block", fontSize: "0.813rem", color: T.muted, marginBottom: 6 }}>Rating</label>
             <select
               value={rating}
               onChange={(e) => setRating(Number(e.target.value))}
@@ -63,7 +63,7 @@ export default function ReviewsPage() {
               ))}
             </select>
 
-            <label style={{ display: "block", fontSize: 13, color: T.muted, marginBottom: 6 }}>Comment</label>
+            <label style={{ display: "block", fontSize: "0.813rem", color: T.muted, marginBottom: 6 }}>Comment</label>
             <textarea
               placeholder="Write your review"
               value={comment}

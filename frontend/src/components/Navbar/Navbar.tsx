@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { listNotifications, markNotificationRead, markAllNotificationsRead } from "../../api/notifications";
 import type { Notification } from "../../types/notifications";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { useFontScale } from "../../FontScale";
 import styles from "./Navbar.module.css";
 
 type NavItem = {
@@ -27,6 +28,27 @@ const NOTIF_ICONS: Record<string, string> = {
   suggestion:      "💡",
 };
 
+export default function FontSizeControl() {
+  const { fontScale, setFontScale } = useFontScale();
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+      <span style={{ fontSize: "0.75rem" }}>A</span>
+
+      <input
+        type="range"
+        min="0.8"
+        max="1.4"
+        step="0.05"
+        value={fontScale}
+        onChange={(e) => setFontScale(Number(e.target.value))}
+      />
+
+      <span style={{ fontSize: "1.25rem" }}>A</span>
+    </div>
+  );
+}
+
 export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -37,6 +59,8 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
+  const [fontOpen, setFontOpen] = useState(false);
+  const fontRef = useRef<HTMLDivElement>(null);
 
   const NAV_CONFIG: Record<Role, NavItem[]> = {
     guest: [
@@ -107,6 +131,9 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
       }
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotifOpen(false);
+      }
+      if (fontRef.current && !fontRef.current.contains(e.target as Node)) {
+        setFontOpen(false);
       }
       if (mobileMenuOpen && navRef.current && !navRef.current.contains(e.target as Node)) {
         setMobileMenuOpen(false);
@@ -203,7 +230,7 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
               aria-label="Notifications"
               title="Notifications"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="1.125rem" height="1.125rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
@@ -251,6 +278,24 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
           </div>
         )}
 
+        <div ref={fontRef} className={styles.dropdownWrapper}>
+          <button
+            className={styles.fontBtn}
+            onClick={() => setFontOpen((o) => !o)}
+            title="Font size"
+          >
+            Aa
+          </button>
+
+          {fontOpen && (
+            <div className={styles.dropdown}>
+              <div className={styles.dropdownSection}>
+                <FontSizeControl />
+              </div>
+            </div>
+          )}
+        </div>
+
         {user && (
           <div ref={dropdownRef} className={styles.dropdownWrapper}>
             <button
@@ -274,6 +319,10 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
                     <span className={styles.adminBadge}>Admin</span>
                   )}
                 </div>
+
+                {/* <div className={styles.dropdownSection}>
+                  <FontSizeControl />
+                </div> */}
 
                 {dropdownLinks.map((item) => (
                   <a

@@ -57,47 +57,47 @@ export default function ReportModal({ targetType, targetId, targetName, listingI
 
         {done ? (
           <div style={{ textAlign:"center", padding:"12px 0" }}>
-            <div style={{ fontSize:36, marginBottom:12 }}>✅</div>
-            <div style={{ fontSize:15, fontWeight:700, color: T.text, marginBottom:6 }}>Report submitted</div>
-            <div style={{ fontSize:13, color: T.muted, marginBottom:20 }}>
+            <div style={{ fontSize: "2.250rem", marginBottom:12 }}>✅</div>
+            <div style={{ fontSize: "0.938rem", fontWeight:700, color: T.text, marginBottom:6 }}>Report submitted</div>
+            <div style={{ fontSize: "0.813rem", color: T.muted, marginBottom:20 }}>
               Thanks for helping keep TradeForge safe. Reports are reviewed within 2–3 days.
             </div>
             <button
               onClick={onClose}
-              style={{ padding:"8px 22px", borderRadius:8, border:`1px solid ${T.border}`, background: T.surface, color: T.text, cursor:"pointer", fontSize:13 }}
+              style={{ padding:"8px 22px", borderRadius:8, border:`1px solid ${T.border}`, background: T.surface, color: T.text, cursor:"pointer", fontSize: "0.813rem" }}
             >
               Close
             </button>
           </div>
         ) : (
           <>
-            <div style={{ fontSize:15, fontWeight:700, color: T.text, marginBottom:4 }}>
+            <div style={{ fontSize: "0.938rem", fontWeight:700, color: T.text, marginBottom:4 }}>
               Report {typeLabel}
             </div>
-            <div style={{ fontSize:13, color: T.muted, marginBottom:18 }}>
+            <div style={{ fontSize: "0.813rem", color: T.muted, marginBottom:18 }}>
               Reporting: <span style={{ color: T.text, fontWeight:600 }}>{targetName}</span>
             </div>
 
-            <label style={{ fontSize:12, fontWeight:700, color: T.muted, display:"block", marginBottom:6 }}>REASON</label>
+            <label style={{ fontSize: "0.750rem", fontWeight:700, color: T.muted, display:"block", marginBottom:6 }}>REASON</label>
             <select
               value={reason}
               onChange={e => setReason(e.target.value as ReportReason)}
-              style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:`1px solid ${T.border}`, background: T.surface, color: T.text, fontSize:13, marginBottom:14, outline:"none" }}
+              style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:`1px solid ${T.border}`, background: T.surface, color: T.text, fontSize: "0.813rem", marginBottom:14, outline:"none" }}
             >
               {REPORT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
 
-            <label style={{ fontSize:12, fontWeight:700, color: T.muted, display:"block", marginBottom:6 }}>ADDITIONAL DETAILS (optional)</label>
+            <label style={{ fontSize: "0.750rem", fontWeight:700, color: T.muted, display:"block", marginBottom:6 }}>ADDITIONAL DETAILS (optional)</label>
             <textarea
               value={desc}
               onChange={e => setDesc(e.target.value)}
               placeholder="Describe the issue..."
               rows={3}
-              style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:`1px solid ${T.border}`, background: T.surface, color: T.text, fontSize:13, resize:"vertical", outline:"none", boxSizing:"border-box" }}
+              style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:`1px solid ${T.border}`, background: T.surface, color: T.text, fontSize: "0.813rem", resize:"vertical", outline:"none", boxSizing:"border-box" }}
             />
 
             {error && (
-              <div style={{ marginTop:12, padding:"8px 12px", borderRadius:8, background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.3)", color: T.danger, fontSize:13 }}>
+              <div style={{ marginTop:12, padding:"8px 12px", borderRadius:8, background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.3)", color: T.danger, fontSize: "0.813rem" }}>
                 {error}
               </div>
             )}
@@ -105,14 +105,14 @@ export default function ReportModal({ targetType, targetId, targetName, listingI
             <div style={{ display:"flex", gap:10, justifyContent:"flex-end", marginTop:18 }}>
               <button
                 onClick={onClose}
-                style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${T.border}`, background: T.surface, color: T.text, cursor:"pointer", fontSize:13 }}
+                style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${T.border}`, background: T.surface, color: T.text, cursor:"pointer", fontSize: "0.813rem" }}
               >
                 Cancel
               </button>
               <button
                 disabled={working}
                 onClick={handleSubmit}
-                style={{ padding:"8px 18px", borderRadius:8, border:"1px solid rgba(239,68,68,0.4)", background:"rgba(239,68,68,0.15)", color: T.danger, cursor: working ? "not-allowed" : "pointer", fontSize:13, fontWeight:700, opacity: working ? 0.6 : 1 }}
+                style={{ padding:"8px 18px", borderRadius:8, border:"1px solid rgba(239,68,68,0.4)", background:"rgba(239,68,68,0.15)", color: T.danger, cursor: working ? "not-allowed" : "pointer", fontSize: "0.813rem", fontWeight:700, opacity: working ? 0.6 : 1 }}
               >
                 {working ? "Submitting…" : "Submit Report"}
               </button>

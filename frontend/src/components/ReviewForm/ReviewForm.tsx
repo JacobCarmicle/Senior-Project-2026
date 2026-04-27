@@ -67,15 +67,15 @@ export default function ReviewForm({
         marginBottom: 16,
       }}
     >
-      <div style={{ fontSize: 18, fontWeight: 800 }}>Leave a Review</div>
+      <div style={{ fontSize: "1.125rem", fontWeight: 800 }}>Leave a Review</div>
       {listingTitle && (
-        <div style={{ fontSize: 13, color: T.muted, marginTop: 4 }}>
+        <div style={{ fontSize: "0.813rem", color: T.muted, marginTop: 4 }}>
           For: <strong style={{ color: T.text }}>{listingTitle}</strong>
         </div>
       )}
 
       <div style={{ marginTop: 12 }}>
-        <label style={{ fontSize: 13, color: T.muted }}>Rating</label>
+        <label style={{ fontSize: "0.813rem", color: T.muted }}>Rating</label>
 
         <select
           value={rating}
@@ -98,7 +98,7 @@ export default function ReviewForm({
           ))}
         </select>
 
-        <label style={{ fontSize: 13, color: T.muted }}>Comment</label>
+        <label style={{ fontSize: "0.813rem", color: T.muted }}>Comment</label>
 
         <textarea
           placeholder="Write your review"

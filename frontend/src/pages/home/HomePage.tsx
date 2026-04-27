@@ -221,10 +221,10 @@ function ListingCard({ listing, onSave, onClick }: {
           <div style={{
             width: "100%", height: "100%",
             display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#555", fontSize: "13px", fontWeight: 600,
+            color: "#555", fontSize: "0.8125rem", fontWeight: 600,
           }}>
             {DEBUG_IMAGES && listing.imageUrl
-              ? <span style={{ fontSize: "10px", color: "#888", padding: "0 10px", wordBreak: "break-all" }}>{listing.imageUrl}</span>
+              ? <span style={{ fontSize: "0.625rem", color: "#888", padding: "0 10px", wordBreak: "break-all" }}>{listing.imageUrl}</span>
               : "No image"}
           </div>
         )}
@@ -265,7 +265,7 @@ function ListingCard({ listing, onSave, onClick }: {
           <div style={{
             position: "absolute", top: "10px", left: "10px",
             background: "rgba(239,68,68,0.9)",
-            color: "#fff", fontSize: "10px", fontWeight: 800,
+            color: "#fff", fontSize: "0.625rem", fontWeight: 800,
             padding: "3px 8px", borderRadius: "6px",
             letterSpacing: "0.05em",
           }}>SOLD</div>
@@ -275,19 +275,19 @@ function ListingCard({ listing, onSave, onClick }: {
       {/* Card Body */}
       <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: "6px", flex: 1 }}>
         <div style={{
-          fontSize: "14px", fontWeight: 700, color: T.text,
+          fontSize: "0.875rem", fontWeight: 700, color: T.text,
           lineHeight: 1.35, letterSpacing: "-0.01em",
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
         }}>{listing.title}</div>
 
         <div style={{
-          fontSize: "22px", fontWeight: 900, color: T.accent,
+          fontSize: "1.375rem", fontWeight: 900, color: T.accent,
           fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em",
         }}>${listing.price.toLocaleString()}</div>
 
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
           <span style={{
-            fontSize: "11px", fontWeight: 600, padding: "2px 8px", borderRadius: "5px",
+            fontSize: "0.6875rem", fontWeight: 600, padding: "2px 8px", borderRadius: "5px",
             background: cc.bg, color: cc.color, border: `1px solid ${cc.border}`,
             letterSpacing: "0.01em",
           }}>{listing.category}</span>
@@ -300,11 +300,11 @@ function ListingCard({ listing, onSave, onClick }: {
           gap: "8px",
           flexWrap: "wrap",
         }}>
-          <span style={{ fontSize: "12px", color: T.muted, display: "flex", alignItems: "center", gap: "4px" }}>
+          <span style={{ fontSize: "0.75rem", color: T.muted, display: "flex", alignItems: "center", gap: "4px" }}>
             <IconPin />
             {listing.location}{listing.distanceMiles != null ? ` · ${listing.distanceMiles.toFixed(1)} mi` : ""}
           </span>
-          <span style={{ fontSize: "11px", color: "#a3a3a3" }}>{listing.postedAt}</span>
+          <span style={{ fontSize: "0.6875rem", color: "#a3a3a3" }}>{listing.postedAt}</span>
         </div>
       </div>
     </div>
@@ -431,7 +431,7 @@ export default function HomePage() {
   const inputStyle: React.CSSProperties = {
     background: T.input, color: T.text,
     border: `1px solid ${T.border}`, borderRadius: "10px",
-    padding: "9px 14px", fontSize: "14px", outline: "none",
+    padding: "9px 14px", fontSize: "0.875rem", outline: "none",
     fontFamily: "inherit",
   };
 
@@ -521,7 +521,7 @@ export default function HomePage() {
                 color: geo ? T.accent : T.muted,
                 border: `1px solid ${geo ? "rgba(34,197,94,0.4)" : T.border}`,
                 borderRadius: "10px", padding: "9px 13px",
-                fontSize: "13px", cursor: "pointer",
+                fontSize: "0.8125rem", cursor: "pointer",
                 display: "flex", alignItems: "center", gap: "5px",
                 fontFamily: "inherit", transition: "all 0.15s",
                 width: isMobile ? "calc(50% - 5px)" : undefined,
@@ -552,7 +552,7 @@ export default function HomePage() {
                 background: T.accent, color: "#fff",
                 border: "none", borderRadius: "10px",
                 padding: "9px 22px", fontWeight: 700,
-                fontSize: "14px", cursor: "pointer",
+                fontSize: "0.875rem", cursor: "pointer",
                 fontFamily: "inherit",
                 transition: "background 0.15s, transform 0.1s",
                 width: isMobile ? "calc(50% - 5px)" : undefined,
@@ -570,7 +570,7 @@ export default function HomePage() {
               style={{
                 background: "transparent", color: T.muted,
                 border: `1px solid ${T.border}`, borderRadius: "10px",
-                padding: "9px 16px", fontSize: "14px",
+                padding: "9px 16px", fontSize: "0.875rem",
                 cursor: "pointer", fontFamily: "inherit",
                 transition: "color 0.15s, border-color 0.15s",
                 width: isMobile ? "calc(50% - 5px)" : undefined,
@@ -581,34 +581,35 @@ export default function HomePage() {
               Reset
             </button>
           </div>
-        </div>
-
-        {/* ── Category Pills ── */}
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
-          {CATEGORIES.map(c => {
-            const active = category === c;
-            const cc = catColor(c);
-            return (
-              <button
-                key={c}
-                onClick={() => { setCategory(c); setPage(1); }}
-                style={{
-                  padding: "6px 16px", borderRadius: "99px", fontSize: "13px",
-                  fontWeight: active ? 700 : 500, cursor: "pointer",
-                  border: active ? `1.5px solid ${cc.border}` : "1px solid rgba(255,255,255,0.14)",
-                  background: active ? cc.bg : "rgba(255,255,255,0.04)",
-                  color: active ? cc.color : "#c0c0c0",
-                  transition: "all 0.15s",
-                  fontFamily: "inherit",
-                }}
-                onMouseDown={e => (e.currentTarget.style.transform = "scale(0.97)")}
-                onMouseUp={e => (e.currentTarget.style.transform = "scale(1)")}
-                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-              >
-                {c}
-              </button>
-            );
-          })}
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "stretch" }}>
+              {/* ── Category Pills ── */}
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "12px"}}>
+                {CATEGORIES.map(c => {
+                  const active = category === c;
+                  const cc = catColor(c);
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => { setCategory(c); setPage(1); }}
+                      style={{
+                        padding: "6px 16px", borderRadius: "99px", fontSize: "0.8125rem",
+                        fontWeight: active ? 700 : 500, cursor: "pointer",
+                        border: active ? `1.5px solid ${cc.border}` : "1px solid rgba(255,255,255,0.14)",
+                        background: active ? cc.bg : "rgba(255,255,255,0.04)",
+                        color: active ? cc.color : "#c0c0c0",
+                        transition: "all 0.15s",
+                        fontFamily: "inherit",
+                      }}
+                      onMouseDown={e => (e.currentTarget.style.transform = "scale(0.97)")}
+                      onMouseUp={e => (e.currentTarget.style.transform = "scale(1)")}
+                      onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
         </div>
 
         {/* ── Error ── */}
@@ -617,7 +618,7 @@ export default function HomePage() {
             marginBottom: "12px", padding: "10px 14px", borderRadius: "10px",
             border: "1px solid rgba(239,68,68,0.35)",
             background: "rgba(239,68,68,0.08)",
-            color: T.danger, fontSize: "13px", fontWeight: 600,
+            color: T.danger, fontSize: "0.8125rem", fontWeight: 600,
           }}>
             {listingsError}
           </div>
@@ -628,7 +629,7 @@ export default function HomePage() {
           display: "flex", justifyContent: "space-between", alignItems: "center",
           marginBottom: "16px", flexWrap: "wrap", gap: "10px",
         }}>
-          <span style={{ fontSize: "13px", color: T.muted }}>
+          <span style={{ fontSize: "0.8125rem", color: T.muted }}>
             {loadingListings
               ? "Loading…"
               : filtered.length === 0
@@ -636,12 +637,12 @@ export default function HomePage() {
               : `${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, filtered.length)} of ${filtered.length} listing${filtered.length !== 1 ? "s" : ""}`}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <label htmlFor="sort-listings" style={{ fontSize: "13px", color: T.muted }}>Sort:</label>
+            <label htmlFor="sort-listings" style={{ fontSize: "0.8125rem", color: T.muted }}>Sort:</label>
             <select
               id="sort-listings"
               value={sort}
               onChange={e => { setSort(e.target.value); setPage(1); }}
-              style={{ ...selectStyle, fontSize: "13px", padding: "7px 12px" }}
+              style={{ ...selectStyle, fontSize: "0.8125rem", padding: "7px 12px" }}
             >
               {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
@@ -669,8 +670,8 @@ export default function HomePage() {
                 borderBottom: `1px solid ${T.border}`,
                 background: "rgba(34,197,94,0.04)",
               }}>
-                <div style={{ fontSize: "13px", fontWeight: 800, color: T.text, letterSpacing: "-0.01em" }}>For you</div>
-                <div style={{ fontSize: "11px", color: T.muted, marginTop: "2px" }}>Based on your saved listings</div>
+                <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: T.text, letterSpacing: "-0.01em" }}>For you</div>
+                <div style={{ fontSize: "0.6875rem", color: T.muted, marginTop: "2px" }}>Based on your saved listings</div>
               </div>
 
               {forYou.slice(0, 8).map((listing, i) => (
@@ -696,9 +697,9 @@ export default function HomePage() {
                       : <div style={{ width: "100%", height: "100%", background: "#252525" }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "12px", fontWeight: 700, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "3px" }}>{listing.title}</div>
-                    <div style={{ fontSize: "13px", fontWeight: 800, color: T.accent, fontVariantNumeric: "tabular-nums" }}>${listing.price.toLocaleString()}</div>
-                    <div style={{ fontSize: "10px", color: T.muted, marginTop: "1px" }}>{listing.category}</div>
+                    <div style={{ fontSize: "0.875rem", fontWeight: 700, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "3px" }}>{listing.title}</div>
+                    <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: T.accent, fontVariantNumeric: "tabular-nums" }}>${listing.price.toLocaleString()}</div>
+                    <div style={{ fontSize: "0.625rem", color: T.muted, marginTop: "1px" }}>{listing.category}</div>
                   </div>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                     <path d="M9 18l6-6-6-6" />
@@ -750,15 +751,15 @@ export default function HomePage() {
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
                   <IconEmpty />
                 </div>
-                <div style={{ fontSize: "15px", fontWeight: 700, color: T.text, marginBottom: "6px" }}>Nothing matched your filters</div>
-                <div style={{ fontSize: "13px", color: T.muted, marginBottom: "20px" }}>Try different keywords, category, or price range.</div>
+                <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: T.text, marginBottom: "6px" }}>Nothing matched your filters</div>
+                <div style={{ fontSize: "0.8125rem", color: T.muted, marginBottom: "20px" }}>Try different keywords, category, or price range.</div>
                 <button
                   onClick={resetFilters}
                   style={{
                     background: T.accent, color: "#fff",
                     border: "none", borderRadius: "10px",
                     padding: "10px 24px", fontWeight: 700,
-                    fontSize: "14px", cursor: "pointer",
+                    fontSize: "0.875rem", cursor: "pointer",
                     fontFamily: "inherit",
                     transition: "background 0.15s, transform 0.1s",
                   }}
@@ -778,7 +779,7 @@ export default function HomePage() {
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
                   style={{
-                    padding: "8px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: 600,
+                    padding: "8px 16px", borderRadius: "8px", fontSize: "0.8125rem", fontWeight: 600,
                     cursor: page === 1 ? "not-allowed" : "pointer",
                     background: page === 1 ? "#2a2a2a" : T.surface,
                     border: `1px solid ${T.border}`,
@@ -797,7 +798,7 @@ export default function HomePage() {
                     onClick={() => setPage(p)}
                     style={{
                       width: "36px", height: "36px", borderRadius: "8px",
-                      fontSize: "13px", fontWeight: p === page ? 700 : 500,
+                      fontSize: "0.8125rem", fontWeight: p === page ? 700 : 500,
                       cursor: "pointer",
                       border: p === page ? `1.5px solid ${T.accent}` : `1px solid ${T.border}`,
                       background: p === page ? "rgba(34,197,94,0.1)" : T.surface,
@@ -815,7 +816,7 @@ export default function HomePage() {
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                   style={{
-                    padding: "8px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: 600,
+                    padding: "8px 16px", borderRadius: "8px", fontSize: "0.8125rem", fontWeight: 600,
                     cursor: page === totalPages ? "not-allowed" : "pointer",
                     background: page === totalPages ? "#2a2a2a" : T.surface,
                     border: `1px solid ${T.border}`,

@@ -10,6 +10,7 @@ import ReportModal from "../../components/ReportModal/ReportModal";
 import ReviewForm from "../../components/ReviewForm/ReviewForm";
 import { getListing, updateListing } from "../../api/listings";
 import type { Listing } from "../../types/listings";
+import { getUser } from "../../api/users";
 
 const T = {
   bg:      "#0f0f0f",
@@ -35,7 +36,7 @@ function MessageRow({ message, isOwn, onReport }: {
       onMouseLeave={() => setHovered(false)}
       style={{ marginBottom: 4, background: "#2a2a2a", padding: 10, borderRadius: 10, border: `1px solid ${T.border}`, position: "relative" }}
     >
-      <div style={{ fontSize: 11, color: T.muted }}>{new Date(message.sent_at).toLocaleString()}</div>
+      <div style={{ fontSize: "0.688rem", color: T.muted }}>{new Date(message.sent_at).toLocaleString()}</div>
       <div style={{ marginTop: 4 }}>{message.text || "[image]"}</div>
       {!isOwn && hovered && (
         <button
@@ -44,7 +45,7 @@ function MessageRow({ message, isOwn, onReport }: {
           style={{
             position: "absolute", top: 8, right: 8,
             background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
-            borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 700,
+            borderRadius: 6, padding: "2px 8px", fontSize: "0.688rem", fontWeight: 700,
             color: "#ef4444", cursor: "pointer",
           }}
         >
@@ -71,10 +72,12 @@ export default function MessagingPage() {
   const [activeListing, setActiveListing] = useState<Listing | null>(null);
   const [reviewSubmitted, setReviewSubmitted] = useState<Record<string, boolean>>({});
   const [reviewFormOpen, setReviewFormOpen] = useState<Record<string, boolean>>({});
+  const [reportUserOpen, setReportUserOpen] = useState(false);
 
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [reportTarget, setReportTarget] = useState<{ id: string; preview: string } | null>(null);
+  const [otherUserName, setOtherUserName] = useState<string>("");
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 640);
@@ -159,6 +162,31 @@ export default function MessagingPage() {
     getListing(active.listing_id).then(setActiveListing).catch(() => setActiveListing(null));
   }, [active?.listing_id]);
 
+  useEffect(() => {
+    if (!otherUserId) {
+      setOtherUserName("");
+      return;
+    }
+
+    let cancelled = false;
+
+    getUser(otherUserId)
+      .then((u) => {
+        if (!cancelled) {
+          setOtherUserName(u.full_name);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setOtherUserName("User");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [otherUserId]);
+
   async function handleMarkSold() {
     if (!active?.listing_id) return;
     if (!window.confirm("Mark this listing as sold?")) return;
@@ -182,7 +210,8 @@ export default function MessagingPage() {
   }
 
   function handleReport() {
-    alert("Report flow coming soon");
+    if (!otherUserId) return;
+    setReportUserOpen(true);
   }
 
   async function handleScheduleMeetup() {
@@ -218,6 +247,14 @@ export default function MessagingPage() {
           onClose={() => setReportTarget(null)}
         />
       )}
+      {reportUserOpen && otherUserId && (
+        <ReportModal
+          targetType="user"
+          targetId={otherUserId}
+          targetName={otherUserName || (isSeller ? "Buyer" : "Seller")}
+          onClose={() => setReportUserOpen(false)}
+        />
+      )}
       <Navbar exclude={["inbox"]}/>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? 10 : 20 }}>
         <div
@@ -235,7 +272,7 @@ export default function MessagingPage() {
           <aside style={{ borderRight: isMobile ? "none" : `1px solid ${T.border}`, padding: 12 }}>
             <h3 style={{ marginTop: 4 }}>Inbox</h3>
             {conversations.length === 0 && (
-              <p style={{ color: T.muted, fontSize: 13 }}>No conversations yet.</p>
+              <p style={{ color: T.muted, fontSize: "0.813rem" }}>No conversations yet.</p>
             )}
             {conversations.map((c) => (
               <button
@@ -253,10 +290,10 @@ export default function MessagingPage() {
                   cursor: "pointer",
                 }}
               >
-                <div style={{ fontWeight: 700, fontSize: 13 }}>
+                <div style={{ fontWeight: 700, fontSize: "0.813rem" }}>
                   {c.listing_title?.trim() || `Listing ${c.listing_id.slice(0, 8)}...`}
                 </div>
-                <div style={{ color: T.muted, fontSize: 12, marginTop: 3 }}>{c.status.toUpperCase()}</div>
+                <div style={{ color: T.muted, fontSize: "0.750rem", marginTop: 3 }}>{c.status.toUpperCase()}</div>
               </button>
             ))}
           </aside>
@@ -272,7 +309,7 @@ export default function MessagingPage() {
                 padding: 12,
                 borderBottom: `1px solid ${T.border}`,
                 color: T.muted,
-                fontSize: 13,
+                fontSize: "0.813rem",
               }}
             >
               {isMobile && (
@@ -317,7 +354,7 @@ export default function MessagingPage() {
                     border: `1px solid ${T.border}`,
                     fontWeight: 700,
                     cursor: "pointer",
-                    fontSize: 13,
+                    fontSize: "0.813rem",
                   }}
                 >
                   {isSeller ? "View Buyer Profile" : "View Seller Profile"}
@@ -334,7 +371,7 @@ export default function MessagingPage() {
                   border: `1px solid ${T.border}`,
                   fontWeight: 700,
                   cursor: "pointer",
-                  fontSize: 13,
+                  fontSize: "0.813rem",
                 }}
               >
                 View Listing
@@ -350,7 +387,7 @@ export default function MessagingPage() {
                   border: "1px solid rgba(239,68,68,0.3)",
                   fontWeight: 700,
                   cursor: "pointer",
-                  fontSize: 13,
+                  fontSize: "0.813rem",
                 }}
               >
                 Report
@@ -365,7 +402,7 @@ export default function MessagingPage() {
                     background: T.accent,
                     color: "#fff",
                     border: "none",
-                    fontSize: 14,
+                    fontSize: "0.875rem",
                     cursor: "pointer",
                   }}
                 >
@@ -384,7 +421,7 @@ export default function MessagingPage() {
                     border: "1px solid rgba(234,179,8,0.4)",
                     fontWeight: 700,
                     cursor: "pointer",
-                    fontSize: 13,
+                    fontSize: "0.813rem",
                     marginLeft: isMobile ? 0 : "auto",
                   }}
                 >
@@ -409,7 +446,7 @@ export default function MessagingPage() {
                   borderTop: `1px solid ${T.border}`,
                   background: "#202020",
                   alignItems: "center",
-                  fontSize: 13,
+                  fontSize: "0.813rem",
                   color: T.text,
                 }}
               >
@@ -434,7 +471,7 @@ export default function MessagingPage() {
                         background: "#ef4444",
                         color: "#fff",
                         border: "none",
-                        fontSize: 13,
+                        fontSize: "0.813rem",
                         cursor: "pointer",
                       }}
                     >
@@ -456,7 +493,7 @@ export default function MessagingPage() {
                         background: "#22c55e",
                         color: "#fff",
                         border: "none",
-                        fontSize: 13,
+                        fontSize: "0.813rem",
                         cursor: "pointer",
                       }}
                     >
@@ -473,7 +510,7 @@ export default function MessagingPage() {
                         background: "#f97316",
                         color: "#fff",
                         border: "none",
-                        fontSize: 13,
+                        fontSize: "0.813rem",
                         cursor: "pointer",
                       }}
                     >
@@ -515,7 +552,7 @@ export default function MessagingPage() {
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                     padding: "8px 12px", gap: 8,
                   }}>
-                    <span style={{ fontSize: 12, color: T.muted }}>
+                    <span style={{ fontSize: "0.750rem", color: T.muted }}>
                       How was your experience with this seller?
                     </span>
                     <button
@@ -523,7 +560,7 @@ export default function MessagingPage() {
                       style={{
                         background: "rgba(34,197,94,0.12)", color: T.accent,
                         border: "1px solid rgba(34,197,94,0.3)", borderRadius: 8,
-                        padding: "4px 12px", fontSize: 12, fontWeight: 700,
+                        padding: "4px 12px", fontSize: "0.750rem", fontWeight: 700,
                         cursor: "pointer", whiteSpace: "nowrap", fontFamily: "inherit",
                         flexShrink: 0,
                       }}
@@ -546,7 +583,7 @@ export default function MessagingPage() {
             )}
 
             {!isSeller && activeListing?.status === "sold" && active && reviewSubmitted[active.id] && (
-              <div style={{ padding: "8px 12px", fontSize: 12, color: T.accent, fontWeight: 600, borderTop: `1px solid ${T.border}` }}>
+              <div style={{ padding: "8px 12px", fontSize: "0.750rem", color: T.accent, fontWeight: 600, borderTop: `1px solid ${T.border}` }}>
                 Review submitted — thanks!
               </div>
             )}
