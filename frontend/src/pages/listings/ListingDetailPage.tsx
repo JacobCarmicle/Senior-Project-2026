@@ -192,8 +192,6 @@ if (error) {
       )}
 
       <main style={{ maxWidth: 1000, margin: "0 auto", padding: isMobile? 10 : 24 }}>
-        <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: "0.875rem" }}>← Back to Marketplace</a>
-
         <div
           style={{
             marginTop: 14,
@@ -202,8 +200,11 @@ if (error) {
             borderRadius: 14,
             overflow: "hidden",
             boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
+          <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: "0.875rem", marginLeft: "20px", marginTop: "10px"}}>← Back to Marketplace</a>
           {listing.images?.length ? (
             <div style={{ borderBottom: `1px solid ${T.border}`, padding: 12 }}>
               <div style={{ position: "relative" }}>

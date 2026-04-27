@@ -581,34 +581,35 @@ export default function HomePage() {
               Reset
             </button>
           </div>
-        </div>
-
-        {/* ── Category Pills ── */}
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
-          {CATEGORIES.map(c => {
-            const active = category === c;
-            const cc = catColor(c);
-            return (
-              <button
-                key={c}
-                onClick={() => { setCategory(c); setPage(1); }}
-                style={{
-                  padding: "6px 16px", borderRadius: "99px", fontSize: "0.8125rem",
-                  fontWeight: active ? 700 : 500, cursor: "pointer",
-                  border: active ? `1.5px solid ${cc.border}` : "1px solid rgba(255,255,255,0.14)",
-                  background: active ? cc.bg : "rgba(255,255,255,0.04)",
-                  color: active ? cc.color : "#c0c0c0",
-                  transition: "all 0.15s",
-                  fontFamily: "inherit",
-                }}
-                onMouseDown={e => (e.currentTarget.style.transform = "scale(0.97)")}
-                onMouseUp={e => (e.currentTarget.style.transform = "scale(1)")}
-                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-              >
-                {c}
-              </button>
-            );
-          })}
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "stretch" }}>
+              {/* ── Category Pills ── */}
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "12px"}}>
+                {CATEGORIES.map(c => {
+                  const active = category === c;
+                  const cc = catColor(c);
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => { setCategory(c); setPage(1); }}
+                      style={{
+                        padding: "6px 16px", borderRadius: "99px", fontSize: "0.8125rem",
+                        fontWeight: active ? 700 : 500, cursor: "pointer",
+                        border: active ? `1.5px solid ${cc.border}` : "1px solid rgba(255,255,255,0.14)",
+                        background: active ? cc.bg : "rgba(255,255,255,0.04)",
+                        color: active ? cc.color : "#c0c0c0",
+                        transition: "all 0.15s",
+                        fontFamily: "inherit",
+                      }}
+                      onMouseDown={e => (e.currentTarget.style.transform = "scale(0.97)")}
+                      onMouseUp={e => (e.currentTarget.style.transform = "scale(1)")}
+                      onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
         </div>
 
         {/* ── Error ── */}

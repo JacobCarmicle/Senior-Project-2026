@@ -429,19 +429,19 @@ export default function CreateEditListingPage({ listingId }: { listingId?: strin
 
       <div style={{ maxWidth: "780px", margin: "0 auto", padding: isMobile ? "16px 10px 36px" : "28px 20px 60px" }}>
 
-        {/* ── Page Header ── */}
-        <div style={{ marginBottom: "24px" }}>
-          <a href="/" style={{ fontSize: "0.813rem", color: T.muted, textDecoration: "none" }}>← Back to Marketplace</a>
-          <h1 style={{ fontSize: "1.500rem", fontWeight: 800, color: T.text, margin: "10px 0 4px" }}>
-            {isEditMode ? "Edit Listing" : "Create New Listing"}
-          </h1>
-          <p style={{ fontSize: "0.875rem", color: T.muted }}>
-            {isEditMode ? "Update your listing details below." : "Fill out the details below to list your item."}
-          </p>
-        </div>
-
         {/* ── Form Card ── */}
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: "14px", overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
+
+          {/* ── Page Header ── */}
+          <div style={{ margin: "20px 20px", marginBottom: "0px"}}>
+            <a href="/" style={{ fontSize: "0.813rem", color: T.muted, textDecoration: "none" }}>← Back to Marketplace</a>
+            <h1 style={{ fontSize: "1.500rem", fontWeight: 800, color: T.text, margin: "10px 0 4px" }}>
+              {isEditMode ? "Edit Listing" : "Create New Listing"}
+            </h1>
+            <p style={{ fontSize: "0.875rem", color: T.muted }}>
+              {isEditMode ? "Update your listing details below." : "Fill out the details below to list your item."}
+            </p>
+          </div>
 
           {/* ── Section: Basic Info ── */}
           <div style={{ padding: isMobile ? "16px" : "24px", borderBottom: `1px solid ${T.border}` }}>
