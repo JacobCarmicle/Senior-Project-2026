@@ -70,7 +70,7 @@ function SavedListingCard({
           alignItems: "center",
           justifyContent: "center",
           color: T.muted,
-          fontSize: 13,
+          fontSize: "0.813rem",
           fontWeight: 600,
           position: "relative",
           margin: "10px 10px 0",
@@ -98,7 +98,7 @@ function SavedListingCard({
               left: 8,
               background: "rgba(239,68,68,0.85)",
               color: "#fff",
-              fontSize: 11,
+              fontSize: "0.688rem",
               fontWeight: 700,
               padding: "3px 8px",
               borderRadius: 6,
@@ -120,11 +120,11 @@ function SavedListingCard({
         }}
       >
         <div
-          style={{ fontSize: 15, fontWeight: 800, color: T.text, lineHeight: 1.3 }}
+          style={{ fontSize: "0.938rem", fontWeight: 800, color: T.text, lineHeight: 1.3 }}
         >
           {listing.title}
         </div>
-        <div style={{ fontSize: 20, fontWeight: 900, color: T.accent }}>
+        <div style={{ fontSize: "1.250rem", fontWeight: 900, color: T.accent }}>
           ${Number(listing.price).toLocaleString()}
         </div>
 
@@ -138,7 +138,7 @@ function SavedListingCard({
             borderTop: `1px solid ${T.border}`,
           }}
         >
-          <span style={{ fontSize: 12, color: T.muted }}>
+          <span style={{ fontSize: "0.750rem", color: T.muted }}>
             📍 {listing.location}
           </span>
 
@@ -150,7 +150,7 @@ function SavedListingCard({
               border: "1px solid rgba(239,68,68,0.3)",
               borderRadius: 8,
               padding: "4px 10px",
-              fontSize: 12,
+              fontSize: "0.750rem",
               fontWeight: 700,
               color: T.danger,
               cursor: unsaving ? "not-allowed" : "pointer",
@@ -213,11 +213,11 @@ export default function SavedListingsPage() {
 
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: "22px 20px 40px" }}>
         <div style={{ marginBottom: 20 }}>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: T.text }}>
+          <h1 style={{ margin: 0, fontSize: "1.375rem", fontWeight: 800, color: T.text }}>
             Saved Listings
           </h1>
           {!loading && !error && (
-            <p style={{ margin: "5px 0 0", fontSize: 13, color: T.muted }}>
+            <p style={{ margin: "5px 0 0", fontSize: "0.813rem", color: T.muted }}>
               {listings.length} saved listing{listings.length !== 1 ? "s" : ""}
             </p>
           )}
@@ -231,7 +231,7 @@ export default function SavedListingsPage() {
               border: "1px solid rgba(239,68,68,0.4)",
               background: "rgba(239,68,68,0.1)",
               color: T.danger,
-              fontSize: 13,
+              fontSize: "0.813rem",
               fontWeight: 600,
               marginBottom: 16,
             }}
@@ -265,10 +265,10 @@ export default function SavedListingsPage() {
               boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
             }}
           >
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🔖</div>
+            <div style={{ fontSize: "2.500rem", marginBottom: 12 }}>🔖</div>
             <div
               style={{
-                fontSize: 16,
+                fontSize: "1.000rem",
                 fontWeight: 700,
                 color: T.text,
                 marginBottom: 6,
@@ -276,7 +276,7 @@ export default function SavedListingsPage() {
             >
               No saved listings yet
             </div>
-            <div style={{ fontSize: 14, marginBottom: 20 }}>
+            <div style={{ fontSize: "0.875rem", marginBottom: 20 }}>
               You don't have any saved listings. Browse the marketplace to save
               items you're interested in.
             </div>
@@ -289,7 +289,7 @@ export default function SavedListingsPage() {
                 borderRadius: 10,
                 padding: "10px 22px",
                 fontWeight: 700,
-                fontSize: 14,
+                fontSize: "0.875rem",
                 cursor: "pointer",
               }}
             >

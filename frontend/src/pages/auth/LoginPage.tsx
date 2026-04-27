@@ -149,7 +149,7 @@ export default function LoginPage() {
                       border: `1px solid rgba(239,68,68,0.3)`,
                       background: "rgba(239,68,68,0.1)",
                       color: T.error,
-                      fontSize: 13,
+                      fontSize: "0.813rem",
                       fontWeight: 700,
                     }}
                   >
@@ -161,7 +161,7 @@ export default function LoginPage() {
                   {/* Email */}
                   <div style={{ marginBottom: 14 }}>
                     <label htmlFor="email" style={{
-                      display: "block", fontSize: 13, fontWeight: 700,
+                      display: "block", fontSize: "0.813rem", fontWeight: 700,
                       color: T.text, marginBottom: 6,
                     }}>
                       Email
@@ -175,7 +175,7 @@ export default function LoginPage() {
                         width: "100%", boxSizing: "border-box",
                         background: T.input, color: T.text,
                         border: `1px solid ${T.border}`, borderRadius: 10,
-                        padding: "11px 14px", fontSize: 14, outline: "none",
+                        padding: "11px 14px", fontSize: "0.875rem", outline: "none",
                         fontFamily: "inherit",
                       }}
                     />
@@ -184,7 +184,7 @@ export default function LoginPage() {
                   {/* Password */}
                   <div style={{ marginBottom: 10 }}>
                     <label htmlFor="password" style={{
-                      display: "block", fontSize: 13, fontWeight: 700,
+                      display: "block", fontSize: "0.813rem", fontWeight: 700,
                       color: T.text, marginBottom: 6,
                     }}>
                       Password
@@ -198,7 +198,7 @@ export default function LoginPage() {
                         width: "100%", boxSizing: "border-box",
                         background: T.input, color: T.text,
                         border: `1px solid ${T.border}`, borderRadius: 10,
-                        padding: "11px 14px", fontSize: 14, outline: "none",
+                        padding: "11px 14px", fontSize: "0.875rem", outline: "none",
                         fontFamily: "inherit",
                       }}
                     />
@@ -208,7 +208,7 @@ export default function LoginPage() {
                   <div style={{
                     display: "flex", alignItems: "center",
                     justifyContent: "space-between",
-                    marginBottom: 20, fontSize: 13,
+                    marginBottom: 20, fontSize: "0.813rem",
                   }}>
                     <label style={{
                       display: "flex", alignItems: "center",
@@ -224,7 +224,7 @@ export default function LoginPage() {
                     </label>
                     <Link
                       to="/forgot-password"
-                      style={{ color: T.accent, fontWeight: 700, textDecoration: "none", fontSize: 13 }}
+                      style={{ color: T.accent, fontWeight: 700, textDecoration: "none", fontSize: "0.813rem" }}
                     >
                       Forgot password?
                     </Link>
@@ -240,7 +240,7 @@ export default function LoginPage() {
                       width: "100%", padding: "12px 0",
                       background: T.accent, color: "#fff",
                       border: "none", borderRadius: 10,
-                      fontSize: 15, fontWeight: 800,
+                      fontSize: "0.938rem", fontWeight: 800,
                       cursor: submitting ? "not-allowed" : "pointer",
                       opacity: submitting ? 0.6 : 1,
                       fontFamily: "inherit",
@@ -254,7 +254,7 @@ export default function LoginPage() {
                   {/* Divider */}
                   <div style={{
                     display: "flex", alignItems: "center", gap: 10,
-                    marginBottom: 16, color: T.muted, fontSize: 13,
+                    marginBottom: 16, color: T.muted, fontSize: "0.813rem",
                   }}>
                     <span style={{ flex: 1, height: 1, background: T.border }} />
                     or
@@ -270,7 +270,7 @@ export default function LoginPage() {
                       width: "100%", padding: "11px 0",
                       background: T.input, color: T.text,
                       border: `1px solid ${T.border}`, borderRadius: 10,
-                      fontSize: 14, fontWeight: 700,
+                      fontSize: "0.875rem", fontWeight: 700,
                       cursor: submitting ? "not-allowed" : "pointer",
                       opacity: submitting ? 0.6 : 1,
                       fontFamily: "inherit",
@@ -291,7 +291,7 @@ export default function LoginPage() {
                     Continue with Google
                   </button>
 
-                  <p style={{ textAlign: "center", fontSize: 13, color: T.muted, margin: 0 }}>
+                  <p style={{ textAlign: "center", fontSize: "0.813rem", color: T.muted, margin: 0 }}>
                     Don't have an account?{" "}
                     <Link
                       to="/register"

@@ -165,10 +165,10 @@ if (error) {
       {adminConfirm && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
           <div style={{ background: "#1a1a1a", border: "1px solid #404040", borderRadius: 14, padding: "28px 32px", maxWidth: 380, width: "90%", boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}>
-            <div style={{ fontSize: 15, color: T.text, marginBottom: 22, lineHeight: 1.6 }}>{adminConfirm.message}</div>
+            <div style={{ fontSize: "0.938rem", color: T.text, marginBottom: 22, lineHeight: 1.6 }}>{adminConfirm.message}</div>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button onClick={() => setAdminConfirm(null)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, cursor: "pointer", fontSize: 13 }}>Cancel</button>
-              <button onClick={() => { adminConfirm.onConfirm(); setAdminConfirm(null); }} style={{ padding: "8px 18px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.15)", color: "#ef4444", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>Confirm</button>
+              <button onClick={() => setAdminConfirm(null)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #404040", background: "#2d2d2d", color: T.text, cursor: "pointer", fontSize: "0.813rem" }}>Cancel</button>
+              <button onClick={() => { adminConfirm.onConfirm(); setAdminConfirm(null); }} style={{ padding: "8px 18px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.15)", color: "#ef4444", cursor: "pointer", fontSize: "0.813rem", fontWeight: 700 }}>Confirm</button>
             </div>
           </div>
         </div>
@@ -185,7 +185,7 @@ if (error) {
       )}
 
       <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
-        <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: 14 }}>← Back to Marketplace</a>
+        <a href="/" style={{ color: T.muted, textDecoration: "none", fontSize: "0.875rem" }}>← Back to Marketplace</a>
 
         <div
           style={{
@@ -222,7 +222,7 @@ if (error) {
                         border: `1px solid ${T.border}`,
                         background: "rgba(0,0,0,0.5)",
                         color: "#fff",
-                        fontSize: 20,
+                        fontSize: "1.250rem",
                         cursor: "pointer",
                       }}
                     >
@@ -243,7 +243,7 @@ if (error) {
                         border: `1px solid ${T.border}`,
                         background: "rgba(0,0,0,0.5)",
                         color: "#fff",
-                        fontSize: 20,
+                        fontSize: "1.250rem",
                         cursor: "pointer",
                       }}
                     >
@@ -257,7 +257,7 @@ if (error) {
                         bottom: 12,
                         padding: "4px 8px",
                         borderRadius: 8,
-                        fontSize: 12,
+                        fontSize: "0.750rem",
                         fontWeight: 700,
                         background: "rgba(0,0,0,0.55)",
                         color: "#fff",
@@ -310,12 +310,12 @@ if (error) {
           <div style={{ padding: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
               <div>
-                <h1 style={{ margin: 0, fontSize: 30, fontWeight: 900 }}>{listing.title}</h1>
+                <h1 style={{ margin: 0, fontSize: "1.875rem", fontWeight: 900 }}>{listing.title}</h1>
                 <p style={{ margin: "8px 0 0", color: T.muted }}>📍 {listing.location}</p>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 32, fontWeight: 900, color: T.accent }}>${Number(listing.price).toLocaleString()}</div>
-                <div style={{ color: T.muted, fontSize: 13, marginTop: 4 }}>{listing.category}</div>
+                <div style={{ fontSize: "2.000rem", fontWeight: 900, color: T.accent }}>${Number(listing.price).toLocaleString()}</div>
+                <div style={{ color: T.muted, fontSize: "0.813rem", marginTop: 4 }}>{listing.category}</div>
               </div>
             </div>
 
@@ -329,7 +329,7 @@ if (error) {
                 border: `1px solid ${T.border}`,
                 background: "#222",
                 color: T.muted,
-                fontSize: 14,
+                fontSize: "0.875rem",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -337,7 +337,7 @@ if (error) {
                 {trust?.trust_badge && (() => {
                   const c = BADGE_COLORS[trust.trust_badge];
                   return (
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: c.bg, border: `1px solid ${c.border}`, color: c.text }}>
+                    <span style={{ fontSize: "0.688rem", fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: c.bg, border: `1px solid ${c.border}`, color: c.text }}>
                       {trust.trust_badge}
                     </span>
                   );
@@ -406,7 +406,7 @@ if (error) {
                     border: "1px solid rgba(239,68,68,0.3)",
                     fontWeight: 700,
                     cursor: "pointer",
-                    fontSize: 14,
+                    fontSize: "0.875rem",
                     marginLeft: "auto",
                   }}
                 >
@@ -429,14 +429,14 @@ if (error) {
                   padding: "10px 16px",
                   display: "flex", alignItems: "center", gap: 8,
                 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#c084fc" }}>Admin Controls</span>
-                  <span style={{ fontSize: 11, color: "#9ca3af" }}>— Seller: {listing.seller_name ?? listing.seller_id}</span>
+                  <span style={{ fontSize: "0.813rem", fontWeight: 700, color: "#c084fc" }}>Admin Controls</span>
+                  <span style={{ fontSize: "0.688rem", color: "#9ca3af" }}>— Seller: {listing.seller_name ?? listing.seller_id}</span>
                 </div>
                 <div style={{ padding: "14px 16px", background: "rgba(168,85,247,0.04)", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
 
                   {/* Edit */}
                   <a href={`/edit-listing/${listing.id}`} style={{
-                    padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700,
+                    padding: "8px 14px", borderRadius: 8, fontSize: "0.813rem", fontWeight: 700,
                     background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.35)",
                     color: "#c084fc", textDecoration: "none",
                   }}>Edit Listing</a>
@@ -446,20 +446,20 @@ if (error) {
                     <button
                       disabled={adminWorking}
                       onClick={() => adminAsk("Mark this listing as sold?", adminMarkSold)}
-                      style={{ padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.35)", color: "#60a5fa" }}
+                      style={{ padding: "8px 14px", borderRadius: 8, fontSize: "0.813rem", fontWeight: 700, cursor: "pointer", background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.35)", color: "#60a5fa" }}
                     >Mark as Sold</button>
                   )}
                   {listing.status === "sold" && (
                     <button
                       disabled={adminWorking}
                       onClick={() => adminAsk("Restore this listing to active?", adminMarkActive)}
-                      style={{ padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.35)", color: "#22c55e" }}
+                      style={{ padding: "8px 14px", borderRadius: 8, fontSize: "0.813rem", fontWeight: 700, cursor: "pointer", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.35)", color: "#22c55e" }}
                     >Restore to Active</button>
                   )}
 
                   {/* View Seller Profile */}
                   <a href={`/profile/${listing.seller_id}`} style={{
-                    padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700,
+                    padding: "8px 14px", borderRadius: 8, fontSize: "0.813rem", fontWeight: 700,
                     background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.3)",
                     color: "#eab308", textDecoration: "none",
                   }}>View Seller Profile</a>
@@ -467,14 +467,14 @@ if (error) {
                   {/* Message Seller */}
                   <button
                     onClick={handleMessageSeller}
-                    style={{ padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", background: "rgba(156,163,175,0.1)", border: "1px solid rgba(156,163,175,0.3)", color: "#9ca3af" }}
+                    style={{ padding: "8px 14px", borderRadius: 8, fontSize: "0.813rem", fontWeight: 700, cursor: "pointer", background: "rgba(156,163,175,0.1)", border: "1px solid rgba(156,163,175,0.3)", color: "#9ca3af" }}
                   >Message Seller</button>
 
                   {/* Remove */}
                   <button
                     disabled={adminWorking}
                     onClick={() => adminAsk(`Permanently remove "${listing.title}"? This cannot be undone.`, adminRemoveListing)}
-                    style={{ padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", color: "#ef4444", marginLeft: "auto" }}
+                    style={{ padding: "8px 14px", borderRadius: 8, fontSize: "0.813rem", fontWeight: 700, cursor: "pointer", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", color: "#ef4444", marginLeft: "auto" }}
                   >Remove Listing</button>
 
                 </div>
@@ -485,7 +485,7 @@ if (error) {
         {/* ── More Like This ── */}
         {similar.length > 0 && (
           <div style={{ marginTop: 32 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: T.text, marginBottom: 14 }}>
+            <div style={{ fontSize: "1.000rem", fontWeight: 800, color: T.text, marginBottom: 14 }}>
               More like this
             </div>
             <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 6 }}>
@@ -517,16 +517,16 @@ if (error) {
                     {item.images?.[0] ? (
                       <img src={item.images[0]} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
-                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#555", fontSize: "12px" }}>No Image</div>
+                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#555", fontSize: "0.750rem" }}>No Image</div>
                     )}
                     {item.status === "sold" && (
-                      <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(239,68,68,0.85)", color: "#fff", fontSize: "10px", fontWeight: 700, padding: "2px 7px", borderRadius: 5 }}>SOLD</div>
+                      <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(239,68,68,0.85)", color: "#fff", fontSize: "0.625rem", fontWeight: 700, padding: "2px 7px", borderRadius: 5 }}>SOLD</div>
                     )}
                   </div>
                   <div style={{ padding: "10px 12px" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
-                    <div style={{ fontSize: 15, fontWeight: 900, color: T.accent }}>${Number(item.price).toLocaleString()}</div>
-                    <div style={{ fontSize: 11, color: T.muted, marginTop: 3 }}>{item.location}</div>
+                    <div style={{ fontSize: "0.813rem", fontWeight: 700, color: T.text, marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
+                    <div style={{ fontSize: "0.938rem", fontWeight: 900, color: T.accent }}>${Number(item.price).toLocaleString()}</div>
+                    <div style={{ fontSize: "0.688rem", color: T.muted, marginTop: 3 }}>{item.location}</div>
                   </div>
                 </a>
               ))}

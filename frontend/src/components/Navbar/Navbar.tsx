@@ -57,6 +57,8 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+  const [fontOpen, setFontOpen] = useState(false);
+  const fontRef = useRef<HTMLDivElement>(null);
 
   const NAV_CONFIG: Record<Role, NavItem[]> = {
     guest: [
@@ -127,6 +129,9 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
       }
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotifOpen(false);
+      }
+      if (fontRef.current && !fontRef.current.contains(e.target as Node)) {
+        setFontOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -247,6 +252,24 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
           </div>
         )}
 
+        <div ref={fontRef} className={styles.dropdownWrapper}>
+          <button
+            className={styles.fontBtn}
+            onClick={() => setFontOpen((o) => !o)}
+            title="Font size"
+          >
+            Aa
+          </button>
+
+          {fontOpen && (
+            <div className={styles.dropdown}>
+              <div className={styles.dropdownSection}>
+                <FontSizeControl />
+              </div>
+            </div>
+          )}
+        </div>
+
         {user && (
           <div ref={dropdownRef} className={styles.dropdownWrapper}>
             <button
@@ -271,9 +294,9 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
                   )}
                 </div>
 
-                <div className={styles.dropdownSection}>
+                {/* <div className={styles.dropdownSection}>
                   <FontSizeControl />
-                </div>
+                </div> */}
 
                 {dropdownLinks.map((item) => (
                   <a key={item.href} href={item.href} className={styles.dropdownItem}>

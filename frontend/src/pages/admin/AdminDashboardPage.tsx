@@ -3,6 +3,10 @@ import { listUsers, patchUser, listAllListings, adminDeleteListing, adminRestore
 import { listAdminReports, patchReport, type Report } from "../../api/reports";
 import { deleteReview } from "../../api/reviews";
 import type { Listing } from "../../types/listings";
+import { useFontScale } from "../../FontScale";
+import FontSizeControl from "../../components/Navbar/Navbar";
+import styles from "../../components/Navbar/Navbar.module.css";
+import { useRef } from "react";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -44,7 +48,7 @@ function Badge({ value }: { value: string }) {
   return (
     <span style={{
       background: s.bg, color: s.color, border: `1px solid ${s.border}`,
-      fontSize:"11px", fontWeight:600, padding:"3px 9px",
+      fontSize: "0.688rem", fontWeight:600, padding:"3px 9px",
       borderRadius:"6px", textTransform:"capitalize", letterSpacing:"0.03em",
     }}>{value}</span>
   );
@@ -63,7 +67,7 @@ function Btn({ label, color, onClick }: { label: string; color: "green"|"yellow"
   const c = colors[color];
   return (
     <button onClick={onClick} style={{
-      padding:"4px 10px", fontSize:"12px", fontWeight:600,
+      padding:"4px 10px", fontSize: "0.750rem", fontWeight:600,
       borderRadius:"6px", border:`1px solid ${c.border}`,
       background: c.bg, color: c.text, cursor:"pointer", whiteSpace:"nowrap",
     }}>{label}</button>
@@ -75,10 +79,10 @@ function ConfirmModal({ message, onConfirm, onCancel }: { message: string; onCon
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50 }}>
       <div style={{ background: T.card, border:`1px solid ${T.border}`, borderRadius:"14px", padding:"28px 32px", maxWidth:"380px", width:"90%", boxShadow:"0 10px 40px rgba(0,0,0,0.5)" }}>
-        <div style={{ fontSize:"15px", color: T.text, marginBottom:"22px", lineHeight:1.6 }}>{message}</div>
+        <div style={{ fontSize: "0.938rem", color: T.text, marginBottom:"22px", lineHeight:1.6 }}>{message}</div>
         <div style={{ display:"flex", gap:"10px", justifyContent:"flex-end" }}>
-          <button onClick={onCancel} style={{ padding:"8px 16px", borderRadius:"8px", border:`1px solid ${T.border}`, background: T.surface, color: T.text, cursor:"pointer", fontSize:"13px" }}>Cancel</button>
-          <button onClick={onConfirm} style={{ padding:"8px 18px", borderRadius:"8px", border:"1px solid rgba(239,68,68,0.4)", background:"rgba(239,68,68,0.15)", color:"#ef4444", cursor:"pointer", fontSize:"13px", fontWeight:700 }}>Confirm</button>
+          <button onClick={onCancel} style={{ padding:"8px 16px", borderRadius:"8px", border:`1px solid ${T.border}`, background: T.surface, color: T.text, cursor:"pointer", fontSize: "0.813rem" }}>Cancel</button>
+          <button onClick={onConfirm} style={{ padding:"8px 18px", borderRadius:"8px", border:"1px solid rgba(239,68,68,0.4)", background:"rgba(239,68,68,0.15)", color:"#ef4444", cursor:"pointer", fontSize: "0.813rem", fontWeight:700 }}>Confirm</button>
         </div>
       </div>
     </div>
@@ -92,7 +96,7 @@ function SearchInput({ value, onChange, placeholder }: { value: string; onChange
       style={{
         marginBottom:"16px", padding:"9px 14px",
         border:`1px solid ${T.border}`, borderRadius:"10px",
-        fontSize:"13px", width:"280px", outline:"none",
+        fontSize: "0.813rem", width:"280px", outline:"none",
         background: T.input, color: T.text,
       }} />
   );
@@ -102,17 +106,17 @@ function SearchInput({ value, onChange, placeholder }: { value: string; onChange
 function Table({ headers, children, empty }: { headers: string[]; children: React.ReactNode; empty: boolean }) {
   return (
     <div style={{ border:`1px solid ${T.border}`, borderRadius:"14px", overflow:"hidden", boxShadow:"0 2px 10px rgba(0,0,0,0.3)" }}>
-      <table style={{ width:"100%", borderCollapse:"collapse", fontSize:"13px" }}>
+      <table style={{ width:"100%", borderCollapse:"collapse", fontSize: "0.813rem" }}>
         <thead>
           <tr style={{ background: T.card, borderBottom:`1px solid ${T.border}` }}>
             {headers.map(h => (
-              <th key={h} style={{ padding:"11px 14px", textAlign:"left", fontWeight:700, color: T.muted, fontSize:"11px", textTransform:"uppercase", letterSpacing:"0.06em" }}>{h}</th>
+              <th key={h} style={{ padding:"11px 14px", textAlign:"left", fontWeight:700, color: T.muted, fontSize: "0.688rem", textTransform:"uppercase", letterSpacing:"0.06em" }}>{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>{children}</tbody>
       </table>
-      {empty && <div style={{ padding:"40px", textAlign:"center", color: T.muted, fontSize:"14px", background: T.card }}>No results found.</div>}
+      {empty && <div style={{ padding:"40px", textAlign:"center", color: T.muted, fontSize: "0.875rem", background: T.card }}>No results found.</div>}
     </div>
   );
 }
@@ -133,10 +137,10 @@ function OverviewTab() {
 
         {/* Placeholder for future reports-by-user panel */}
         <div style={{ background: T.card, border:`1px solid ${T.border}`, borderRadius:"14px", overflow:"hidden", boxShadow:"0 2px 10px rgba(0,0,0,0.3)" }}>
-          <div style={{ padding:"14px 18px", borderBottom:`1px solid ${T.border}`, fontWeight:700, fontSize:"14px", color: T.text }}>
+          <div style={{ padding:"14px 18px", borderBottom:`1px solid ${T.border}`, fontWeight:700, fontSize: "0.875rem", color: T.text }}>
             User Management
           </div>
-          <div style={{ padding:"16px 18px", color: T.muted, fontSize:"13px" }}>
+          <div style={{ padding:"16px 18px", color: T.muted, fontSize: "0.813rem" }}>
             Go to the <strong style={{ color: T.text }}>Users</strong> tab to manage accounts, disable users, and assign admin roles.
           </div>
         </div>
@@ -154,7 +158,7 @@ function TargetTypeBadge({ type }: { type: string }) {
   };
   const s = map[type] ?? map["listing"];
   return (
-    <span style={{ background: s.bg, color: s.color, border:`1px solid ${s.border}`, fontSize:"11px", fontWeight:600, padding:"3px 9px", borderRadius:"6px", textTransform:"capitalize" }}>
+    <span style={{ background: s.bg, color: s.color, border:`1px solid ${s.border}`, fontSize: "0.688rem", fontWeight:600, padding:"3px 9px", borderRadius:"6px", textTransform:"capitalize" }}>
       {type}
     </span>
   );
@@ -199,7 +203,7 @@ function ReportsTab() {
           const col = typeColors[f];
           return (
             <button key={f} onClick={() => setTypeFilter(f)} style={{
-              padding:"5px 13px", borderRadius:"8px", fontSize:"12px", cursor:"pointer",
+              padding:"5px 13px", borderRadius:"8px", fontSize: "0.750rem", cursor:"pointer",
               border: active ? `1.5px solid ${col}` : `1px solid ${T.border}`,
               background: active ? `${col}1a` : T.surface,
               color: active ? col : T.muted,
@@ -207,7 +211,7 @@ function ReportsTab() {
             }}>
               {f === "all" ? "All Types" : f.charAt(0).toUpperCase() + f.slice(1) + "s"}
               {f !== "all" && (
-                <span style={{ marginLeft:"5px", background:"#333", borderRadius:"99px", padding:"1px 5px", fontSize:"10px", color: T.muted }}>
+                <span style={{ marginLeft:"5px", background:"#333", borderRadius:"99px", padding:"1px 5px", fontSize: "0.625rem", color: T.muted }}>
                   {reports.filter(r => r.target_type === f).length}
                 </span>
               )}
@@ -220,7 +224,7 @@ function ReportsTab() {
       <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
         {(["all","pending","reviewed","dismissed"] as const).map(f => (
           <button key={f} onClick={() => setStatusFilter(f)} style={{
-            padding:"5px 13px", borderRadius:"8px", fontSize:"12px", cursor:"pointer",
+            padding:"5px 13px", borderRadius:"8px", fontSize: "0.750rem", cursor:"pointer",
             border: statusFilter === f ? "1.5px solid #22c55e" : `1px solid ${T.border}`,
             background: statusFilter === f ? "rgba(34,197,94,0.12)" : T.surface,
             color: statusFilter === f ? "#22c55e" : T.muted,
@@ -228,7 +232,7 @@ function ReportsTab() {
           }}>
             {f === "all" ? "All Statuses" : f.charAt(0).toUpperCase() + f.slice(1)}
             {f !== "all" && (
-              <span style={{ marginLeft:"5px", background:"#333", borderRadius:"99px", padding:"1px 5px", fontSize:"10px", color: T.muted }}>
+              <span style={{ marginLeft:"5px", background:"#333", borderRadius:"99px", padding:"1px 5px", fontSize: "0.625rem", color: T.muted }}>
                 {reports.filter(r => r.status === f).length}
               </span>
             )}
@@ -306,7 +310,7 @@ function ReportsTab() {
             </TR>
             {expanded === r.id && (
               <tr key={`${r.id}-exp`} style={{ background:"rgba(34,197,94,0.05)", borderBottom:`1px solid ${T.border}` }}>
-                <td colSpan={7} style={{ padding:"12px 20px", color: T.text, fontSize:"13px" }}>
+                <td colSpan={7} style={{ padding:"12px 20px", color: T.text, fontSize: "0.813rem" }}>
                   <span style={{ color: T.muted }}>Description: </span>{r.description || <em style={{ color: T.muted }}>No details provided.</em>}
                 </td>
               </tr>
@@ -438,7 +442,7 @@ function ListingsTab() {
             <TD muted>{l.created_at.slice(0, 10)}</TD>
             <TD>
               <div style={{ display:"flex", gap:"5px" }}>
-                <a href={`/listing/${l.id}`} style={{ padding:"4px 10px", fontSize:"12px", fontWeight:600, borderRadius:"6px", border:"1px solid rgba(156,163,175,0.3)", background:"rgba(156,163,175,0.1)", color:"#9ca3af", textDecoration:"none" }}>View</a>
+                <a href={`/listing/${l.id}`} style={{ padding:"4px 10px", fontSize: "0.750rem", fontWeight:600, borderRadius:"6px", border:"1px solid rgba(156,163,175,0.3)", background:"rgba(156,163,175,0.1)", color:"#9ca3af", textDecoration:"none" }}>View</a>
                 {l.status !== "deleted" && <Btn label="Delete"  color="red"   onClick={() => ask(`Delete "${l.title}"?`,  () => applyDelete(l.id))}  />}
                 {l.status === "deleted" && <Btn label="Restore" color="green" onClick={() => ask(`Restore "${l.title}"?`, () => applyRestore(l.id))} />}
               </div>
@@ -453,6 +457,8 @@ function ListingsTab() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [fontOpen, setFontOpen] = useState(false);
+  const fontRef = useRef<HTMLDivElement>(null);
 
   const tabs: { id: TabId; label: string; count?: number }[] = [
     { id:"overview",  label:"Overview" },
@@ -461,35 +467,95 @@ export default function AdminDashboardPage() {
     { id:"listings",  label:"Listings" },
   ];
 
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (fontRef.current && !fontRef.current.contains(e.target as Node)) {
+        setFontOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div style={{ minHeight:"100vh", background: "radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.05) 0%, #0f0f0f 55%)", color: T.text, fontFamily:"'Outfit', Arial, sans-serif" }}>
 
       {/* ── Header ── */}
-      <header style={{ background: T.card, borderBottom:`1px solid ${T.border}`, padding:"12px 20px", display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:10 }}>
+      <header style={{
+        background: T.card,
+        borderBottom:`1px solid ${T.border}`,
+        padding:"12px 20px",
+        display:"flex",
+        alignItems:"center",
+        justifyContent:"space-between",
+        position:"sticky",
+        top:0,
+        zIndex:10
+      }}>
+
         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-          <span style={{ fontWeight:800, color: T.accent, fontSize:"1.2rem", letterSpacing:"0.2px" }}>
-            <a href="/" style={{ fontSize: "18px", fontWeight: 700, color: T.accent, textDecoration: "none" }}>TradeForge</a>
-          </span>
-          <span style={{ fontSize:"12px", background:"rgba(168,85,247,0.15)", color:"#c084fc", border:"1px solid rgba(168,85,247,0.3)", padding:"2px 10px", borderRadius:"6px", fontWeight:700 }}>
+          <a href="/" style={{
+            fontSize: "1.125rem",
+            fontWeight: 700,
+            color: T.accent,
+            textDecoration: "none"
+          }}>
+            TradeForge
+          </a>
+
+          <span style={{
+            fontSize: "0.750rem",
+            background:"rgba(168,85,247,0.15)",
+            color:"#c084fc",
+            border:"1px solid rgba(168,85,247,0.3)",
+            padding:"2px 10px",
+            borderRadius:"6px",
+            fontWeight:700
+          }}>
             Admin
           </span>
         </div>
-        <span style={{ fontSize:"13px", color: T.muted }}>Moderation Dashboard</span>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+
+          <div ref={fontRef} className={styles.dropdownWrapper}>
+            <button
+              className={styles.avatarBtn}
+              onClick={() => setFontOpen((o) => !o)}
+              title="Font size"
+            >
+              Aa
+            </button>
+
+            {fontOpen && (
+              <div className={styles.dropdown}>
+                <div className={styles.dropdownSection}>
+                  <FontSizeControl />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <span style={{ fontSize: "0.813rem", color: T.muted }}>
+            Moderation Dashboard
+          </span>
+
+        </div>
       </header>
 
       <div style={{ maxWidth:"1200px", margin:"0 auto", padding:"28px 20px" }}>
 
         {/* Page Title */}
         <div style={{ marginBottom:"24px" }}>
-          <h1 style={{ fontSize:"22px", fontWeight:800, color: T.text, margin:0 }}>Admin Dashboard</h1>
-          <p style={{ fontSize:"13px", color: T.muted, marginTop:"5px" }}>Manage reports, users, and listings across TradeForge.</p>
+          <h1 style={{ fontSize: "1.375rem", fontWeight:800, color: T.text, margin:0 }}>Admin Dashboard</h1>
+          <p style={{ fontSize: "0.813rem", color: T.muted, marginTop:"5px" }}>Manage reports, users, and listings across TradeForge.</p>
         </div>
 
         {/* Tabs */}
         <div style={{ display:"flex", gap:"6px", marginBottom:"24px", borderBottom:`1px solid ${T.border}`, paddingBottom:"0" }}>
           {tabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-              padding:"9px 18px", border:"none", fontSize:"13px", cursor:"pointer",
+              padding:"9px 18px", border:"none", fontSize: "0.813rem", cursor:"pointer",
               fontWeight: activeTab === tab.id ? 700 : 400,
               background:"transparent",
               color: activeTab === tab.id ? T.accent : T.muted,
@@ -504,7 +570,7 @@ export default function AdminDashboardPage() {
                   background: activeTab === tab.id ? "rgba(34,197,94,0.15)" : "#333",
                   border: activeTab === tab.id ? "1px solid rgba(34,197,94,0.3)" : `1px solid ${T.border}`,
                   color: activeTab === tab.id ? T.accent : T.muted,
-                  borderRadius:"99px", padding:"0px 7px", fontSize:"11px", fontWeight:700,
+                  borderRadius:"99px", padding:"0px 7px", fontSize: "0.688rem", fontWeight:700,
                 }}>
                   {tab.count}
                 </span>

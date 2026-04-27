@@ -49,7 +49,7 @@ interface UserProfile {
 // ── Star Rating Component ─────────────────────────────────────────────────────
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div style={{ display: "flex", gap: "2px", fontSize: "18px" }}>
+    <div style={{ display: "flex", gap: "2px", fontSize: "1.125rem" }}>
       {Array.from({ length: 5 }, (_, i) => (
         <span key={i} style={{ color: i < rating ? "#facc15" : "#555" }}>
           ★
@@ -95,7 +95,7 @@ function ReviewCard({
         }}
       >
         <span style={{ fontWeight: 700 }}>{username}</span>
-        <span style={{ fontSize: "14px", color: T.muted }}>
+        <span style={{ fontSize: "0.875rem", color: T.muted }}>
           {new Date(review.created_at).toLocaleDateString()}
         </span>
 
@@ -105,7 +105,7 @@ function ReviewCard({
             style={{
               padding: "4px 10px",
               borderRadius: "6px",
-              fontSize: "12px",
+              fontSize: "0.750rem",
               fontWeight: 700,
               cursor: "pointer",
               background: "rgba(239,68,68,0.12)",
@@ -123,7 +123,7 @@ function ReviewCard({
             style={{
               padding: "4px 10px",
               borderRadius: "6px",
-              fontSize: "12px",
+              fontSize: "0.750rem",
               fontWeight: 700,
               cursor: "pointer",
               background: "rgba(239,68,68,0.08)",
@@ -139,12 +139,12 @@ function ReviewCard({
       <StarRating rating={review.rating} />
 
       {review.listing_title && (
-        <div style={{ fontSize: 12, color: T.muted }}>
+        <div style={{ fontSize: "0.750rem", color: T.muted }}>
           Item: <a href={review.listing_id ? `/listing/${review.listing_id}` : undefined} style={{ color: "#60a5fa", textDecoration: "none" }}>{review.listing_title}</a>
         </div>
       )}
 
-      <div style={{ fontSize: "14px", color: T.text }}>
+      <div style={{ fontSize: "0.875rem", color: T.text }}>
         {review.comment}
       </div>
     </div>
@@ -210,7 +210,7 @@ function ProfileHeader({
               alignItems: "center",
               justifyContent: "center",
               color: "#555",
-              fontSize: "14px",
+              fontSize: "0.875rem",
             }}
           >
             No Image
@@ -244,11 +244,11 @@ function ProfileHeader({
       {/* Profile Info */}
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <div style={{ fontSize: "22px", fontWeight: 800 }}>{profile.username}</div>
+          <div style={{ fontSize: "1.375rem", fontWeight: 800 }}>{profile.username}</div>
           {badge && badgeColors && (
             <span
               style={{
-                fontSize: 12,
+                fontSize: "0.750rem",
                 fontWeight: 700,
                 padding: "3px 10px",
                 borderRadius: 999,
@@ -264,13 +264,13 @@ function ProfileHeader({
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <StarRating rating={Math.round(profile.rating)} />
-          <span style={{ color: T.muted, fontSize: "14px" }}>
+          <span style={{ color: T.muted, fontSize: "0.875rem" }}>
             {profile.rating.toFixed(1)} ({profile.ratingCount} reviews)
           </span>
         </div>
 
         {profile.trust && (
-          <div style={{ fontSize: 13, color: T.muted }}>
+          <div style={{ fontSize: "0.813rem", color: T.muted }}>
             Trust score: <strong style={{ color: T.text }}>{profile.trust.trust_score}</strong> / 100
           </div>
         )}
@@ -293,7 +293,7 @@ function MessageCard({ message }: { message: string }) {
         marginBottom: "20px",
         boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
         minHeight: "120px",
-        fontSize: "16px",
+        fontSize: "1.000rem",
         fontWeight: 600,
         color: T.text,
       }}
@@ -445,13 +445,13 @@ export default function UserProfilePage() {
               boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
             }}
           >
-            <div style={{ fontSize: "40px", marginBottom: "10px" }}>⚠️</div>
+            <div style={{ fontSize: "2.500rem", marginBottom: "10px" }}>⚠️</div>
 
-            <div style={{ fontSize: "18px", fontWeight: 800, marginBottom: "6px" }}>
+            <div style={{ fontSize: "1.125rem", fontWeight: 800, marginBottom: "6px" }}>
               Unable to load profile
             </div>
 
-            <div style={{ fontSize: "14px", color: T.muted, marginBottom: "16px" }}>
+            <div style={{ fontSize: "0.875rem", color: T.muted, marginBottom: "16px" }}>
               {error}
             </div>
 
@@ -540,7 +540,7 @@ export default function UserProfilePage() {
               <button
                 onClick={() => setReportOpen(true)}
                 style={{
-                  padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  padding: "8px 16px", borderRadius: 10, fontSize: "0.813rem", fontWeight: 700, cursor: "pointer",
                   background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444",
                 }}
               >
@@ -577,7 +577,7 @@ export default function UserProfilePage() {
             marginBottom: "12px",
           }}
         >
-          <div style={{ fontSize: "18px", fontWeight: 800 }}>
+          <div style={{ fontSize: "1.125rem", fontWeight: 800 }}>
             Reviews ({profile.reviews.length})
           </div>
         </div>
