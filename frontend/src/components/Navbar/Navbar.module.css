@@ -224,8 +224,8 @@
 /* ── Bell / Notification Button ─────────────────────────────────────────────── */
 .bellBtn {
   position: relative;
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -390,15 +390,15 @@
 }
 
 .fontBtn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.625rem;
 
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
 
   color: #E7E5E4;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 700;
 
   cursor: pointer;
