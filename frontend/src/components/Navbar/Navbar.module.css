@@ -111,6 +111,13 @@
   z-index: 100;
 }
 
+.dropdownSection {
+  padding: 0.6rem 0.8rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin: 0;
+}
+
 .userInfo {
   padding: 14px 16px;
   border-bottom: 1px solid #404040;
@@ -119,11 +126,11 @@
 .userName {
   font-weight: 700;
   color: #e5e5e5;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .userEmail {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #9ca3af;
   margin-top: 2px;
 }
@@ -132,7 +139,7 @@
   margin-top: 6px;
   display: inline-block;
 
-  font-size: 11px;
+  font-size: 0.6875rem;
   background: rgba(168,85,247,0.15);
   color: #c084fc;
 
@@ -150,7 +157,7 @@
 
   text-decoration: none;
   color: #e5e5e5;
-  font-size: 14px;
+  font-size: 0.875rem;
 
   border-bottom: 1px solid #2a2a2a;
 }
@@ -168,7 +175,7 @@
   border: none;
 
   color: #ef4444;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 
   cursor: pointer;
@@ -202,7 +209,7 @@
   right: -4px;
   background: #EF4444;
   color: #fff;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 800;
   min-width: 16px;
   height: 16px;
@@ -247,14 +254,14 @@
 }
 
 .notifTitle {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: #E7E5E4;
   letter-spacing: -0.01em;
 }
 
 .markAllBtn {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   color: #CA8A04;
   background: transparent;
@@ -271,7 +278,7 @@
   padding: 24px 16px;
   text-align: center;
   color: #57534E;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .notifItem,
@@ -303,7 +310,7 @@
 }
 
 .notifIcon {
-  font-size: 16px;
+  font-size: 1rem;
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -314,21 +321,21 @@
 }
 
 .notifItemTitle {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: #E7E5E4;
   margin-bottom: 2px;
 }
 
 .notifItemBody {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #A8A29E;
   line-height: 1.4;
   white-space: normal;
 }
 
 .notifItemTime {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: #57534E;
   margin-top: 4px;
 }

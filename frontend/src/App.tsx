@@ -13,30 +13,33 @@ import ReviewsPage from "./pages/reviews/ReviewsPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import SavedListingsPage from "./pages/saved/SavedListingsPage";
 import MyListingsPage from "./pages/myListings/MyListingsPage";
+import { FontScaleProvider } from "./FontScale";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/admin" element={<AdminDashboardPage />} />
-          <Route path="/create-listing" element={<CreateEditListingPage />} />
-          <Route path="/edit-listing/:id" element={<CreateEditListingPage />} />
-          <Route path="/listing/:id" element={<ListingDetailPage />} />
-          <Route path="/messages" element={<MessagingPage />} />
-          <Route path="/reviews" element={<ReviewsPage />} />
-          <Route path="/profile" element={<ProfilePage/>} />
-          <Route path="/user/:userId" element={<ProfilePage/>} />
-          <Route path="/saved" element={<SavedListingsPage />} />
-          <Route path="/my-listings" element={<MyListingsPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+    <FontScaleProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/create-listing" element={<CreateEditListingPage />} />
+            <Route path="/edit-listing/:id" element={<CreateEditListingPage />} />
+            <Route path="/listing/:id" element={<ListingDetailPage />} />
+            <Route path="/messages" element={<MessagingPage />} />
+            <Route path="/reviews" element={<ReviewsPage />} />
+            <Route path="/profile" element={<ProfilePage/>} />
+            <Route path="/user/:userId" element={<ProfilePage/>} />
+            <Route path="/saved" element={<SavedListingsPage />} />
+            <Route path="/my-listings" element={<MyListingsPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </FontScaleProvider>
   );
 }

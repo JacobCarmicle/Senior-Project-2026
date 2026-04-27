@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { listNotifications, markNotificationRead, markAllNotificationsRead } from "../../api/notifications";
 import type { Notification } from "../../types/notifications";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { useFontScale } from "../../FontScale";
 import styles from "./Navbar.module.css";
 
 type NavItem = {
@@ -26,6 +27,27 @@ const NOTIF_ICONS: Record<string, string> = {
   listing_sold:    "✅",
   suggestion:      "💡",
 };
+
+export default function FontSizeControl() {
+  const { fontScale, setFontScale } = useFontScale();
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+      <span style={{ fontSize: "0.75rem" }}>A</span>
+
+      <input
+        type="range"
+        min="0.8"
+        max="1.4"
+        step="0.05"
+        value={fontScale}
+        onChange={(e) => setFontScale(Number(e.target.value))}
+      />
+
+      <span style={{ fontSize: "1.25rem" }}>A</span>
+    </div>
+  );
+}
 
 export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
   const { user, logout } = useAuth();
@@ -247,6 +269,10 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
                   {user.role === "admin" && (
                     <span className={styles.adminBadge}>Admin</span>
                   )}
+                </div>
+
+                <div className={styles.dropdownSection}>
+                  <FontSizeControl />
                 </div>
 
                 {dropdownLinks.map((item) => (
