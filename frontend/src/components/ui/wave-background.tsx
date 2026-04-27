@@ -31,21 +31,23 @@ export function Waves({
   const boundingRef  = useRef<DOMRect | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current || !svgRef.current) return;
+    const container = containerRef.current;
+    const svg = svgRef.current;
+    if (!container || !svg) return;
     noiseRef.current = createNoise2D();
     setSize();
     setLines();
 
     window.addEventListener('resize', onResize);
     window.addEventListener('mousemove', onMouseMove);
-    containerRef.current.addEventListener('touchmove', onTouchMove, { passive: false });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('mousemove', onMouseMove);
-      containerRef.current?.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('touchmove', onTouchMove);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

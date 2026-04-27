@@ -39,7 +39,7 @@ const ShaderMesh = ({ source, uniforms }: { source: string; uniforms: Uniforms }
       blendSrc: THREE.SrcAlphaFactor,
       blendDst: THREE.OneFactor,
     });
-  }, [size.width, size.height, source]);
+  }, [size.width, size.height, source, uniforms]);
 
   useFrame(({ clock }) => {
     if (!ref.current) return;

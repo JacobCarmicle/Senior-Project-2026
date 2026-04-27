@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, startTransition } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { listNotifications, markNotificationRead, markAllNotificationsRead } from "../../api/notifications";
 import type { Notification } from "../../types/notifications";
@@ -50,6 +51,7 @@ export default function FontSizeControl() {
 }
 
 export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -119,8 +121,14 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
   }, [user]);
 
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30_000);
+    startTransition(() => {
+      void fetchNotifications();
+    });
+    const interval = setInterval(() => {
+      startTransition(() => {
+        void fetchNotifications();
+      });
+    }, 30_000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
@@ -152,7 +160,16 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
       setUnreadCount((c) => Math.max(0, c - 1));
     }
     if (notif.link) {
-      window.location.href = notif.link;
+      try {
+        const url = new URL(notif.link, window.location.origin);
+        if (url.origin === window.location.origin) {
+          navigate(`${url.pathname}${url.search}${url.hash}`);
+        } else {
+          window.open(notif.link, "_self", "noopener,noreferrer");
+        }
+      } catch {
+        navigate(notif.link);
+      }
     }
     setNotifOpen(false);
   }

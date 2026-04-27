@@ -68,7 +68,7 @@ export function connectMeetupRealtime(
       const data = JSON.parse(evt.data) as MeetupRealtimeEvent;
       handlers.onEvent(data);
     } catch {
-      
+      // Ignore malformed WebSocket payloads
     }
   };
 

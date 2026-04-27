@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, startTransition } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { connectConversationRealtime, listMessages, listMyConversations, sendMessage } from "../../api/messaging";
 import { createMeetup, getMeetup, updateMeetupStatus, deleteMeetup, connectMeetupRealtime } from "../../api/meetups";
@@ -158,8 +158,23 @@ export default function MessagingPage() {
   const isSeller = user?.id === active?.seller_id;
 
   useEffect(() => {
-    if (!active?.listing_id) { setActiveListing(null); return; }
-    getListing(active.listing_id).then(setActiveListing).catch(() => setActiveListing(null));
+    if (!active?.listing_id) {
+      startTransition(() => {
+        setActiveListing(null);
+      });
+      return;
+    }
+    let cancelled = false;
+    getListing(active.listing_id)
+      .then((l) => {
+        if (!cancelled) setActiveListing(l);
+      })
+      .catch(() => {
+        if (!cancelled) setActiveListing(null);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [active?.listing_id]);
 
   useEffect(() => {

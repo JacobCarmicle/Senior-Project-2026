@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { deleteListing, getListing, updateListing, getSimilarListings } from "../../api/listings";
 import { openConversationFromListing } from "../../api/messaging";
@@ -77,15 +77,15 @@ export default function ListingDetailPage() {
 
   const imageCount = listing?.images?.length ?? 0;
 
-  function goToPreviousImage() {
+  const goToPreviousImage = useCallback(() => {
     if (!listing?.images?.length) return;
     setSelectedImageIndex((prev) => (prev - 1 + listing.images.length) % listing.images.length);
-  }
+  }, [listing?.images]);
 
-  function goToNextImage() {
+  const goToNextImage = useCallback(() => {
     if (!listing?.images?.length) return;
     setSelectedImageIndex((prev) => (prev + 1) % listing.images.length);
-  }
+  }, [listing?.images]);
 
   useEffect(() => {
     if (!listing?.images?.length || listing.images.length <= 1) return;
@@ -103,7 +103,7 @@ export default function ListingDetailPage() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [listing]);
+  }, [goToNextImage, goToPreviousImage, listing]);
 
   async function handleMessageSeller() {
     if (!listing) return;
