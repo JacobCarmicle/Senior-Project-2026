@@ -179,7 +179,9 @@ export default function MessagingPage() {
 
   useEffect(() => {
     if (!otherUserId) {
-      setOtherUserName("");
+      startTransition(() => {
+        setOtherUserName("");
+      });
       return;
     }
 

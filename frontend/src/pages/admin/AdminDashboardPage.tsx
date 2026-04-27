@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { listUsers, patchUser, listAllListings, adminDeleteListing, adminRestoreListing, type AdminUser } from "../../api/admin";
 import { listAdminReports, patchReport, type Report } from "../../api/reports";
 import type { Listing } from "../../types/listings";
-import { useFontScale } from "../../FontScale";
-import FontSizeControl from "../../components/Navbar/Navbar";
+import { FontSizeControl } from "../../FontScale";
 import styles from "../../components/Navbar/Navbar.module.css";
 import { useRef } from "react";
 
