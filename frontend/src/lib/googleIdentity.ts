@@ -46,6 +46,10 @@ function loadGoogleIdentityScript(): Promise<void> {
     );
 
     if (existingScript) {
+      if (window.google?.accounts?.id) {
+        resolve();
+        return;
+      }
       existingScript.addEventListener("load", () => resolve(), { once: true });
       existingScript.addEventListener("error", () => reject(new Error("Failed to load Google Identity script.")), {
         once: true,
@@ -63,6 +67,13 @@ function loadGoogleIdentityScript(): Promise<void> {
   });
 
   return googleScriptPromise;
+}
+
+export function preloadGoogleIdentity(clientId?: string): void {
+  if (!clientId) return;
+  void loadGoogleIdentityScript().catch(() => {
+    // Best effort preload for mobile tap reliability.
+  });
 }
 
 export async function requestGoogleIdToken(clientId: string): Promise<string> {

@@ -61,6 +61,7 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
   const [fontOpen, setFontOpen] = useState(false);
   const fontRef = useRef<HTMLDivElement>(null);
 
@@ -133,7 +134,7 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
   }, [fetchNotifications]);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    function handleClickOutside(e: PointerEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
       }
@@ -143,12 +144,12 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
       if (fontRef.current && !fontRef.current.contains(e.target as Node)) {
         setFontOpen(false);
       }
-      if (mobileMenuOpen && navRef.current && !navRef.current.contains(e.target as Node)) {
+      if (mobileMenuOpen && headerRef.current && !headerRef.current.contains(e.target as Node)) {
         setMobileMenuOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("pointerdown", handleClickOutside);
+    return () => document.removeEventListener("pointerdown", handleClickOutside);
   }, [mobileMenuOpen]);
 
   async function handleNotifClick(notif: Notification) {
@@ -190,7 +191,7 @@ export function Navbar({ exclude = [], excludeAll = false}: NavbarProps) {
     : "?";
 
   return (
-    <header className={styles.navbar}>
+    <header ref={headerRef} className={styles.navbar}>
       {/* Brand */}
       <a href="/" className={styles.brand}>
         <img

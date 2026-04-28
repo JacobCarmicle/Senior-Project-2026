@@ -2,7 +2,7 @@ import { useState, useEffect, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
-import { requestGoogleIdToken } from "../../lib/googleIdentity";
+import { preloadGoogleIdentity, requestGoogleIdToken } from "../../lib/googleIdentity";
 import { getApiErrorMessage } from "../../api/errors";
 import { Waves } from "../../components/ui/wave-background";
 
@@ -29,6 +29,10 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    preloadGoogleIdentity(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  }, []);
 
   async function handleGoogleLogin() {
     setError("");
