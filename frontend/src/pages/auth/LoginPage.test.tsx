@@ -7,7 +7,8 @@ describe("LoginPage", () => {
   it("renders the login form with all fields", () => {
     renderWithProviders(<LoginPage />, { route: "/login" });
 
-    expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /welcome back/i })).toBeInTheDocument();
+    expect(screen.getByText(/log in to your tradeforge account/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /log in/i })).toBeInTheDocument();
@@ -78,13 +79,5 @@ describe("LoginPage", () => {
     await waitFor(() => {
       expect(localStorage.getItem("access_token")).toBe("mock-jwt-token-abc123");
     });
-  });
-
-  it("renders the hero panel features", () => {
-    renderWithProviders(<LoginPage />, { route: "/login" });
-
-    expect(screen.getByText("Message sellers securely")).toBeInTheDocument();
-    expect(screen.getByText("Save listings for later")).toBeInTheDocument();
-    expect(screen.getByText("Schedule meetups")).toBeInTheDocument();
   });
 });

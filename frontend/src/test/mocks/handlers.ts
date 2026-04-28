@@ -87,6 +87,10 @@ export const handlers = [
     return HttpResponse.json({ detail: "Unauthorized" }, { status: 401 });
   }),
 
+  http.get(`${BASE}/notifications`, () => {
+    return HttpResponse.json({ items: [], unread_count: 0 });
+  }),
+
   http.post(`${BASE}/uploads/images`, async ({ request }) => {
     const auth = request.headers.get("Authorization");
     if (!auth) return HttpResponse.json({ detail: "Not authenticated" }, { status: 401 });
